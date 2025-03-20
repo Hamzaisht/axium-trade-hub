@@ -1,12 +1,8 @@
-
-import { useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAIValuation } from '@/hooks/useAIValuation';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { cn } from '@/lib/utils';
-import { Calendar, CoinsIcon, Clock, Shield, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { CircleDollarSign, Lock, AlertTriangle } from 'lucide-react';
+import { useAIValuation } from '@/hooks/useAIValuation';
+import { useEffect } from 'react';
 
 interface DividendAndVestingProps {
   ipoId?: string;
@@ -14,8 +10,6 @@ interface DividendAndVestingProps {
 }
 
 export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVestingProps) => {
-  const [activeTab, setActiveTab] = useState('dividends');
-  
   const { 
     dividendInfo, 
     vestingRules, 
@@ -24,19 +18,12 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
     isVestingRulesLoading,
     isLiquidationRulesLoading
   } = useAIValuation({ ipoId });
-  
-  // Format date to readable format
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
-  
-  // Render dividend information
-  const renderDividendInfo = () => {
+
+  useEffect(() => {
+    console.log("DividendAndVesting component loaded with ipoId:", ipoId);
+  }, [ipoId]);
+
+  const renderDividendSection = () => {
     if (isDividendInfoLoading) {
       return (
         <div className="flex items-center justify-center h-40">
@@ -50,111 +37,80 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
     if (!dividendInfo) {
       return (
         <div className="text-center py-10 text-axium-gray-500">
-          <p>No dividend data available</p>
+          <p>No dividend information available</p>
         </div>
       );
     }
     
-    // Process payout history data for chart
-    // Check if historicalPayouts exists, if not use empty array
-    const payoutHistory = [...(dividendInfo.historicalPayouts || [])]
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .map(payout => ({
-        date: formatDate(payout.date),
-        amount: payout.amount
-      }));
+    // Calculate time until next payout
+    const nextPayoutDate = new Date(dividendInfo.nextPayoutDate);
+    const now = new Date();
+    const daysUntilPayout = Math.ceil((nextPayoutDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     
-    // Add future payout if available
-    if (dividendInfo.nextPayoutDate) {
-      payoutHistory.push({
-        date: formatDate(dividendInfo.nextPayoutDate),
-        amount: dividendInfo.nextEstimatedAmount
-      });
-    }
+    // Handle missing historicalPayouts safely
+    const historicalPayouts = dividendInfo.historicalPayouts || [];
     
     return (
-      <div className="space-y-5">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-axium-blue/5 rounded-lg p-3">
-            <div className="text-sm text-axium-gray-600 mb-1">Annual Yield</div>
-            <div className="text-2xl font-semibold text-axium-blue">
-              {dividendInfo.annualYieldPercent}%
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">Dividends</h3>
+            <p className="text-axium-gray-500 text-sm">
+              Earn passive income by holding {symbol} tokens
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-xl font-semibold">{dividendInfo.annualYieldPercent}%</div>
+            <div className="text-axium-gray-500 text-sm">Annual Yield</div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Badge className="bg-axium-blue/10 text-axium-blue hover:bg-axium-blue/20 mb-2">
+              Next Payout
+            </Badge>
+            <div className="text-sm text-axium-gray-600">
+              {daysUntilPayout} days
+            </div>
+            <div className="text-sm text-axium-gray-600">
+              {nextPayoutDate.toLocaleDateString()}
             </div>
           </div>
           
-          <div className="bg-axium-gray-50 rounded-lg p-3">
-            <div className="text-sm text-axium-gray-600 mb-1">Payout Frequency</div>
-            <div className="text-lg font-medium capitalize">
-              {dividendInfo.payoutFrequency}
+          <div>
+            <Badge className="bg-axium-blue/10 text-axium-blue hover:bg-axium-blue/20 mb-2">
+              Estimated Amount
+            </Badge>
+            <div className="text-sm text-axium-gray-600">
+              ${dividendInfo.nextEstimatedAmount}M
+            </div>
+            <div className="text-sm text-axium-gray-600">
+              Payout Frequency: {dividendInfo.payoutFrequency}
             </div>
           </div>
         </div>
         
         <div>
-          <div className="flex items-center space-x-2 mb-3">
-            <Calendar className="h-4 w-4 text-axium-gray-500" />
-            <h3 className="text-sm font-medium">Next Payout</h3>
-          </div>
-          
-          <div className="bg-axium-gray-50 rounded-lg p-3">
-            <div className="flex justify-between items-center">
-              <span className="text-axium-gray-700">{formatDate(dividendInfo.nextPayoutDate)}</span>
-              <span className="text-lg font-semibold">${dividendInfo.nextEstimatedAmount}M</span>
-            </div>
-            <div className="text-xs text-axium-gray-500 mt-1">
-              Estimated total payout pool in millions
-            </div>
-          </div>
-        </div>
-        
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              <CoinsIcon className="h-4 w-4 text-axium-gray-500" />
-              <h3 className="text-sm font-medium">Payout History</h3>
-            </div>
-          </div>
-          
-          <div className="h-[180px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={payoutHistory}
-                margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-              >
-                <CartesianGrid stroke="#f5f5f5" strokeDasharray="3 3" vertical={false} />
-                <XAxis 
-                  dataKey="date" 
-                  tick={{ fontSize: 10 }}
-                  tickMargin={10}
-                />
-                <YAxis 
-                  tickFormatter={(value) => `$${value}M`}
-                  tick={{ fontSize: 10 }}
-                  width={40}
-                />
-                <Tooltip 
-                  formatter={(value) => [`$${value}M`, 'Payout']}
-                  labelFormatter={(label) => `Date: ${label}`}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="amount" 
-                  stroke="#0050FF" 
-                  strokeWidth={2}
-                  dot={{ stroke: '#0050FF', strokeWidth: 2, r: 4, fill: 'white' }}
-                  activeDot={{ r: 6, stroke: '#0050FF', strokeWidth: 2, fill: '#0050FF' }}
-                  connectNulls
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <h4 className="text-sm font-semibold mb-2">Historical Payouts</h4>
+          {historicalPayouts.length > 0 ? (
+            <ul className="space-y-2">
+              {historicalPayouts.map((payout, idx) => (
+                <li key={idx} className="flex items-center justify-between text-sm text-axium-gray-600">
+                  <span>{payout.date}</span>
+                  <span>${payout.amount}M</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-axium-gray-500">No historical data available</div>
+          )}
         </div>
       </div>
     );
   };
-  
-  // Render vesting and staking rules
-  const renderVestingRules = () => {
+
+  const renderVestingSection = () => {
     if (isVestingRulesLoading) {
       return (
         <div className="flex items-center justify-center h-40">
@@ -168,97 +124,94 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
     if (!vestingRules) {
       return (
         <div className="text-center py-10 text-axium-gray-500">
-          <p>No vesting data available</p>
+          <p>No vesting rules available</p>
         </div>
       );
     }
     
-    // Process vesting schedule for chart
-    const vestingSchedule = vestingRules.tokenLockupSchedule.map(item => ({
-      date: formatDate(item.date),
-      unlocked: item.unlockPercent,
-      locked: 100 - item.unlockPercent
-    }));
+    // Generate lockup schedule data if property is missing
+    const tokenLockupSchedule = vestingRules.tokenLockupSchedule || generateTokenLockupSchedule(vestingRules);
     
     return (
-      <div className="space-y-5">
-        <div>
-          <div className="flex items-center space-x-2 mb-3">
-            <Clock className="h-4 w-4 text-axium-gray-500" />
-            <h3 className="text-sm font-medium">Creator Vesting Schedule</h3>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">Vesting Rules</h3>
+            <p className="text-axium-gray-500 text-sm">
+              Understand token lockup and release schedule
+            </p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Badge className="bg-axium-blue/10 text-axium-blue hover:bg-axium-blue/20 mb-2">
+              Initial Unlock
+            </Badge>
+            <div className="text-sm text-axium-gray-600">
+              {vestingRules.creatorVesting.initialUnlock}%
+            </div>
+            <div className="text-sm text-axium-gray-600">
+              Unlocked at launch
+            </div>
           </div>
           
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-axium-gray-50 rounded-lg p-2">
-              <div className="text-xs text-axium-gray-600 mb-1">Initial Unlock</div>
-              <div className="text-lg font-medium">{vestingRules.creatorVesting.initialUnlock}%</div>
+          <div>
+            <Badge className="bg-axium-blue/10 text-axium-blue hover:bg-axium-blue/20 mb-2">
+              Vesting Period
+            </Badge>
+            <div className="text-sm text-axium-gray-600">
+              {vestingRules.creatorVesting.vestingPeriod} months
             </div>
-            
-            <div className="bg-axium-gray-50 rounded-lg p-2">
-              <div className="text-xs text-axium-gray-600 mb-1">Vesting Period</div>
-              <div className="text-lg font-medium">{vestingRules.creatorVesting.vestingPeriod} mo</div>
+            <div className="text-sm text-axium-gray-600">
+              Total vesting duration
             </div>
-            
-            <div className="bg-axium-gray-50 rounded-lg p-2">
-              <div className="text-xs text-axium-gray-600 mb-1">Monthly Unlock</div>
-              <div className="text-lg font-medium">{vestingRules.creatorVesting.monthlyUnlock}%</div>
-            </div>
-          </div>
-          
-          <div className="h-[180px] mt-3">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={vestingSchedule}
-                margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-              >
-                <CartesianGrid stroke="#f5f5f5" strokeDasharray="3 3" vertical={false} />
-                <XAxis 
-                  dataKey="date" 
-                  tick={{ fontSize: 10 }}
-                  tickMargin={10}
-                />
-                <YAxis 
-                  tickFormatter={(value) => `${value}%`}
-                  tick={{ fontSize: 10 }}
-                  width={35}
-                />
-                <Tooltip 
-                  formatter={(value) => [`${value}%`, 'Unlocked']}
-                  labelFormatter={(label) => `Date: ${label}`}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="unlocked" 
-                  stroke="#0050FF" 
-                  strokeWidth={2}
-                  dot={{ stroke: '#0050FF', strokeWidth: 2, r: 3, fill: 'white' }}
-                  activeDot={{ r: 5, stroke: '#0050FF', strokeWidth: 2, fill: '#0050FF' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
           </div>
         </div>
         
         <div>
-          <div className="flex items-center space-x-2 mb-3">
-            <Shield className="h-4 w-4 text-axium-gray-500" />
-            <h3 className="text-sm font-medium">Investor Staking Rules</h3>
-          </div>
-          
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-axium-blue/5 rounded-lg p-2">
-              <div className="text-xs text-axium-gray-600 mb-1">Min Period</div>
-              <div className="text-lg font-medium">{vestingRules.investorStaking.minStakingPeriod} days</div>
+          <h4 className="text-sm font-semibold mb-2">Token Lockup Schedule</h4>
+          <ul className="space-y-2">
+            {tokenLockupSchedule.map((lockup, idx) => (
+              <li key={idx} className="flex items-center justify-between text-sm text-axium-gray-600">
+                <span>{lockup.label}</span>
+                <span>{lockup.unlockPercentage}%</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        <div>
+          <h4 className="text-sm font-semibold mb-2">Investor Staking</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Badge className="bg-axium-blue/10 text-axium-blue hover:bg-axium-blue/20 mb-2">
+                Min Staking Period
+              </Badge>
+              <div className="text-sm text-axium-gray-600">
+                {vestingRules.investorStaking.minStakingPeriod} days
+              </div>
             </div>
             
-            <div className="bg-axium-error/5 rounded-lg p-2">
-              <div className="text-xs text-axium-gray-600 mb-1">Early Penalty</div>
-              <div className="text-lg font-medium">{vestingRules.investorStaking.earlyUnstakePenalty}%</div>
+            <div>
+              <Badge className="bg-axium-blue/10 text-axium-blue hover:bg-axium-blue/20 mb-2">
+                Early Unstake Penalty
+              </Badge>
+              <div className="text-sm text-axium-gray-600">
+                {vestingRules.investorStaking.earlyUnstakePenalty}%
+              </div>
             </div>
             
-            <div className="bg-axium-success/5 rounded-lg p-2">
-              <div className="text-xs text-axium-gray-600 mb-1">Annual Rewards</div>
-              <div className="text-lg font-medium">{vestingRules.investorStaking.stakingRewards}%</div>
+            <div>
+              <Badge className="bg-axium-blue/10 text-axium-blue hover:bg-axium-blue/20 mb-2">
+                Staking Rewards
+              </Badge>
+              <div className="text-sm text-axium-gray-600">
+                {vestingRules.investorStaking.stakingRewards}%
+              </div>
+              <div className="text-sm text-axium-gray-600">
+                Annual percentage
+              </div>
             </div>
           </div>
         </div>
@@ -266,8 +219,31 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
     );
   };
   
-  // Render liquidation rules
-  const renderLiquidationRules = () => {
+  // Generate token lockup schedule based on vesting rules
+  const generateTokenLockupSchedule = (vestingRules) => {
+    const { creatorVesting } = vestingRules;
+    const schedule = [];
+    
+    // Initial unlock
+    schedule.push({
+      month: 0,
+      unlockPercentage: creatorVesting.initialUnlock,
+      label: 'Initial'
+    });
+    
+    // Monthly unlocks
+    for (let i = 1; i <= 12; i++) {
+      schedule.push({
+        month: i,
+        unlockPercentage: creatorVesting.monthlyUnlock,
+        label: `Month ${i}`
+      });
+    }
+    
+    return schedule;
+  };
+
+  const renderLiquidationSection = () => {
     if (isLiquidationRulesLoading) {
       return (
         <div className="flex items-center justify-center h-40">
@@ -281,95 +257,87 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
     if (!liquidationRules) {
       return (
         <div className="text-center py-10 text-axium-gray-500">
-          <p>No liquidation data available</p>
+          <p>No liquidation rules available</p>
         </div>
       );
     }
     
-    // Check if warningThresholds exists, if not use empty array
-    const warningThresholds = liquidationRules.warningThresholds || [];
+    // Handle missing warningThresholds safely
+    const warningThresholds = liquidationRules.warningThresholds || {
+      severe: 30,
+      moderate: 60,
+      mild: 90
+    };
     
     return (
       <div className="space-y-4">
-        <div className="bg-axium-error/5 p-3 rounded-lg border border-axium-error/20">
-          <div className="flex items-center space-x-2 mb-2">
-            <AlertTriangle className="h-4 w-4 text-axium-error" />
-            <h3 className="text-sm font-medium text-axium-error">Liquidation Conditions</h3>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">Liquidation Rules</h3>
+            <p className="text-axium-gray-500 text-sm">
+              Understand conditions for token liquidation
+            </p>
           </div>
-          
-          <div className="text-sm text-axium-gray-700 mb-3">
-            {liquidationRules.liquidationProcess}
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white/50 rounded p-2">
-              <div className="text-xs text-axium-gray-600 mb-1">Inactivity Threshold</div>
-              <div className="text-lg font-medium">{liquidationRules.inactivityThreshold} days</div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Badge className="bg-axium-blue/10 text-axium-blue hover:bg-axium-blue/20 mb-2">
+              Inactivity Threshold
+            </Badge>
+            <div className="text-sm text-axium-gray-600">
+              {liquidationRules.inactivityThreshold} days
             </div>
-            
-            <div className="bg-white/50 rounded p-2">
-              <div className="text-xs text-axium-gray-600 mb-1">Minimum Engagement</div>
-              <div className="text-lg font-medium">{liquidationRules.engagementMinimum}/100</div>
+            <div className="text-sm text-axium-gray-600">
+              Days of inactivity before liquidation
             </div>
           </div>
           
-          <div className="mt-3 p-2 bg-axium-gray-100/50 rounded">
-            <div className="text-xs text-axium-gray-600 mb-1">Token Buyback Price</div>
-            <div className="text-xl font-semibold">${liquidationRules.tokenBuybackPrice}</div>
+          <div>
+            <Badge className="bg-axium-blue/10 text-axium-blue hover:bg-axium-blue/20 mb-2">
+              Engagement Minimum
+            </Badge>
+            <div className="text-sm text-axium-gray-600">
+              {liquidationRules.engagementMinimum}
+            </div>
+            <div className="text-sm text-axium-gray-600">
+              Minimum engagement score
+            </div>
           </div>
         </div>
         
         <div>
-          <h3 className="text-sm font-medium mb-2">Warning Thresholds</h3>
-          
-          {warningThresholds.map((threshold, idx) => (
-            <div key={idx} className="mb-2 last:mb-0 p-2 bg-axium-gray-50 rounded-lg">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium">{threshold.metric}</span>
-                <Badge variant="outline" className={cn(
-                  idx === 0 ? "bg-yellow-50 text-yellow-700 border-yellow-200" :
-                  idx === 1 ? "bg-orange-50 text-orange-700 border-orange-200" :
-                  "bg-red-50 text-red-700 border-red-200"
-                )}>
-                  {threshold.threshold}
-                </Badge>
-              </div>
-              <div className="text-xs text-axium-gray-600">{threshold.action}</div>
-            </div>
-          ))}
+          <Badge className="bg-axium-blue/10 text-axium-blue hover:bg-axium-blue/20 mb-2">
+            Token Buyback Price
+          </Badge>
+          <div className="text-sm text-axium-gray-600">
+            ${liquidationRules.tokenBuybackPrice}
+          </div>
+          <div className="text-sm text-axium-gray-600">
+            Price at which tokens will be bought back
+          </div>
+        </div>
+        
+        <div>
+          <h4 className="text-sm font-semibold mb-2">Liquidation Process</h4>
+          <p className="text-sm text-axium-gray-600">
+            {liquidationRules.liquidationProcess}
+          </p>
         </div>
       </div>
     );
   };
-  
+
   return (
-    <GlassCard className="h-full">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold flex items-center">
-          <CoinsIcon className="text-axium-blue mr-2 h-5 w-5" />
-          Smart Contract {symbol && <span className="text-axium-gray-500 font-normal ml-1">({symbol})</span>}
-        </h2>
+    <GlassCard className="space-y-6">
+      <div className="flex items-center space-x-3 mb-4">
+        <CircleDollarSign className="h-5 w-5 text-axium-blue" />
+        <h2 className="text-lg font-semibold">Dividends & Vesting</h2>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-4">
-          <TabsTrigger value="dividends">Dividends</TabsTrigger>
-          <TabsTrigger value="vesting">Vesting</TabsTrigger>
-          <TabsTrigger value="liquidation">Liquidation</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="dividends" className="pt-2">
-          {renderDividendInfo()}
-        </TabsContent>
-        
-        <TabsContent value="vesting" className="pt-2">
-          {renderVestingRules()}
-        </TabsContent>
-        
-        <TabsContent value="liquidation" className="pt-2">
-          {renderLiquidationRules()}
-        </TabsContent>
-      </Tabs>
+      {renderDividendSection()}
+      {renderVestingSection()}
+      {renderLiquidationSection()}
     </GlassCard>
   );
 };

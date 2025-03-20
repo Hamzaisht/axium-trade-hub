@@ -1,553 +1,379 @@
-
 /**
  * Mock API
- * Simulates API endpoints for creator data, IPOs, and trading
+ * Simulates API endpoints for fetching creator data, IPOs, and AI valuations.
  */
 
-import {
-  predictPriceMovement,
-  calculateMarketDepth,
-  getSocialSentiment,
-  calculateDividendYield,
-  getTokenVestingRules,
-  getLiquidationRules,
-  calculateSpread,
-  detectAnomalies,
-  AIModelType,
-  PredictionTimeframe
-} from "./mockAIModels";
+import { faker } from '@faker-js/faker';
 
-// Mock data for creators
-export interface Creator {
-  id: string;
-  name: string;
-  bio: string;
-  profilePic: string;
-  socialLinks: {
-    twitter: string;
-    instagram: string;
-    youtube: string;
-  };
-  // Add revenue data
-  revenueUSD?: number;
-}
-
-// Mock data for IPOs
+// Define types for mock data
 export interface IPO {
   id: string;
-  creatorId: string;
   creatorName: string;
-  symbol: string; // Added symbol field
+  symbol: string;
   initialPrice: number;
   currentPrice: number;
   totalSupply: number;
   availableSupply: number;
-  launchDate: string;
-  description: string;
-  aiScore: number;
-  engagementScore: number;
-  marketCap: number;
-  volume24h: number;
-  // Add average daily volume
-  averageDailyVolume?: number;
-  // Add revenue data
+  launchDate?: string;
   revenueUSD?: number;
-  // Add social links
-  socialLinks?: {
-    twitter: string;
-    instagram: string;
-    youtube: string;
+  engagementScore: number;
+  aiScore: number;
+  averageDailyVolume?: number;
+}
+
+// Utility function to generate a delay
+const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+// Mock IPO data
+const mockIPOs: IPO[] = Array(20).fill(null).map((_, i) => {
+  const creatorName = faker.person.firstName() + " " + faker.person.lastName();
+  const initialPrice = parseFloat(faker.number.float({ min: 1, max: 50, precision: 0.01 }).toFixed(2));
+  const engagementScore = faker.number.int({ min: 20, max: 99 });
+  const aiScore = faker.number.int({ min: 30, max: 95 });
+  const revenueUSD = faker.number.int({ min: 100000, max: 10000000 });
+
+  return {
+    id: faker.string.uuid(),
+    creatorName: creatorName,
+    symbol: creatorName.substring(0, 3).toUpperCase(),
+    initialPrice: initialPrice,
+    currentPrice: parseFloat(faker.number.float({ min: initialPrice * 0.5, max: initialPrice * 2, precision: 0.01 }).toFixed(2)),
+    totalSupply: faker.number.int({ min: 1000000, max: 10000000 }),
+    availableSupply: faker.number.int({ min: 100000, max: 1000000 }),
+    launchDate: faker.date.past({ years: 1 }).toISOString(),
+    revenueUSD: revenueUSD,
+    engagementScore: engagementScore,
+    aiScore: aiScore,
+    averageDailyVolume: faker.number.int({ min: 1000, max: 10000 })
   };
-}
+});
 
-// Mock data for orders
-export interface Order {
-  id: string;
-  userId?: string; // Added userId field
-  ipoId?: string; // Added ipoId field
-  price: number;
-  quantity: number;
-  type: "buy" | "sell";
-  timestamp: string;
-  status?: 'open' | 'filled' | 'cancelled';
-  orderType?: 'market' | 'limit';
-}
-
-// Mock data for transactions
-export interface Transaction {
-  id: string;
-  buyerId: string;
-  sellerId: string;
-  ipoId: string;
-  creatorSymbol: string;
-  price: number;
-  quantity: number;
-  timestamp: string;
-}
-
-// Define Trade interface
-export interface Trade extends Transaction {
-  // Trade is basically the same as Transaction in this mock
-}
-
-// Define Portfolio interface
-export interface Portfolio {
-  id: string;
-  userId: string;
-  cash: number;
-  totalValue: number;
-  holdings: {
-    ipoId: string;
-    symbol: string;
-    quantity: number;
-    averagePurchasePrice: number;
-    currentPrice: number;
-  }[];
-  history: {
-    date: string;
-    value: number;
-  }[];
-}
-
-// Mock data arrays (needed by mockWebSocket.ts)
-export const mockIPOs: IPO[] = [];
-export const mockOrders: Order[] = [];
-export const mockTrades: Trade[] = [];
-
-// API class to simulate backend calls
-class MockIPOAPI {
-  private creators: Creator[] = [
-    {
-      id: "emma-watson",
-      name: "Emma Watson",
-      bio: "Actress and activist known for her roles in Harry Potter and her work with the UN.",
-      profilePic: "https://via.placeholder.com/150",
-      socialLinks: {
-        twitter: "https://twitter.com/emmawatson",
-        instagram: "https://instagram.com/emmawatson",
-        youtube: "https://youtube.com/emmawatson",
-      },
-      revenueUSD: 750000,
-    },
-    {
-      id: "taylor-swift",
-      name: "Taylor Swift",
-      bio: "Singer-songwriter and global pop superstar.",
-      profilePic: "https://via.placeholder.com/150",
-      socialLinks: {
-        twitter: "https://twitter.com/taylorswift13",
-        instagram: "https://instagram.com/taylorswift",
-        youtube: "https://youtube.com/taylorswift",
-      },
-      revenueUSD: 1200000,
-    },
-    {
-      id: "elon-musk",
-      name: "Elon Musk",
-      bio: "Entrepreneur and business magnate; founder of SpaceX, Tesla, and more.",
-      profilePic: "https://via.placeholder.com/150",
-      socialLinks: {
-        twitter: "https://twitter.com/elonmusk",
-        instagram: "https://instagram.com/elonmusk",
-        youtube: "https://youtube.com/elonmusk",
-      },
-      revenueUSD: 2000000,
-    },
-    {
-      id: "mr-beast",
-      name: "MrBeast",
-      bio: "YouTube personality, philanthropist, and entrepreneur known for elaborate stunts and challenges.",
-      profilePic: "https://via.placeholder.com/150",
-      socialLinks: {
-        twitter: "https://twitter.com/MrBeast",
-        instagram: "https://instagram.com/mrbeast",
-        youtube: "https://youtube.com/MrBeast",
-      },
-      revenueUSD: 900000,
-    },
-    {
-      id: "arianagrande",
-      name: "Ariana Grande",
-      bio: "Singer, songwriter, and actress with a powerful voice and a global fanbase.",
-      profilePic: "https://via.placeholder.com/150",
-      socialLinks: {
-        twitter: "https://twitter.com/ArianaGrande",
-        instagram: "https://instagram.com/arianagrande",
-        youtube: "https://youtube.com/arianagrande",
-      },
-      revenueUSD: 1100000,
-    },
-  ];
-  private ipos: IPO[] = [
-    {
-      id: "emma-watson-ipo",
-      creatorId: "emma-watson",
-      creatorName: "Emma Watson",
-      symbol: "EMW",
-      initialPrice: 20.00,
-      currentPrice: 24.82,
-      totalSupply: 1000000,
-      availableSupply: 350000,
-      launchDate: "2024-01-20T14:30:00.000Z",
-      description: "Official token representing shares in Emma Watson's future earnings and ventures.",
-      aiScore: 85,
-      engagementScore: 78,
-      marketCap: 24820000,
-      volume24h: 67800,
-      averageDailyVolume: 70000,
-      revenueUSD: 750000,
-    },
-    {
-      id: "taylor-swift-ipo",
-      creatorId: "taylor-swift",
-      creatorName: "Taylor Swift",
-      symbol: "TSWIFT",
-      initialPrice: 25.50,
-      currentPrice: 31.25,
-      totalSupply: 1500000,
-      availableSupply: 500000,
-      launchDate: "2023-11-15T09:00:00.000Z",
-      description: "Exclusive token providing access to Taylor Swift's upcoming album releases and concert tickets.",
-      aiScore: 92,
-      engagementScore: 89,
-      marketCap: 46875000,
-      volume24h: 123500,
-      averageDailyVolume: 130000,
-      revenueUSD: 1200000,
-    },
-    {
-      id: "elon-musk-ipo",
-      creatorId: "elon-musk",
-      creatorName: "Elon Musk",
-      symbol: "MUSK",
-      initialPrice: 30.00,
-      currentPrice: 28.50,
-      totalSupply: 2000000,
-      availableSupply: 600000,
-      launchDate: "2023-09-01T18:45:00.000Z",
-      description: "Token backed by Elon Musk's ventures, offering holders exclusive insights and voting rights.",
-      aiScore: 78,
-      engagementScore: 65,
-      marketCap: 57000000,
-      volume24h: 95200,
-      averageDailyVolume: 100000,
-      revenueUSD: 2000000,
-    },
-    {
-      id: "mr-beast-ipo",
-      creatorId: "mr-beast",
-      creatorName: "MrBeast",
-      symbol: "BEAST",
-      initialPrice: 18.75,
-      currentPrice: 22.10,
-      totalSupply: 1200000,
-      availableSupply: 400000,
-      launchDate: "2024-02-10T12:00:00.000Z",
-      description: "Token that grants holders early access to MrBeast's challenges and a chance to participate in his videos.",
-      aiScore: 88,
-      engagementScore: 95,
-      marketCap: 26520000,
-      volume24h: 89700,
-      averageDailyVolume: 90000,
-      revenueUSD: 900000,
-    },
-    {
-      id: "ariana-grande-ipo",
-      creatorId: "arianagrande",
-      creatorName: "Ariana Grande",
-      symbol: "ARIANA",
-      initialPrice: 22.00,
-      currentPrice: 26.75,
-      totalSupply: 1300000,
-      availableSupply: 450000,
-      launchDate: "2023-12-01T21:15:00.000Z",
-      description: "Token providing VIP access to Ariana Grande's concerts, meet-and-greets, and exclusive merchandise.",
-      aiScore: 90,
-      engagementScore: 85,
-      marketCap: 34775000,
-      volume24h: 110300,
-      averageDailyVolume: 115000,
-      revenueUSD: 1100000,
-    },
-  ];
-  private orders: Order[] = [];
-  private transactions: Transaction[] = [];
-
-  // Simulate network delay
-  private async simulateNetworkDelay(maxDelay = 800) {
-    const delay = Math.random() * maxDelay;
-    return new Promise(resolve => setTimeout(resolve, delay));
-  }
-
-  // Get all creators
-  async getAllCreators(): Promise<Creator[]> {
-    await this.simulateNetworkDelay();
-    return this.creators;
-  }
-
-  // Get creator by ID
-  async getCreatorById(creatorId: string): Promise<Creator | undefined> {
-    await this.simulateNetworkDelay();
-    return this.creators.find(creator => creator.id === creatorId);
-  }
-
-  // Get all IPOs
+// Mock API class
+export class MockIPOAPI {
   async getAllIPOs(): Promise<IPO[]> {
-    await this.simulateNetworkDelay();
-    // Copy ipos to mockIPOs for WebSocket
-    mockIPOs.length = 0;
-    this.ipos.forEach(ipo => mockIPOs.push({...ipo}));
-    return this.ipos;
+    await delay(500);
+    return mockIPOs;
   }
 
-  // Get IPO by ID
-  async getIPOById(ipoId: string): Promise<IPO | undefined> {
-    await this.simulateNetworkDelay();
-    return this.ipos.find(ipo => ipo.id === ipoId);
+  async getIPO(id: string): Promise<IPO | undefined> {
+    await delay(300);
+    return mockIPOs.find(ipo => ipo.id === id);
   }
 
-  // Create IPO
-  async createIPO(ipoData: Partial<IPO>): Promise<IPO> {
-    await this.simulateNetworkDelay();
-    const newIPO: IPO = {
-      id: `${ipoData.creatorId || 'unknown'}-ipo-${Date.now()}`,
-      creatorId: ipoData.creatorId || 'unknown',
-      creatorName: ipoData.creatorName || 'Unknown Creator',
-      symbol: ipoData.symbol || 'NEW',
-      initialPrice: ipoData.initialPrice || 1.00,
-      currentPrice: ipoData.initialPrice || 1.00,
-      totalSupply: ipoData.totalSupply || 1000000,
-      availableSupply: ipoData.availableSupply || 500000,
-      launchDate: new Date().toISOString(),
-      description: ipoData.description || 'New creator token',
-      aiScore: Math.floor(Math.random() * 100),
-      engagementScore: Math.floor(Math.random() * 100),
-      marketCap: (ipoData.initialPrice || 1.00) * (ipoData.totalSupply || 1000000),
-      volume24h: 0,
-      averageDailyVolume: Math.floor(Math.random() * 10000),
-      revenueUSD: ipoData.revenueUSD || 100000,
-      socialLinks: ipoData.socialLinks
-    };
-    this.ipos.push(newIPO);
-    mockIPOs.push({...newIPO});
-    return newIPO;
-  }
-
-  // Add order
-  async addOrder(order: Order): Promise<Order> {
-    await this.simulateNetworkDelay();
-    this.orders.push(order);
-    mockOrders.push({...order});
-    return order;
-  }
-
-  // Get orders by IPO ID
-  async getOrdersByIPOId(ipoId: string): Promise<Order[]> {
-    await this.simulateNetworkDelay();
-    return this.orders.filter(order => order.ipoId === ipoId);
-  }
-
-  // Add transaction
-  async addTransaction(transaction: Transaction): Promise<Transaction> {
-    await this.simulateNetworkDelay();
-    this.transactions.push(transaction);
-    mockTrades.push({...transaction} as Trade);
-    return transaction;
-  }
-
-  // Get transactions by IPO ID
-  async getTransactionsByIPOId(ipoId: string): Promise<Transaction[]> {
-    await this.simulateNetworkDelay();
-    return this.transactions.filter(transaction => transaction.ipoId === ipoId);
-  }
-}
-
-// Mock Trading API
-class MockTradingAPI {
-  // Simulate network delay
-  private async simulateNetworkDelay(maxDelay = 800) {
-    const delay = Math.random() * maxDelay;
-    return new Promise(resolve => setTimeout(resolve, delay));
-  }
-
-  // Place order
-  async placeOrder(orderData: Partial<Order>): Promise<Order> {
-    await this.simulateNetworkDelay();
-    const order: Order = {
-      id: `order-${Date.now()}`,
-      userId: orderData.userId || 'current-user',
-      ipoId: orderData.ipoId,
-      price: orderData.price || 0,
-      quantity: orderData.quantity || 1,
-      type: orderData.type || 'buy',
-      timestamp: new Date().toISOString(),
-      status: 'open',
-      orderType: orderData.orderType || 'market'
-    };
-    mockOrders.push(order);
-    return order;
-  }
-
-  // Cancel order
-  async cancelOrder(orderId: string): Promise<Order> {
-    await this.simulateNetworkDelay();
-    const orderIndex = mockOrders.findIndex(o => o.id === orderId);
-    if (orderIndex >= 0) {
-      mockOrders[orderIndex].status = 'cancelled';
-      return mockOrders[orderIndex];
-    }
-    throw new Error('Order not found');
-  }
-
-  // Get user orders
-  async getUserOrders(): Promise<Order[]> {
-    await this.simulateNetworkDelay();
-    return mockOrders.filter(o => o.userId === 'current-user');
-  }
-
-  // Get user trades
-  async getUserTrades(): Promise<Trade[]> {
-    await this.simulateNetworkDelay();
-    return mockTrades.filter(t => t.buyerId === 'current-user' || t.sellerId === 'current-user');
-  }
-
-  // Get order book for an IPO
-  async getOrderBook(ipoId: string): Promise<{ bids: Order[], asks: Order[] }> {
-    await this.simulateNetworkDelay();
-    const openOrders = mockOrders.filter(o => o.ipoId === ipoId && o.status === 'open');
-    const bids = openOrders.filter(o => o.type === 'buy').sort((a, b) => b.price - a.price);
-    const asks = openOrders.filter(o => o.type === 'sell').sort((a, b) => a.price - b.price);
-    return { bids, asks };
-  }
-}
-
-// Mock Portfolio API
-class MockPortfolioAPI {
-  // Simulate network delay
-  private async simulateNetworkDelay(maxDelay = 800) {
-    const delay = Math.random() * maxDelay;
-    return new Promise(resolve => setTimeout(resolve, delay));
-  }
-
-  // Get user portfolio
-  async getUserPortfolio(): Promise<Portfolio> {
-    await this.simulateNetworkDelay();
-    // Mock portfolio data
-    return {
-      id: 'portfolio-1',
-      userId: 'current-user',
-      cash: 10000,
-      totalValue: 25000,
-      holdings: [
-        {
-          ipoId: 'emma-watson-ipo',
-          symbol: 'EMW',
-          quantity: 500,
-          averagePurchasePrice: 20,
-          currentPrice: 24.82
-        },
-        {
-          ipoId: 'taylor-swift-ipo',
-          symbol: 'TSWIFT',
-          quantity: 100,
-          averagePurchasePrice: 25,
-          currentPrice: 31.25
-        }
-      ],
-      history: [
-        { date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), value: 15000 },
-        { date: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(), value: 17500 },
-        { date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(), value: 16800 },
-        { date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), value: 19200 },
-        { date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), value: 21500 },
-        { date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), value: 23100 },
-        { date: new Date().toISOString(), value: 25000 }
-      ]
-    };
-  }
-}
-
-// AI valuation API mock
-class AIValuationAPI {
-  // Simulate network delay
-  private async simulateNetworkDelay(maxDelay = 800) {
-    const delay = Math.random() * maxDelay;
-    return new Promise(resolve => setTimeout(resolve, delay));
-  }
-
-  async getValuationFactors(ipoId: string) {
-    await this.simulateNetworkDelay();
-    return {
-      creatorId: ipoId,
-      factors: ["Engagement Rate", "Market Sentiment", "AI Score"],
-      weights: [0.4, 0.3, 0.3]
-    };
-  }
-
-  async predictPriceMovement(ipoId: string, timeframe: PredictionTimeframe = "24h", modelType: AIModelType = AIModelType.HYBRID) {
-    await this.simulateNetworkDelay();
-    const ipo = await mockIPOAPI.getIPOById(ipoId);
-    return predictPriceMovement(ipo, timeframe, modelType);
-  }
-
-  async getMarketDepth(ipoId: string) {
-    await this.simulateNetworkDelay();
-    const ipo = await mockIPOAPI.getIPOById(ipoId);
-    const marketDepth = calculateMarketDepth(ipo);
+  // Simulate fetching recent trades for an IPO
+  async getRecentTrades(ipoId: string, limit: number = 10): Promise<any[]> {
+    await delay(200);
     
-    // Add current spread to market depth data
-    const spread = calculateSpread(ipo);
+    // Find the IPO
+    const ipo = mockIPOs.find(item => item.id === ipoId);
+    if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
     
-    return {
-      ...marketDepth,
-      currentSpread: spread
-    };
-  }
-
-  async getSocialSentiment(ipoId: string) {
-    await this.simulateNetworkDelay();
-    const ipo = await mockIPOAPI.getIPOById(ipoId);
-    return getSocialSentiment(ipo);
-  }
-
-  async getDividendInfo(ipoId: string) {
-    await this.simulateNetworkDelay();
-    const ipo = await mockIPOAPI.getIPOById(ipoId);
-    return calculateDividendYield(ipo);
-  }
-
-  async getVestingRules(ipoId: string) {
-    await this.simulateNetworkDelay();
-    const ipo = await mockIPOAPI.getIPOById(ipoId);
-    return getTokenVestingRules(ipo);
-  }
-
-  async getVestingAndStakingRules(ipoId: string) {
-    await this.simulateNetworkDelay();
-    return this.getVestingRules(ipoId);
-  }
-
-  async getLiquidationRules(ipoId: string) {
-    await this.simulateNetworkDelay();
-    const ipo = await mockIPOAPI.getIPOById(ipoId);
-    return getLiquidationRules(ipo);
-  }
-  
-  // Method for anomaly detection
-  async detectAnomalies(ipoId: string, recentTrades: any[] = []) {
-    await this.simulateNetworkDelay(500); // Faster response for real-time monitoring
-    const ipo = await mockIPOAPI.getIPOById(ipoId);
-    return detectAnomalies(ipo, recentTrades);
+    // Generate mock trades
+    const trades = Array(limit).fill(null).map(() => ({
+      id: faker.string.uuid(),
+      ipoId: ipoId,
+      price: parseFloat(faker.number.float({ min: ipo.currentPrice * 0.9, max: ipo.currentPrice * 1.1, precision: 0.01 }).toFixed(2)),
+      quantity: faker.number.int({ min: 10, max: 500 }),
+      timestamp: faker.date.recent().toISOString(),
+      buyerId: faker.string.uuid(),
+      sellerId: faker.string.uuid()
+    }));
+    
+    return trades;
   }
 }
 
-// Export mock API instances
+// Instantiate the mock API
 export const mockIPOAPI = new MockIPOAPI();
-export const mockAIValuationAPI = new AIValuationAPI();
-export const mockTradingAPI = new MockTradingAPI();
-export const mockPortfolioAPI = new MockPortfolioAPI();
 
-// Mock function to generate random number within a range
-export const getRandomNumber = (min: number, max: number): number => {
-  return Math.random() * (max - min) + min;
-};
+/**
+ * Mock AI Valuation API
+ * Simulates AI-driven analysis for creator valuations, market trends, and price predictions
+ */
+
+import { 
+  AIModelType, 
+  PredictionTimeframe, 
+  PriceMovement, 
+  SentimentTrend,
+  MarketDepthModel,
+  AnomalyDetectionResult,
+  predictPriceMovement as predictPriceMovementUtil,
+  getSocialSentiment as getSocialSentimentUtil,
+  calculateMarketDepth as calculateMarketDepthUtil,
+  detectAnomalies as detectAnomaliesUtil,
+  calculateDividendYield as calculateDividendYieldUtil,
+  getTokenVestingRules as getTokenVestingRulesUtil,
+  getLiquidationRules as getLiquidationRulesUtil
+} from "./mockAIModels";
+
+class AIValuationAPI {
+  async getValue(ipoId: string): Promise<number> {
+    await delay(400);
+    const ipo = mockIPOs.find(item => item.id === ipoId);
+    if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
+    return ipo.aiScore;
+  }
+
+  async predictPriceMovement(
+    ipoId: string, 
+    timeframe: PredictionTimeframe,
+    modelType: AIModelType
+  ): Promise<{
+    prediction: PriceMovement;
+    confidence: number;
+    targetPrice: number;
+    factors: string[];
+  }> {
+    await delay(500);
+    const ipo = mockIPOs.find(item => item.id === ipoId);
+    if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
+
+    return predictPriceMovementUtil(ipo, timeframe, modelType);
+  }
+
+  async getSocialSentiment(ipoId: string): Promise<{
+    overall: SentimentTrend;
+    metrics: {
+      twitter: { score: number; trend: SentimentTrend; volume: number };
+      instagram: { score: number; trend: SentimentTrend; volume: number };
+      youtube: { score: number; trend: SentimentTrend; volume: number };
+    };
+    keywords: string[];
+  }> {
+    await delay(300);
+    const ipo = mockIPOs.find(item => item.id === ipoId);
+    if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
+
+    return getSocialSentimentUtil(ipo);
+  }
+
+  async getMarketDepth(ipoId: string): Promise<MarketDepthModel> {
+    await delay(400);
+    const ipo = mockIPOs.find(item => item.id === ipoId);
+    if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
+
+    return calculateMarketDepthUtil(ipo);
+  }
+
+  async detectAnomalies(ipoId: string, recentTrades: any[]): Promise<AnomalyDetectionResult> {
+    await delay(600);
+    const ipo = mockIPOs.find(item => item.id === ipoId);
+    if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
+
+    return detectAnomaliesUtil(ipo, recentTrades);
+  }
+
+  async getDividendInfo(ipoId: string): Promise<{
+    annualYieldPercent: number;
+    nextPayoutDate: string;
+    nextEstimatedAmount: number;
+    payoutFrequency: 'monthly' | 'quarterly';
+    historicalPayouts?: { date: string; amount: number; }[];
+  }> {
+    await delay(400);
+    const ipo = mockIPOs.find(item => item.id === ipoId);
+    if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
+
+    const dividendInfo = calculateDividendYieldUtil(ipo);
+    
+    // Add mock historical payouts
+    const historicalPayouts = Array(5).fill(null).map((_, i) => ({
+      date: faker.date.past({ years: 1 }).toISOString(),
+      amount: parseFloat(faker.number.float({ min: 0.01, max: dividendInfo.nextEstimatedAmount, precision: 0.01 }).toFixed(2))
+    }));
+
+    return {
+      ...dividendInfo,
+      historicalPayouts
+    };
+  }
+
+  async getVestingRules(ipoId: string): Promise<{
+    creatorVesting: {
+      initialUnlock: number;
+      vestingPeriod: number;
+      monthlyUnlock: number;
+    };
+    investorStaking: {
+      minStakingPeriod: number;
+      earlyUnstakePenalty: number;
+      stakingRewards: number;
+    };
+    tokenLockupSchedule?: { month: number; unlockPercentage: number; label: string; }[];
+  }> {
+    await delay(400);
+    const ipo = mockIPOs.find(item => item.id === ipoId);
+    if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
+
+    return getTokenVestingRulesUtil(ipo);
+  }
+
+  async getLiquidationRules(ipoId: string): Promise<{
+    inactivityThreshold: number;
+    engagementMinimum: number;
+    liquidationProcess: string;
+    tokenBuybackPrice: number;
+    warningThresholds?: { severe: number; moderate: number; mild: number; };
+  }> {
+    await delay(400);
+    const ipo = mockIPOs.find(item => item.id === ipoId);
+    if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
+
+    return getLiquidationRulesUtil(ipo);
+  }
+
+  // Add this method to the AIValuationAPI class
+  getCreatorMarketScore: async (ipoId: string, externalMetrics?: any, socialSentiment?: any, anomalyData?: any): Promise<any> => {
+    // Find the IPO
+    const ipo = mockIPOs.find(item => item.id === ipoId);
+    if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
+    
+    // Generate random delay to simulate API latency
+    await delay(300 + Math.random() * 500);
+    
+    // Calculate revenue influence (50% weight)
+    const revenueInfluenceFactor = Math.min(1, (ipo.revenueUSD || 50000) / 1000000);
+    const revenueInfluenceRaw = revenueInfluenceFactor * 0.7 + Math.random() * 0.3;
+    const revenueInfluenceScore = revenueInfluenceRaw * 100;
+    
+    // Calculate social engagement influence (30% weight)
+    const socialEngagementFactor = ipo.engagementScore / 100;
+    const socialRaw = socialEngagementFactor * 0.8 + Math.random() * 0.2;
+    const socialEngagementScore = socialRaw * 100;
+    
+    // Calculate AI sentiment score (20% weight)
+    const sentimentMultiplier = socialSentiment ? 
+      (socialSentiment.overall.includes('positive') ? 1.2 : 
+       socialSentiment.overall.includes('negative') ? 0.7 : 1) : 1;
+    
+    const sentimentRaw = (ipo.aiScore / 100) * sentimentMultiplier;
+    const aiSentimentScore = sentimentRaw * 100;
+    
+    // Calculate total CMS based on weighted components
+    const weightedRevenueInfluence = revenueInfluenceRaw * 0.5;   // 50% weight
+    const weightedSocialEngagement = socialRaw * 0.3;             // 30% weight
+    const weightedAISentiment = sentimentRaw * 0.2;               // 20% weight
+    
+    const totalScore = (
+      weightedRevenueInfluence + 
+      weightedSocialEngagement + 
+      weightedAISentiment
+    ) * 100;
+    
+    // Calculate recommended price based on CMS
+    // Higher CMS = higher price relative to initial price
+    const baseMultiplier = 0.5 + totalScore / 100;
+    const recommendedPrice = parseFloat((ipo.initialPrice * baseMultiplier).toFixed(2));
+    
+    // Calculate price change from current price
+    const priceChange = recommendedPrice - ipo.currentPrice;
+    const priceChangePercent = (priceChange / ipo.currentPrice) * 100;
+    
+    // Generate influencing factors for each component
+    const generateFactors = (type: string, score: number) => {
+      const factors = [];
+      
+      if (type === 'revenue') {
+        // Generate revenue factors
+        factors.push({
+          name: 'Annual Revenue',
+          impact: ipo.revenueUSD ? Math.min(40, (ipo.revenueUSD / 1000000) * 15) : 5,
+          description: `Annual revenue of $${(ipo.revenueUSD || 0).toLocaleString()}`
+        });
+        
+        factors.push({
+          name: 'Business Diversification',
+          impact: 5 + Math.random() * 15,
+          description: 'Multiple revenue streams strengthen financial stability'
+        });
+        
+        factors.push({
+          name: 'Brand Deal Value',
+          impact: 5 + Math.random() * 20,
+          description: 'Recent sponsorships have increased in value'
+        });
+      } 
+      else if (type === 'social') {
+        // Generate social engagement factors
+        factors.push({
+          name: 'Engagement Rate',
+          impact: (ipo.engagementScore / 10) + (Math.random() * 10),
+          description: `${ipo.engagementScore}% engagement across platforms`
+        });
+        
+        factors.push({
+          name: 'Follower Growth',
+          impact: 5 + Math.random() * 15,
+          description: 'Strong upward trend in follower acquisition'
+        });
+        
+        factors.push({
+          name: 'Content Virality',
+          impact: 3 + Math.random() * 17,
+          description: 'Recent content has achieved viral status'
+        });
+      }
+      else if (type === 'sentiment') {
+        // Generate AI sentiment factors
+        if (socialSentiment) {
+          factors.push({
+            name: 'Public Sentiment',
+            impact: socialSentiment.overall.includes('positive') ? 15 + Math.random() * 15 : 
+                    socialSentiment.overall.includes('negative') ? -20 + Math.random() * 10 : 5,
+            description: `${socialSentiment.overall.replace('_', ' ')} public perception`
+          });
+        }
+        
+        factors.push({
+          name: 'Media Coverage',
+          impact: 5 + Math.random() * 10,
+          description: 'Positive mentions in mainstream media'
+        });
+        
+        factors.push({
+          name: 'Controversy Risk',
+          impact: -5 + Math.random() * 10,
+          description: 'Low risk profile based on past behavior'
+        });
+      }
+      
+      return factors.sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact));
+    };
+    
+    return {
+      totalScore: parseFloat(totalScore.toFixed(2)),
+      revenueInfluence: {
+        score: parseFloat(revenueInfluenceScore.toFixed(2)),
+        weight: 0.5, // 50%
+        rawScore: parseFloat(revenueInfluenceRaw.toFixed(2)),
+        factors: generateFactors('revenue', revenueInfluenceScore)
+      },
+      socialEngagementInfluence: {
+        score: parseFloat(socialEngagementScore.toFixed(2)),
+        weight: 0.3, // 30%
+        rawScore: parseFloat(socialRaw.toFixed(2)),
+        factors: generateFactors('social', socialEngagementScore)
+      },
+      aiSentimentScore: {
+        score: parseFloat(aiSentimentScore.toFixed(2)),
+        weight: 0.2, // 20%
+        rawScore: parseFloat(sentimentRaw.toFixed(2)),
+        factors: generateFactors('sentiment', aiSentimentScore)
+      },
+      priceImpact: {
+        recommendedPrice,
+        priceChange: parseFloat(priceChange.toFixed(2)),
+        priceChangePercent: parseFloat(priceChangePercent.toFixed(2)),
+        confidence: 70 + Math.floor(Math.random() * 25)
+      },
+      anomalyDetection: {
+        hasAnomalies: anomalyData?.detected || false,
+        anomalyImpact: 0  // This will be calculated in the hook if anomalies are detected
+      },
+      lastUpdated: new Date().toISOString()
+    };
+  },
+}
+
+export const mockAIValuationAPI = new AIValuationAPI();

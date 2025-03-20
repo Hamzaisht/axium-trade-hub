@@ -10,6 +10,7 @@ import { useDividendInfo } from './useDividendInfo';
 import { useVestingRules } from './useVestingRules';
 import { useLiquidationRules } from './useLiquidationRules';
 import { useAnomalyDetection, useAnomalyAlerts } from './useAnomalyDetection';
+import { useCreatorMarketScore } from './useCreatorMarketScore';
 import { useMarketData } from '@/hooks/useMarketData';
 
 interface UseAIValuationProps {
@@ -55,6 +56,12 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     enabled: !!ipoId && recentTrades.length > 0
   });
   
+  // Add Creator Market Score calculation
+  const creatorMarketScoreQuery = useCreatorMarketScore({
+    ipoId,
+    enabled: !!ipoId
+  });
+  
   // Setup anomaly alerts
   useAnomalyAlerts({
     anomalyData: anomalyDetectionQuery.data,
@@ -70,7 +77,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
       dividendInfoQuery.isLoading ||
       vestingRulesQuery.isLoading ||
       liquidationRulesQuery.isLoading ||
-      anomalyDetectionQuery.isLoading
+      anomalyDetectionQuery.isLoading ||
+      creatorMarketScoreQuery.isLoading
     );
   }, [
     pricePredictionQuery.isLoading,
@@ -79,7 +87,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     dividendInfoQuery.isLoading,
     vestingRulesQuery.isLoading,
     liquidationRulesQuery.isLoading,
-    anomalyDetectionQuery.isLoading
+    anomalyDetectionQuery.isLoading,
+    creatorMarketScoreQuery.isLoading
   ]);
 
   // Handle any errors from the queries
@@ -91,7 +100,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
       dividendInfoQuery,
       vestingRulesQuery,
       liquidationRulesQuery,
-      anomalyDetectionQuery
+      anomalyDetectionQuery,
+      creatorMarketScoreQuery
     ];
 
     for (const query of queries) {
@@ -108,7 +118,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     dividendInfoQuery.error,
     vestingRulesQuery.error,
     liquidationRulesQuery.error,
-    anomalyDetectionQuery.error
+    anomalyDetectionQuery.error,
+    creatorMarketScoreQuery.error
   ]);
 
   return {
@@ -120,6 +131,7 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     vestingRules: vestingRulesQuery.data,
     liquidationRules: liquidationRulesQuery.data,
     anomalyData: anomalyDetectionQuery.data,
+    creatorMarketScore: creatorMarketScoreQuery.creatorMarketScore,
     externalMetrics,
     aggregatedMetrics,
     
@@ -132,11 +144,12 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     isVestingRulesLoading: vestingRulesQuery.isLoading,
     isLiquidationRulesLoading: liquidationRulesQuery.isLoading,
     isAnomalyDetectionLoading: anomalyDetectionQuery.isLoading,
+    isCreatorMarketScoreLoading: creatorMarketScoreQuery.isLoading,
     
     // Errors
     hasErrors: pricePredictionQuery.error || marketDepthQuery.error || socialSentimentQuery.error ||
                dividendInfoQuery.error || vestingRulesQuery.error || liquidationRulesQuery.error ||
-               anomalyDetectionQuery.error,
+               anomalyDetectionQuery.error || creatorMarketScoreQuery.isError,
     
     // Controls
     selectedTimeframe,
@@ -153,6 +166,7 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
       vestingRulesQuery.refetch();
       liquidationRulesQuery.refetch();
       anomalyDetectionQuery.refetch();
+      creatorMarketScoreQuery.refetch();
     },
     refetchPricePrediction: () => pricePredictionQuery.refetch(),
     refetchMarketDepth: () => marketDepthQuery.refetch(),
@@ -160,6 +174,7 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     refetchDividendInfo: () => dividendInfoQuery.refetch(),
     refetchVestingRules: () => vestingRulesQuery.refetch(),
     refetchLiquidationRules: () => liquidationRulesQuery.refetch(),
-    refetchAnomalyDetection: () => anomalyDetectionQuery.refetch()
+    refetchAnomalyDetection: () => anomalyDetectionQuery.refetch(),
+    refetchCreatorMarketScore: () => creatorMarketScoreQuery.refetch()
   };
 };

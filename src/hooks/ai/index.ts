@@ -8,3 +8,4 @@ export * from './useDividendInfo';
 export * from './useVestingRules';
 export * from './useLiquidationRules';
 export * from './useAnomalyDetection';
+export * from './useCreatorMarketScore';
