@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -67,8 +66,7 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
     if (dividendInfo.nextPayoutDate) {
       payoutHistory.push({
         date: formatDate(dividendInfo.nextPayoutDate),
-        amount: dividendInfo.nextEstimatedAmount,
-        isFuture: true
+        amount: dividendInfo.nextEstimatedAmount
       });
     }
     
