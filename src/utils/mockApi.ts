@@ -1,4 +1,15 @@
 import { toast } from "sonner";
+import { 
+  calculateMarketDepth, 
+  calculateSpread, 
+  predictPriceMovement, 
+  getSocialSentiment, 
+  calculateDividendYield,
+  getTokenVestingRules,
+  getLiquidationRules,
+  AIModelType,
+  PredictionTimeframe 
+} from "./mockAIModels";
 
 // Types for our mock API data
 export interface User {
@@ -610,7 +621,7 @@ export const mockPortfolioAPI = {
   }
 };
 
-// AI Valuation API functions
+// AI Valuation API functions - Enhanced for Phase 2
 export const mockAIValuationAPI = {
   getValuationFactors: async (ipoId: string): Promise<{
     socialEngagement: {
@@ -667,11 +678,15 @@ export const mockAIValuationAPI = {
     };
   },
   
-  predictPriceMovement: async (ipoId: string): Promise<{
-    prediction: 'up' | 'down' | 'stable';
+  predictPriceMovement: async (
+    ipoId: string, 
+    timeframe: PredictionTimeframe = "24h",
+    modelType: AIModelType = AIModelType.HYBRID
+  ): Promise<{
+    prediction: string;
     confidence: number;
     targetPrice: number;
-    timeframe: '24h' | '7d' | '30d';
+    timeframe: PredictionTimeframe;
     factors: string[];
   }> => {
     await delay(1200);
@@ -682,33 +697,233 @@ export const mockAIValuationAPI = {
       throw new Error("IPO not found");
     }
     
-    // Generate prediction factors
-    const factors = [
-      'Recent social media engagement shows positive trend',
-      'New brand partnership announced',
-      'Upcoming project release',
-      'Positive sentiment analysis',
-      'Comparable creators showing similar patterns'
-    ].sort(() => Math.random() - 0.5).slice(0, 3);
+    // Use our AI model function to generate prediction
+    const prediction = predictPriceMovement(ipo, timeframe, modelType);
     
-    // Random prediction with bias toward movement
-    const predictions: ('up' | 'down' | 'stable')[] = ['up', 'up', 'down', 'stable'];
-    const prediction = predictions[Math.floor(Math.random() * predictions.length)];
+    return {
+      prediction: prediction.prediction,
+      confidence: prediction.confidence,
+      targetPrice: prediction.targetPrice,
+      timeframe,
+      factors: prediction.factors
+    };
+  },
+  
+  getMarketDepth: async (ipoId: string): Promise<{
+    orderConcentration: number;
+    buyWallStrength: number;
+    sellWallStrength: number;
+    supportLevels: number[];
+    resistanceLevels: number[];
+    currentSpread: {
+      bid: number;
+      ask: number;
+    };
+  }> => {
+    await delay(800);
     
-    // Target price calculation
-    let targetPrice = ipo.currentPrice;
-    if (prediction === 'up') {
-      targetPrice *= (1 + (Math.random() * 0.15 + 0.05));
-    } else if (prediction === 'down') {
-      targetPrice *= (1 - (Math.random() * 0.10 + 0.03));
+    // Find the IPO
+    const ipo = mockIPOs.find(ipo => ipo.id === ipoId);
+    if (!ipo) {
+      throw new Error("IPO not found");
+    }
+    
+    // Calculate market depth using our model
+    const depth = calculateMarketDepth(ipo);
+    const spread = calculateSpread(ipo);
+    
+    return {
+      ...depth,
+      currentSpread: spread
+    };
+  },
+  
+  getSocialSentiment: async (ipoId: string): Promise<{
+    overall: string;
+    metrics: {
+      twitter: { score: number; trend: string; volume: number };
+      instagram: { score: number; trend: string; volume: number };
+      youtube: { score: number; trend: string; volume: number };
+    };
+    keywords: string[];
+  }> => {
+    await delay(900);
+    
+    // Find the IPO
+    const ipo = mockIPOs.find(ipo => ipo.id === ipoId);
+    if (!ipo) {
+      throw new Error("IPO not found");
+    }
+    
+    // Get sentiment data from our model
+    const sentiment = getSocialSentiment(ipo);
+    
+    // Generate trending keywords
+    const positiveKeywords = ['innovative', 'authentic', 'trending', 'inspiring', 'groundbreaking', 'visionary'];
+    const negativeKeywords = ['declining', 'controversial', 'overrated', 'inconsistent', 'disappointing'];
+    const neutralKeywords = ['consistent', 'steady', 'established', 'dependable', 'familiar'];
+    
+    let keywordPool: string[];
+    if (sentiment.overall.includes('positive')) {
+      keywordPool = [...positiveKeywords, ...neutralKeywords.slice(0, 2)];
+    } else if (sentiment.overall.includes('negative')) {
+      keywordPool = [...negativeKeywords, ...neutralKeywords.slice(0, 2)];
+    } else {
+      keywordPool = [...neutralKeywords, positiveKeywords[0], negativeKeywords[0]];
+    }
+    
+    const selectedKeywords = keywordPool.sort(() => Math.random() - 0.5).slice(0, 5);
+    
+    return {
+      ...sentiment,
+      keywords: selectedKeywords
+    };
+  },
+  
+  getDividendInfo: async (ipoId: string): Promise<{
+    annualYieldPercent: number;
+    nextPayoutDate: string;
+    nextEstimatedAmount: number;
+    payoutFrequency: string;
+    historicalPayouts: { date: string; amount: number }[];
+  }> => {
+    await delay(700);
+    
+    // Find the IPO
+    const ipo = mockIPOs.find(ipo => ipo.id === ipoId);
+    if (!ipo) {
+      throw new Error("IPO not found");
+    }
+    
+    // Get dividend yield from our model
+    const dividendInfo = calculateDividendYield(ipo);
+    
+    // Generate historical payouts
+    const historicalPayouts = [];
+    const now = new Date();
+    
+    for (let i = 1; i <= 6; i++) {
+      const pastDate = new Date();
+      pastDate.setMonth(now.getMonth() - i);
+      
+      if (dividendInfo.payoutFrequency === 'quarterly' && i % 3 !== 0) {
+        continue; // Skip months that wouldn't have had quarterly payouts
+      }
+      
+      // Random variation in historical dividend amounts
+      const variationFactor = 0.9 + (Math.random() * 0.2); // 90-110% of estimated amount
+      
+      historicalPayouts.push({
+        date: pastDate.toISOString(),
+        amount: parseFloat((dividendInfo.nextEstimatedAmount * variationFactor).toFixed(3))
+      });
     }
     
     return {
-      prediction,
-      confidence: Math.floor(Math.random() * 20) + 70, // 70-90% confidence
-      targetPrice: parseFloat(targetPrice.toFixed(2)),
-      timeframe: ['24h', '7d', '30d'][Math.floor(Math.random() * 3)] as '24h' | '7d' | '30d',
-      factors
+      ...dividendInfo,
+      historicalPayouts
+    };
+  },
+  
+  getVestingAndStakingRules: async (ipoId: string): Promise<{
+    creatorVesting: {
+      initialUnlock: number;
+      vestingPeriod: number;
+      monthlyUnlock: number;
+    };
+    investorStaking: {
+      minStakingPeriod: number;
+      earlyUnstakePenalty: number;
+      stakingRewards: number;
+    };
+    tokenLockupSchedule: { date: string; unlockPercent: number }[];
+  }> => {
+    await delay(600);
+    
+    // Find the IPO
+    const ipo = mockIPOs.find(ipo => ipo.id === ipoId);
+    if (!ipo) {
+      throw new Error("IPO not found");
+    }
+    
+    // Get vesting rules from our model
+    const vestingRules = getTokenVestingRules(ipo);
+    
+    // Generate token lockup schedule
+    const tokenLockupSchedule = [];
+    const startDate = new Date(ipo.startDate);
+    
+    // Initial unlock
+    tokenLockupSchedule.push({
+      date: startDate.toISOString(),
+      unlockPercent: vestingRules.creatorVesting.initialUnlock
+    });
+    
+    // Monthly unlocks
+    let cumulativeUnlock = vestingRules.creatorVesting.initialUnlock;
+    for (let i = 1; i <= vestingRules.creatorVesting.vestingPeriod; i++) {
+      const unlockDate = new Date(startDate);
+      unlockDate.setMonth(startDate.getMonth() + i);
+      
+      cumulativeUnlock += vestingRules.creatorVesting.monthlyUnlock;
+      // Cap at 100%
+      if (cumulativeUnlock > 100) cumulativeUnlock = 100;
+      
+      tokenLockupSchedule.push({
+        date: unlockDate.toISOString(),
+        unlockPercent: parseFloat(cumulativeUnlock.toFixed(2))
+      });
+      
+      // Stop if we've reached 100%
+      if (cumulativeUnlock >= 100) break;
+    }
+    
+    return {
+      ...vestingRules,
+      tokenLockupSchedule
+    };
+  },
+  
+  getLiquidationRules: async (ipoId: string): Promise<{
+    inactivityThreshold: number;
+    engagementMinimum: number;
+    liquidationProcess: string;
+    tokenBuybackPrice: number;
+    warningThresholds: { metric: string; threshold: number; action: string }[];
+  }> => {
+    await delay(500);
+    
+    // Find the IPO
+    const ipo = mockIPOs.find(ipo => ipo.id === ipoId);
+    if (!ipo) {
+      throw new Error("IPO not found");
+    }
+    
+    // Get liquidation rules from our model
+    const liquidationRules = getLiquidationRules(ipo);
+    
+    // Generate warning thresholds
+    const warningThresholds = [
+      {
+        metric: "Engagement Score",
+        threshold: 30,
+        action: "Creator notified, community alerted of potential issues"
+      },
+      {
+        metric: "Social Media Activity",
+        threshold: 45,
+        action: "Automatic prompts sent to creator to increase activity"
+      },
+      {
+        metric: "Days Since Last Content",
+        threshold: 90,
+        action: "Formal warning issued, dividend payments frozen"
+      }
+    ];
+    
+    return {
+      ...liquidationRules,
+      warningThresholds
     };
   }
 };

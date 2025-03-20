@@ -81,7 +81,7 @@ class WebSocketEmulator extends CustomEventEmitter {
     console.log("WebSocket: Disconnecting...");
     
     // Clear all interval timers
-    this.intervalIds.forEach(id => clearInterval(id));
+    this.intervalIds.forEach(id => window.clearInterval(id));
     this.intervalIds = [];
     
     this.connected = false;

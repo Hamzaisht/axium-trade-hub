@@ -1,96 +1,55 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { GlassCard } from "@/components/ui/GlassCard";
 import CreatorCard from "@/components/dashboard/CreatorCard";
 import PriceChart from "@/components/dashboard/PriceChart";
 import OrderBook from "@/components/dashboard/OrderBook";
+import AITrendPrediction from "@/components/trading/AITrendPrediction";
+import MarketDepthChart from "@/components/trading/MarketDepthChart";
+import DividendAndVesting from "@/components/trading/DividendAndVesting";
+import LiveTrades from "@/components/trading/LiveTrades";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Bell, User, Filter, TrendingUp, BarChart, Sparkles } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Search, Bell, User, Filter, TrendingUp, 
+  BarChart, Sparkles, CircleDollarSign, BrainCircuit 
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// Mock data for creators
-const mockCreators = [
-  {
-    id: "1",
-    name: "Emma Watson",
-    symbol: "$EMW",
-    image: "emma.jpg",
-    price: 24.82,
-    change: 12.5,
-    marketCap: 124100000,
-    followers: "28.5M",
-    engagement: 82,
-    aiScore: 91
-  },
-  {
-    id: "2",
-    name: "Zendaya",
-    symbol: "$ZEN",
-    image: "zendaya.jpg",
-    price: 18.40,
-    change: 5.2,
-    marketCap: 92000000,
-    followers: "169M",
-    engagement: 75,
-    aiScore: 87
-  },
-  {
-    id: "3",
-    name: "Tom Holland",
-    symbol: "$THLD",
-    image: "tom.jpg",
-    price: 21.35,
-    change: -1.8,
-    marketCap: 106800000,
-    followers: "75.4M",
-    engagement: 68,
-    aiScore: 79
-  },
-  {
-    id: "4",
-    name: "LeBron James",
-    symbol: "$LBJ",
-    image: "lebron.jpg",
-    price: 56.78,
-    change: 3.4,
-    marketCap: 283900000,
-    followers: "154M",
-    engagement: 79,
-    aiScore: 93
-  },
-  {
-    id: "5",
-    name: "Taylor Swift",
-    symbol: "$SWIFT",
-    image: "taylor.jpg",
-    price: 89.21,
-    change: 8.7,
-    marketCap: 446050000,
-    followers: "267M",
-    engagement: 94,
-    aiScore: 98
-  }
-];
-
-// Derived types
-type Creator = typeof mockCreators[0];
+import { mockIPOAPI } from "@/utils/mockApi";
+import { useQuery } from "@tanstack/react-query";
 
 const Dashboard = () => {
-  const [selectedCreator, setSelectedCreator] = useState<Creator>(mockCreators[0]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTab, setSelectedTab] = useState<string>("trading");
+  
+  // Fetch IPOs
+  const { data: ipos = [], isLoading } = useQuery({
+    queryKey: ['ipos'],
+    queryFn: mockIPOAPI.getAllIPOs,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+  
+  const [selectedCreator, setSelectedCreator] = useState<any>(null);
+  
+  // Set the first creator as default when data loads
+  useEffect(() => {
+    if (ipos.length > 0 && !selectedCreator) {
+      setSelectedCreator(ipos[0]);
+    }
+  }, [ipos, selectedCreator]);
   
   const handleCreatorSelect = (id: string) => {
-    const creator = mockCreators.find(creator => creator.id === id);
+    const creator = ipos.find(ipo => ipo.id === id);
     if (creator) {
       setSelectedCreator(creator);
     }
   };
   
-  const filteredCreators = mockCreators.filter(creator => 
-    creator.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    creator.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredCreators = ipos.filter(ipo => 
+    ipo.creatorName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    ipo.symbol.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   return (
@@ -138,14 +97,46 @@ const Dashboard = () => {
               </div>
               
               <div className="space-y-4">
-                {filteredCreators.map(creator => (
-                  <CreatorCard 
-                    key={creator.id} 
-                    creator={creator} 
-                    onSelect={handleCreatorSelect}
-                    selected={selectedCreator.id === creator.id}
-                  />
-                ))}
+                {isLoading ? (
+                  // Loading skeleton
+                  Array(5).fill(0).map((_, idx) => (
+                    <div key={idx} className="animate-pulse">
+                      <div className="h-20 bg-gray-200 rounded-lg"></div>
+                    </div>
+                  ))
+                ) : filteredCreators.length > 0 ? (
+                  filteredCreators.map(creator => (
+                    <CreatorCard 
+                      key={creator.id} 
+                      creator={{
+                        id: creator.id,
+                        name: creator.creatorName,
+                        symbol: `$${creator.symbol}`,
+                        image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.creatorName}`,
+                        price: creator.currentPrice,
+                        change: ((creator.currentPrice - creator.initialPrice) / creator.initialPrice) * 100,
+                        marketCap: creator.currentPrice * (creator.totalSupply - creator.availableSupply),
+                        followers: "28.5M", // This would come from real data
+                        engagement: creator.engagementScore,
+                        aiScore: creator.aiScore
+                      }} 
+                      onSelect={handleCreatorSelect}
+                      selected={selectedCreator?.id === creator.id}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-6 text-axium-gray-500">
+                    <p>No creators found matching "{searchQuery}"</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-4">
+                <LiveTrades 
+                  ipoId={selectedCreator?.id} 
+                  symbol={selectedCreator?.symbol}
+                  limit={5}
+                />
               </div>
             </div>
             
@@ -185,16 +176,89 @@ const Dashboard = () => {
                 </GlassCard>
               </div>
               
-              <PriceChart 
-                symbol={selectedCreator.symbol}
-                name={selectedCreator.name}
-                currentPrice={selectedCreator.price}
-              />
-              
-              <OrderBook 
-                symbol={selectedCreator.symbol}
-                currentPrice={selectedCreator.price}
-              />
+              <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+                <TabsList className="w-full bg-axium-gray-100 p-1">
+                  <TabsTrigger value="trading" className="flex-1 data-[state=active]:bg-white">
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Trading
+                  </TabsTrigger>
+                  <TabsTrigger value="ai" className="flex-1 data-[state=active]:bg-white">
+                    <BrainCircuit className="h-4 w-4 mr-2" />
+                    AI Insights
+                  </TabsTrigger>
+                  <TabsTrigger value="dividends" className="flex-1 data-[state=active]:bg-white">
+                    <CircleDollarSign className="h-4 w-4 mr-2" />
+                    Smart Contract
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="trading" className="mt-6 space-y-6">
+                  <PriceChart 
+                    symbol={selectedCreator?.symbol}
+                    name={selectedCreator?.creatorName}
+                    currentPrice={selectedCreator?.currentPrice}
+                    ipoId={selectedCreator?.id}
+                  />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <OrderBook 
+                      symbol={selectedCreator?.symbol}
+                      currentPrice={selectedCreator?.currentPrice}
+                    />
+                    
+                    <MarketDepthChart 
+                      ipoId={selectedCreator?.id}
+                      symbol={selectedCreator?.symbol}
+                      currentPrice={selectedCreator?.currentPrice}
+                    />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="ai" className="mt-6 space-y-6">
+                  <div className="grid grid-cols-1 gap-6">
+                    <AITrendPrediction 
+                      ipoId={selectedCreator?.id}
+                      symbol={selectedCreator?.symbol}
+                      currentPrice={selectedCreator?.currentPrice}
+                    />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <MarketDepthChart 
+                        ipoId={selectedCreator?.id}
+                        symbol={selectedCreator?.symbol}
+                        currentPrice={selectedCreator?.currentPrice}
+                      />
+                      
+                      <LiveTrades 
+                        ipoId={selectedCreator?.id} 
+                        symbol={selectedCreator?.symbol}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="dividends" className="mt-6 space-y-6">
+                  <DividendAndVesting 
+                    ipoId={selectedCreator?.id}
+                    symbol={selectedCreator?.symbol}
+                  />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <PriceChart 
+                      symbol={selectedCreator?.symbol}
+                      name={selectedCreator?.creatorName}
+                      currentPrice={selectedCreator?.currentPrice}
+                      ipoId={selectedCreator?.id}
+                    />
+                    
+                    <AITrendPrediction 
+                      ipoId={selectedCreator?.id}
+                      symbol={selectedCreator?.symbol}
+                      currentPrice={selectedCreator?.currentPrice}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>
