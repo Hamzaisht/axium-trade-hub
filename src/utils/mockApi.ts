@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 
 // Types for our mock API data
@@ -77,7 +76,7 @@ export interface Portfolio {
 }
 
 // Mock data
-const mockUsers: User[] = [
+export const mockUsers: User[] = [
   {
     id: "u1",
     name: "John Investor",
@@ -96,7 +95,7 @@ const mockUsers: User[] = [
   }
 ];
 
-const mockIPOs: IPO[] = [
+export const mockIPOs: IPO[] = [
   {
     id: "ipo1",
     creatorId: "u2",
@@ -159,7 +158,7 @@ const mockIPOs: IPO[] = [
   }
 ];
 
-const mockOrders: Order[] = [
+export const mockOrders: Order[] = [
   {
     id: "o1",
     userId: "u1",
@@ -186,7 +185,7 @@ const mockOrders: Order[] = [
   }
 ];
 
-const mockTrades: Trade[] = [
+export const mockTrades: Trade[] = [
   {
     id: "t1",
     buyerId: "u1",
@@ -199,7 +198,7 @@ const mockTrades: Trade[] = [
   }
 ];
 
-const mockPortfolios: Portfolio[] = [
+export const mockPortfolios: Portfolio[] = [
   {
     userId: "u1",
     totalValue: 10283.75,

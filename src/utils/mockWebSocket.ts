@@ -4,17 +4,47 @@
  * Simulates real-time data streaming for market prices, order execution, etc.
  */
 
-import { IPO, Order, Trade } from "./mockApi";
+import { IPO, Order, Trade, mockIPOs, mockOrders, mockTrades } from "./mockApi";
 import { EventEmitter } from "events";
 
+// Create a custom event emitter class without relying on Node.js EventEmitter
+class CustomEventEmitter {
+  private events: Record<string, Function[]> = {};
+
+  on(event: string, listener: Function): this {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(listener);
+    return this;
+  }
+
+  off(event: string, listener: Function): this {
+    if (!this.events[event]) return this;
+    this.events[event] = this.events[event].filter(l => l !== listener);
+    return this;
+  }
+
+  emit(event: string, ...args: any[]): boolean {
+    if (!this.events[event]) return false;
+    this.events[event].forEach(listener => listener(...args));
+    return true;
+  }
+
+  setMaxListeners(n: number): this {
+    // This is just a stub for compatibility
+    return this;
+  }
+}
+
 // Create a global event emitter to simulate WebSocket events
-class WebSocketEmulator extends EventEmitter {
+class WebSocketEmulator extends CustomEventEmitter {
   private static instance: WebSocketEmulator;
   private connected: boolean = false;
   private reconnectInterval: number = 3000;
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = 5;
-  private intervalIds: NodeJS.Timeout[] = [];
+  private intervalIds: number[] = [];
   
   private constructor() {
     super();
@@ -76,29 +106,26 @@ class WebSocketEmulator extends EventEmitter {
     const priceUpdateId = setInterval(() => {
       if (!this.connected) return;
       
-      // Import mockIPOAPI dynamically to avoid circular dependencies
-      import("./mockApi").then(({ mockIPOs }) => {
-        mockIPOs.forEach(ipo => {
-          // Apply random price change based on volatility factor
-          const volatilityFactor = this.getVolatilityFactor(ipo);
-          const priceChange = this.calculatePriceChange(ipo.currentPrice, volatilityFactor);
-          
-          const oldPrice = ipo.currentPrice;
-          ipo.currentPrice = parseFloat((ipo.currentPrice + priceChange).toFixed(2));
-          
-          // Ensure price doesn't go below 0.01
-          if (ipo.currentPrice < 0.01) {
-            ipo.currentPrice = 0.01;
-          }
-          
-          // Emit price update event
-          this.emit("price_update", {
-            ipoId: ipo.id,
-            symbol: ipo.symbol,
-            oldPrice,
-            newPrice: ipo.currentPrice,
-            timestamp: new Date().toISOString()
-          });
+      mockIPOs.forEach(ipo => {
+        // Apply random price change based on volatility factor
+        const volatilityFactor = this.getVolatilityFactor(ipo);
+        const priceChange = this.calculatePriceChange(ipo.currentPrice, volatilityFactor);
+        
+        const oldPrice = ipo.currentPrice;
+        ipo.currentPrice = parseFloat((ipo.currentPrice + priceChange).toFixed(2));
+        
+        // Ensure price doesn't go below 0.01
+        if (ipo.currentPrice < 0.01) {
+          ipo.currentPrice = 0.01;
+        }
+        
+        // Emit price update event
+        this.emit("price_update", {
+          ipoId: ipo.id,
+          symbol: ipo.symbol,
+          oldPrice,
+          newPrice: ipo.currentPrice,
+          timestamp: new Date().toISOString()
         });
       });
     }, 5000);
@@ -109,20 +136,18 @@ class WebSocketEmulator extends EventEmitter {
     const orderBookUpdateId = setInterval(() => {
       if (!this.connected) return;
       
-      import("./mockApi").then(({ mockIPOs, mockOrders }) => {
-        mockIPOs.forEach(ipo => {
-          const openOrders = mockOrders.filter(o => o.ipoId === ipo.id && o.status === 'open');
-          
-          const bids = openOrders.filter(o => o.type === 'buy').sort((a, b) => b.price - a.price);
-          const asks = openOrders.filter(o => o.type === 'sell').sort((a, b) => a.price - b.price);
-          
-          this.emit("orderbook_update", {
-            ipoId: ipo.id,
-            symbol: ipo.symbol,
-            bids,
-            asks,
-            timestamp: new Date().toISOString()
-          });
+      mockIPOs.forEach(ipo => {
+        const openOrders = mockOrders.filter(o => o.ipoId === ipo.id && o.status === 'open');
+        
+        const bids = openOrders.filter(o => o.type === 'buy').sort((a, b) => b.price - a.price);
+        const asks = openOrders.filter(o => o.type === 'sell').sort((a, b) => a.price - b.price);
+        
+        this.emit("orderbook_update", {
+          ipoId: ipo.id,
+          symbol: ipo.symbol,
+          bids,
+          asks,
+          timestamp: new Date().toISOString()
         });
       });
     }, 3000);
@@ -133,29 +158,27 @@ class WebSocketEmulator extends EventEmitter {
     const tradeExecutionId = setInterval(() => {
       if (!this.connected) return;
       
-      import("./mockApi").then(({ mockIPOs, mockTrades }) => {
-        // Randomly select an IPO to simulate a trade for
-        const randomIndex = Math.floor(Math.random() * mockIPOs.length);
-        const ipo = mockIPOs[randomIndex];
-        
-        // Create a simulated trade
-        const simulatedTrade = {
-          id: `sim-trade-${Date.now()}`,
-          buyerId: `sim-buyer-${Math.floor(Math.random() * 1000)}`,
-          sellerId: `sim-seller-${Math.floor(Math.random() * 1000)}`,
-          ipoId: ipo.id,
-          creatorSymbol: ipo.symbol,
-          price: parseFloat((ipo.currentPrice * (0.95 + Math.random() * 0.1)).toFixed(2)),
-          quantity: Math.floor(Math.random() * 10) + 1,
-          timestamp: new Date().toISOString()
-        };
-        
-        // Add trade to mock data
-        mockTrades.push(simulatedTrade);
-        
-        // Emit trade execution event
-        this.emit("trade_executed", simulatedTrade);
-      });
+      // Randomly select an IPO to simulate a trade for
+      const randomIndex = Math.floor(Math.random() * mockIPOs.length);
+      const ipo = mockIPOs[randomIndex];
+      
+      // Create a simulated trade
+      const simulatedTrade = {
+        id: `sim-trade-${Date.now()}`,
+        buyerId: `sim-buyer-${Math.floor(Math.random() * 1000)}`,
+        sellerId: `sim-seller-${Math.floor(Math.random() * 1000)}`,
+        ipoId: ipo.id,
+        creatorSymbol: ipo.symbol,
+        price: parseFloat((ipo.currentPrice * (0.95 + Math.random() * 0.1)).toFixed(2)),
+        quantity: Math.floor(Math.random() * 10) + 1,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Add trade to mock data
+      mockTrades.push(simulatedTrade);
+      
+      // Emit trade execution event
+      this.emit("trade_executed", simulatedTrade);
     }, 8000);
     
     this.intervalIds.push(tradeExecutionId);
@@ -176,18 +199,6 @@ class WebSocketEmulator extends EventEmitter {
     const randomFactor = (Math.random() * 2 - 1); // Random value between -1 and 1
     const maxChange = currentPrice * volatilityFactor;
     return randomFactor * maxChange;
-  }
-  
-  // Subscribe to specific event
-  public on(event: string, listener: (...args: any[]) => void): this {
-    super.on(event, listener);
-    return this;
-  }
-  
-  // Unsubscribe from specific event
-  public off(event: string, listener: (...args: any[]) => void): this {
-    super.off(event, listener);
-    return this;
   }
   
   // For debugging - get current connection status
