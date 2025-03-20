@@ -1,69 +1,55 @@
-# Welcome to your Lovable project
 
-## Project info
+# Axium: Creator Token Exchange Platform
 
-**URL**: https://lovable.dev/projects/003d29e0-10f4-41d9-8af3-7b850f41dd0b
+Axium is a platform that allows fans to invest in their favorite creators through tokenized securities.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- Real-time token price tracking
+- Live order book and trade execution
+- Creator metrics and engagement data
+- AI-powered valuation models
+- Secure authentication and trading
 
-**Use Lovable**
+## Getting Started
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/003d29e0-10f4-41d9-8af3-7b850f41dd0b) and start prompting.
+### Prerequisites
 
-Changes made via Lovable will be committed automatically to this repo.
+- Node.js 16+
+- npm or Yarn
 
-**Use your preferred IDE**
+### Installation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. Clone the repository
+2. Install dependencies with `npm install` or `yarn`
+3. Start the development server with `npm run dev` or `yarn dev`
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Environment Variables
 
-Follow these steps:
+To connect to real external APIs, create a `.env` file in the root directory with the following variables:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+VITE_TWITTER_API_KEY=your_twitter_api_key
+VITE_INSTAGRAM_API_KEY=your_instagram_api_key
+VITE_YOUTUBE_API_KEY=your_youtube_api_key
+VITE_TIKTOK_API_KEY=your_tiktok_api_key
+VITE_SPOTIFY_API_KEY=your_spotify_api_key
+VITE_APPLE_MUSIC_API_KEY=your_apple_music_api_key
+VITE_GOOGLE_TRENDS_API_KEY=your_google_trends_api_key
 ```
 
-**Edit a file directly in GitHub**
+Without these variables, the application will use mock data.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Available Scripts
 
-**Use GitHub Codespaces**
+- `npm run dev`: Start development server
+- `npm run build`: Build for production
+- `npm run preview`: Preview production build
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Project Structure
 
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/003d29e0-10f4-41d9-8af3-7b850f41dd0b) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+- `src/components`: UI components
+- `src/hooks`: Custom React hooks
+- `src/services`: API and data services
+- `src/contexts`: React context providers
+- `src/utils`: Utility functions

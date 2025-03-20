@@ -3,10 +3,12 @@ import { useEffect, useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useExternalData } from '@/hooks/useExternalData';
-import { Users, BarChart2, Radio, ShoppingBag, TrendingUp, RefreshCw } from 'lucide-react';
+import { useAPIConfiguration } from '@/hooks/useAPIConfiguration';
+import { Users, BarChart2, Radio, ShoppingBag, TrendingUp, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
 
 interface ExternalMetricsCardProps {
   creatorId?: string;
@@ -22,6 +24,8 @@ export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCar
     isError, 
     refetch 
   } = useExternalData({ creatorId });
+  
+  const { apiServiceStatus } = useAPIConfiguration();
   
   // Handle refreshing data
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -63,6 +67,15 @@ export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCar
     return new Date(dateString).toLocaleString();
   };
   
+  useEffect(() => {
+    if (apiServiceStatus === 'mock') {
+      toast.info(
+        "Using mock data. Set API keys in environment variables to use real data.", 
+        { id: "api-mock-notice", duration: 5000 }
+      );
+    }
+  }, [apiServiceStatus]);
+  
   if (!creatorId) {
     return null;
   }
@@ -70,7 +83,21 @@ export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCar
   return (
     <GlassCard className={cn("p-4", className)}>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">External Data</h3>
+        <div className="flex items-center">
+          <h3 className="text-lg font-semibold">External Data</h3>
+          {apiServiceStatus === 'mock' && (
+            <div className="ml-2 flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              Mock Data
+            </div>
+          )}
+          {apiServiceStatus === 'live' && (
+            <div className="ml-2 flex items-center text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+              <span className="h-2 w-2 bg-green-500 rounded-full mr-1"></span>
+              Live APIs
+            </div>
+          )}
+        </div>
         <Button
           variant="outline"
           size="sm"
