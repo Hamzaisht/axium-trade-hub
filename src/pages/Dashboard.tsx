@@ -14,20 +14,30 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, Bell, User, Filter, TrendingUp, 
-  BarChart, Sparkles, CircleDollarSign, BrainCircuit 
+  BarChart, Sparkles, CircleDollarSign, BrainCircuit,
+  AlertCircle 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mockIPOAPI } from "@/utils/mockApi";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTab, setSelectedTab] = useState<string>("trading");
   
-  // Fetch IPOs
-  const { data: ipos = [], isLoading } = useQuery({
+  // Fetch IPOs with error handling
+  const { data: ipos = [], isLoading, error } = useQuery({
     queryKey: ['ipos'],
-    queryFn: mockIPOAPI.getAllIPOs,
+    queryFn: async () => {
+      try {
+        return await mockIPOAPI.getAllIPOs();
+      } catch (error) {
+        console.error("Error fetching IPOs:", error);
+        toast.error("Failed to load creators. Please try again.");
+        throw error;
+      }
+    },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
   
@@ -51,6 +61,27 @@ const Dashboard = () => {
     ipo.creatorName.toLowerCase().includes(searchQuery.toLowerCase()) || 
     ipo.symbol.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Error fallback
+  if (error) {
+    return (
+      <div className="min-h-screen bg-axium-gray-100/30">
+        <Navbar />
+        <main className="pt-24 pb-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center py-12">
+              <AlertCircle className="mx-auto h-12 w-12 text-axium-error mb-4" />
+              <h2 className="text-2xl font-semibold text-axium-gray-900">Failed to load dashboard</h2>
+              <p className="mt-2 text-axium-gray-600">There was an error loading the dashboard data. Please try again later.</p>
+              <Button className="mt-4" onClick={() => window.location.reload()}>
+                Refresh Page
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-axium-gray-100/30">
