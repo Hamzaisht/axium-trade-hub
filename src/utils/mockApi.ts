@@ -1,3 +1,4 @@
+
 /**
  * Mock API
  * Simulates API endpoints for creator data, IPOs, and trading
@@ -36,7 +37,7 @@ export interface IPO {
   id: string;
   creatorId: string;
   creatorName: string;
-  creatorSymbol: string;
+  symbol: string; // Added symbol field
   initialPrice: number;
   currentPrice: number;
   totalSupply: number;
@@ -51,15 +52,25 @@ export interface IPO {
   averageDailyVolume?: number;
   // Add revenue data
   revenueUSD?: number;
+  // Add social links
+  socialLinks?: {
+    twitter: string;
+    instagram: string;
+    youtube: string;
+  };
 }
 
 // Mock data for orders
 export interface Order {
   id: string;
+  userId?: string; // Added userId field
+  ipoId?: string; // Added ipoId field
   price: number;
   quantity: number;
   type: "buy" | "sell";
   timestamp: string;
+  status?: 'open' | 'filled' | 'cancelled';
+  orderType?: 'market' | 'limit';
 }
 
 // Mock data for transactions
@@ -73,6 +84,35 @@ export interface Transaction {
   quantity: number;
   timestamp: string;
 }
+
+// Define Trade interface
+export interface Trade extends Transaction {
+  // Trade is basically the same as Transaction in this mock
+}
+
+// Define Portfolio interface
+export interface Portfolio {
+  id: string;
+  userId: string;
+  cash: number;
+  totalValue: number;
+  holdings: {
+    ipoId: string;
+    symbol: string;
+    quantity: number;
+    averagePurchasePrice: number;
+    currentPrice: number;
+  }[];
+  history: {
+    date: string;
+    value: number;
+  }[];
+}
+
+// Mock data arrays (needed by mockWebSocket.ts)
+export const mockIPOs: IPO[] = [];
+export const mockOrders: Order[] = [];
+export const mockTrades: Trade[] = [];
 
 // API class to simulate backend calls
 class MockIPOAPI {
@@ -143,7 +183,7 @@ class MockIPOAPI {
       id: "emma-watson-ipo",
       creatorId: "emma-watson",
       creatorName: "Emma Watson",
-      creatorSymbol: "EMW",
+      symbol: "EMW",
       initialPrice: 20.00,
       currentPrice: 24.82,
       totalSupply: 1000000,
@@ -161,7 +201,7 @@ class MockIPOAPI {
       id: "taylor-swift-ipo",
       creatorId: "taylor-swift",
       creatorName: "Taylor Swift",
-      creatorSymbol: "TSWIFT",
+      symbol: "TSWIFT",
       initialPrice: 25.50,
       currentPrice: 31.25,
       totalSupply: 1500000,
@@ -179,7 +219,7 @@ class MockIPOAPI {
       id: "elon-musk-ipo",
       creatorId: "elon-musk",
       creatorName: "Elon Musk",
-      creatorSymbol: "MUSK",
+      symbol: "MUSK",
       initialPrice: 30.00,
       currentPrice: 28.50,
       totalSupply: 2000000,
@@ -197,7 +237,7 @@ class MockIPOAPI {
       id: "mr-beast-ipo",
       creatorId: "mr-beast",
       creatorName: "MrBeast",
-      creatorSymbol: "BEAST",
+      symbol: "BEAST",
       initialPrice: 18.75,
       currentPrice: 22.10,
       totalSupply: 1200000,
@@ -215,7 +255,7 @@ class MockIPOAPI {
       id: "ariana-grande-ipo",
       creatorId: "arianagrande",
       creatorName: "Ariana Grande",
-      creatorSymbol: "ARIANA",
+      symbol: "ARIANA",
       initialPrice: 22.00,
       currentPrice: 26.75,
       totalSupply: 1300000,
@@ -254,6 +294,9 @@ class MockIPOAPI {
   // Get all IPOs
   async getAllIPOs(): Promise<IPO[]> {
     await this.simulateNetworkDelay();
+    // Copy ipos to mockIPOs for WebSocket
+    mockIPOs.length = 0;
+    this.ipos.forEach(ipo => mockIPOs.push({...ipo}));
     return this.ipos;
   }
 
@@ -267,10 +310,10 @@ class MockIPOAPI {
   async createIPO(ipoData: Partial<IPO>): Promise<IPO> {
     await this.simulateNetworkDelay();
     const newIPO: IPO = {
-      id: `${ipoData.creatorId}-ipo-${Date.now()}`,
+      id: `${ipoData.creatorId || 'unknown'}-ipo-${Date.now()}`,
       creatorId: ipoData.creatorId || 'unknown',
       creatorName: ipoData.creatorName || 'Unknown Creator',
-      creatorSymbol: ipoData.creatorSymbol || 'NEW',
+      symbol: ipoData.symbol || 'NEW',
       initialPrice: ipoData.initialPrice || 1.00,
       currentPrice: ipoData.initialPrice || 1.00,
       totalSupply: ipoData.totalSupply || 1000000,
@@ -283,8 +326,10 @@ class MockIPOAPI {
       volume24h: 0,
       averageDailyVolume: Math.floor(Math.random() * 10000),
       revenueUSD: ipoData.revenueUSD || 100000,
+      socialLinks: ipoData.socialLinks
     };
     this.ipos.push(newIPO);
+    mockIPOs.push({...newIPO});
     return newIPO;
   }
 
@@ -292,19 +337,21 @@ class MockIPOAPI {
   async addOrder(order: Order): Promise<Order> {
     await this.simulateNetworkDelay();
     this.orders.push(order);
+    mockOrders.push({...order});
     return order;
   }
 
   // Get orders by IPO ID
   async getOrdersByIPOId(ipoId: string): Promise<Order[]> {
     await this.simulateNetworkDelay();
-    return this.orders.filter(order => order.id === ipoId);
+    return this.orders.filter(order => order.ipoId === ipoId);
   }
 
   // Add transaction
   async addTransaction(transaction: Transaction): Promise<Transaction> {
     await this.simulateNetworkDelay();
     this.transactions.push(transaction);
+    mockTrades.push({...transaction} as Trade);
     return transaction;
   }
 
@@ -312,6 +359,111 @@ class MockIPOAPI {
   async getTransactionsByIPOId(ipoId: string): Promise<Transaction[]> {
     await this.simulateNetworkDelay();
     return this.transactions.filter(transaction => transaction.ipoId === ipoId);
+  }
+}
+
+// Mock Trading API
+class MockTradingAPI {
+  // Simulate network delay
+  private async simulateNetworkDelay(maxDelay = 800) {
+    const delay = Math.random() * maxDelay;
+    return new Promise(resolve => setTimeout(resolve, delay));
+  }
+
+  // Place order
+  async placeOrder(orderData: Partial<Order>): Promise<Order> {
+    await this.simulateNetworkDelay();
+    const order: Order = {
+      id: `order-${Date.now()}`,
+      userId: orderData.userId || 'current-user',
+      ipoId: orderData.ipoId,
+      price: orderData.price || 0,
+      quantity: orderData.quantity || 1,
+      type: orderData.type || 'buy',
+      timestamp: new Date().toISOString(),
+      status: 'open',
+      orderType: orderData.orderType || 'market'
+    };
+    mockOrders.push(order);
+    return order;
+  }
+
+  // Cancel order
+  async cancelOrder(orderId: string): Promise<Order> {
+    await this.simulateNetworkDelay();
+    const orderIndex = mockOrders.findIndex(o => o.id === orderId);
+    if (orderIndex >= 0) {
+      mockOrders[orderIndex].status = 'cancelled';
+      return mockOrders[orderIndex];
+    }
+    throw new Error('Order not found');
+  }
+
+  // Get user orders
+  async getUserOrders(): Promise<Order[]> {
+    await this.simulateNetworkDelay();
+    return mockOrders.filter(o => o.userId === 'current-user');
+  }
+
+  // Get user trades
+  async getUserTrades(): Promise<Trade[]> {
+    await this.simulateNetworkDelay();
+    return mockTrades.filter(t => t.buyerId === 'current-user' || t.sellerId === 'current-user');
+  }
+
+  // Get order book for an IPO
+  async getOrderBook(ipoId: string): Promise<{ bids: Order[], asks: Order[] }> {
+    await this.simulateNetworkDelay();
+    const openOrders = mockOrders.filter(o => o.ipoId === ipoId && o.status === 'open');
+    const bids = openOrders.filter(o => o.type === 'buy').sort((a, b) => b.price - a.price);
+    const asks = openOrders.filter(o => o.type === 'sell').sort((a, b) => a.price - b.price);
+    return { bids, asks };
+  }
+}
+
+// Mock Portfolio API
+class MockPortfolioAPI {
+  // Simulate network delay
+  private async simulateNetworkDelay(maxDelay = 800) {
+    const delay = Math.random() * maxDelay;
+    return new Promise(resolve => setTimeout(resolve, delay));
+  }
+
+  // Get user portfolio
+  async getUserPortfolio(): Promise<Portfolio> {
+    await this.simulateNetworkDelay();
+    // Mock portfolio data
+    return {
+      id: 'portfolio-1',
+      userId: 'current-user',
+      cash: 10000,
+      totalValue: 25000,
+      holdings: [
+        {
+          ipoId: 'emma-watson-ipo',
+          symbol: 'EMW',
+          quantity: 500,
+          averagePurchasePrice: 20,
+          currentPrice: 24.82
+        },
+        {
+          ipoId: 'taylor-swift-ipo',
+          symbol: 'TSWIFT',
+          quantity: 100,
+          averagePurchasePrice: 25,
+          currentPrice: 31.25
+        }
+      ],
+      history: [
+        { date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), value: 15000 },
+        { date: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(), value: 17500 },
+        { date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(), value: 16800 },
+        { date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), value: 19200 },
+        { date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), value: 21500 },
+        { date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), value: 23100 },
+        { date: new Date().toISOString(), value: 25000 }
+      ]
+    };
   }
 }
 
@@ -370,29 +522,30 @@ class AIValuationAPI {
     return getTokenVestingRules(ipo);
   }
 
+  async getVestingAndStakingRules(ipoId: string) {
+    await this.simulateNetworkDelay();
+    return this.getVestingRules(ipoId);
+  }
+
   async getLiquidationRules(ipoId: string) {
     await this.simulateNetworkDelay();
     const ipo = await mockIPOAPI.getIPOById(ipoId);
     return getLiquidationRules(ipo);
   }
   
-  // New method for anomaly detection
+  // Method for anomaly detection
   async detectAnomalies(ipoId: string, recentTrades: any[] = []) {
     await this.simulateNetworkDelay(500); // Faster response for real-time monitoring
     const ipo = await mockIPOAPI.getIPOById(ipoId);
     return detectAnomalies(ipo, recentTrades);
-  }
-
-  // Simulate network delay
-  private async simulateNetworkDelay(maxDelay = 800) {
-    const delay = Math.random() * maxDelay;
-    return new Promise(resolve => setTimeout(resolve, delay));
   }
 }
 
 // Export mock API instances
 export const mockIPOAPI = new MockIPOAPI();
 export const mockAIValuationAPI = new AIValuationAPI();
+export const mockTradingAPI = new MockTradingAPI();
+export const mockPortfolioAPI = new MockPortfolioAPI();
 
 // Mock function to generate random number within a range
 export const getRandomNumber = (min: number, max: number): number => {

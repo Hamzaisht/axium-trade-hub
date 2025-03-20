@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -55,7 +56,8 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
     }
     
     // Process payout history data for chart
-    const payoutHistory = [...dividendInfo.historicalPayouts]
+    // Check if historicalPayouts exists, if not use empty array
+    const payoutHistory = [...(dividendInfo.historicalPayouts || [])]
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .map(payout => ({
         date: formatDate(payout.date),
@@ -284,6 +286,9 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
       );
     }
     
+    // Check if warningThresholds exists, if not use empty array
+    const warningThresholds = liquidationRules.warningThresholds || [];
+    
     return (
       <div className="space-y-4">
         <div className="bg-axium-error/5 p-3 rounded-lg border border-axium-error/20">
@@ -317,7 +322,7 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
         <div>
           <h3 className="text-sm font-medium mb-2">Warning Thresholds</h3>
           
-          {liquidationRules.warningThresholds.map((threshold, idx) => (
+          {warningThresholds.map((threshold, idx) => (
             <div key={idx} className="mb-2 last:mb-0 p-2 bg-axium-gray-50 rounded-lg">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm font-medium">{threshold.metric}</span>

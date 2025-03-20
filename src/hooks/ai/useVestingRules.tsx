@@ -13,7 +13,7 @@ export const useVestingRules = ({ ipoId, enabled = true }: UseVestingRulesProps)
     queryFn: async () => {
       if (!ipoId) return null;
       try {
-        return await mockAIValuationAPI.getVestingAndStakingRules(ipoId);
+        return await mockAIValuationAPI.getVestingRules(ipoId);
       } catch (error) {
         console.error('Error fetching vesting rules:', error);
         throw error;

@@ -59,7 +59,7 @@ const Dashboard = () => {
   
   const filteredCreators = ipos.filter(ipo => 
     ipo.creatorName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    ipo.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+    (ipo.symbol && ipo.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   // Error fallback
