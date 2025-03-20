@@ -1,6 +1,5 @@
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
 
@@ -20,8 +19,6 @@ import { PortfolioProvider } from "@/contexts/PortfolioContext";
 import "./App.css";
 
 function App() {
-  const { toasts } = useToast();
-
   return (
     <AuthProvider>
       <IPOProvider>
@@ -37,7 +34,7 @@ function App() {
               </Routes>
             </Router>
             <SonnerToaster position="top-right" closeButton />
-            <Toaster toasts={toasts} />
+            <Toaster />
           </PortfolioProvider>
         </TradingProvider>
       </IPOProvider>
