@@ -16,7 +16,7 @@ export const useLiquidationRules = ({ ipoId, enabled = true }: UseLiquidationRul
         return await mockAIValuationAPI.getLiquidationRules(ipoId);
       } catch (error) {
         console.error('Error fetching liquidation rules:', error);
-        return null;
+        throw error;
       }
     },
     enabled: !!ipoId && enabled,

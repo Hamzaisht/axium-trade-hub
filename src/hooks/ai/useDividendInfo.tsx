@@ -16,7 +16,7 @@ export const useDividendInfo = ({ ipoId, enabled = true }: UseDividendInfoProps)
         return await mockAIValuationAPI.getDividendInfo(ipoId);
       } catch (error) {
         console.error('Error fetching dividend info:', error);
-        return null;
+        throw error;
       }
     },
     enabled: !!ipoId && enabled,

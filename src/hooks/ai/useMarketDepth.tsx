@@ -16,7 +16,7 @@ export const useMarketDepth = ({ ipoId, enabled = true }: UseMarketDepthProps) =
         return await mockAIValuationAPI.getMarketDepth(ipoId);
       } catch (error) {
         console.error('Error fetching market depth:', error);
-        return null;
+        throw error;
       }
     },
     enabled: !!ipoId && enabled,

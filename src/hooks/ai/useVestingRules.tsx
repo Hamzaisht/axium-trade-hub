@@ -16,7 +16,7 @@ export const useVestingRules = ({ ipoId, enabled = true }: UseVestingRulesProps)
         return await mockAIValuationAPI.getVestingAndStakingRules(ipoId);
       } catch (error) {
         console.error('Error fetching vesting rules:', error);
-        return null;
+        throw error;
       }
     },
     enabled: !!ipoId && enabled,

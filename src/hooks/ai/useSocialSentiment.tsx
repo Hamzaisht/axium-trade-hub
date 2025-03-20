@@ -21,7 +21,7 @@ export const useSocialSentiment = ({
         return await mockAIValuationAPI.getSocialSentiment(ipoId);
       } catch (error) {
         console.error('Error fetching social sentiment:', error);
-        return null;
+        throw error;
       }
     },
     enabled: !!ipoId && enabled,

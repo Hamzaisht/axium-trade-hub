@@ -30,7 +30,7 @@ export const usePricePrediction = ({
         );
       } catch (error) {
         console.error('Error fetching price prediction:', error);
-        return null;
+        throw error;
       }
     },
     enabled: !!ipoId && enabled,

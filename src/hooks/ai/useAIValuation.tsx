@@ -110,7 +110,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     isLiquidationRulesLoading: liquidationRulesQuery.isLoading,
     
     // Errors
-    hasErrors: pricePredictionQuery.error || marketDepthQuery.error || socialSentimentQuery.error,
+    hasErrors: pricePredictionQuery.error || marketDepthQuery.error || socialSentimentQuery.error ||
+               dividendInfoQuery.error || vestingRulesQuery.error || liquidationRulesQuery.error,
     
     // Controls
     selectedTimeframe,
