@@ -5,7 +5,6 @@
  */
 
 import { IPO, Order, Trade, mockIPOs, mockOrders, mockTrades } from "./mockApi";
-import { EventEmitter } from "events";
 
 // Create a custom event emitter class without relying on Node.js EventEmitter
 class CustomEventEmitter {
@@ -103,7 +102,7 @@ class WebSocketEmulator extends CustomEventEmitter {
   
   private startPriceSimulation(): void {
     // Simulate price updates every 5 seconds
-    const priceUpdateId = setInterval(() => {
+    const priceUpdateId = window.setInterval(() => {
       if (!this.connected) return;
       
       mockIPOs.forEach(ipo => {
@@ -133,7 +132,7 @@ class WebSocketEmulator extends CustomEventEmitter {
     this.intervalIds.push(priceUpdateId);
     
     // Simulate order book updates every 3 seconds
-    const orderBookUpdateId = setInterval(() => {
+    const orderBookUpdateId = window.setInterval(() => {
       if (!this.connected) return;
       
       mockIPOs.forEach(ipo => {
@@ -155,7 +154,7 @@ class WebSocketEmulator extends CustomEventEmitter {
     this.intervalIds.push(orderBookUpdateId);
     
     // Simulate random trade executions every 8 seconds
-    const tradeExecutionId = setInterval(() => {
+    const tradeExecutionId = window.setInterval(() => {
       if (!this.connected) return;
       
       // Randomly select an IPO to simulate a trade for
