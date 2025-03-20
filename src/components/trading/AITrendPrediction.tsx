@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -246,6 +246,11 @@ export const AITrendPrediction = ({ ipoId, symbol = 'EMW', currentPrice = 24.82 
       </div>
     );
   };
+  
+  // Add error handling wrapper
+  useEffect(() => {
+    console.log("AITrendPrediction component loaded with ipoId:", ipoId);
+  }, [ipoId]);
   
   return (
     <GlassCard className="h-full">

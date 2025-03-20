@@ -59,13 +59,15 @@ export const PriceChart = ({
   
   // Generate initial historical data
   useEffect(() => {
-    setBaseChartData(generateHistoricalData(activeRange.days, currentPrice, currentPrice * 0.05));
-    setLivePrice(currentPrice);
+    // Ensure we have a valid current price before generating data
+    const price = currentPrice || 25.0;
+    setBaseChartData(generateHistoricalData(activeRange.days, price, price * 0.05));
+    setLivePrice(price);
   }, [activeRange, currentPrice]);
   
   // Update live price when we get updates
   useEffect(() => {
-    if (ipoId && latestPrices[ipoId]) {
+    if (ipoId && latestPrices[ipoId] !== undefined) {
       setLivePrice(latestPrices[ipoId]);
     }
   }, [ipoId, latestPrices]);
@@ -102,10 +104,10 @@ export const PriceChart = ({
   const priceChange = useMemo(() => {
     if (chartData.length < 2) return { value: 0, percentage: 0 };
     
-    const firstPrice = chartData[0].price;
+    const firstPrice = chartData[0]?.price || 0;
     const lastPrice = livePrice;
     const change = lastPrice - firstPrice;
-    const percentage = (change / firstPrice) * 100;
+    const percentage = firstPrice > 0 ? (change / firstPrice) * 100 : 0;
     
     return {
       value: parseFloat(change.toFixed(2)),
@@ -129,6 +131,17 @@ export const PriceChart = ({
     }
     return null;
   };
+  
+  // Safeguard against empty data
+  if (chartData.length === 0) {
+    return (
+      <GlassCard className="h-full p-4">
+        <div className="text-center py-10">
+          <p className="text-axium-gray-500">Loading chart data...</p>
+        </div>
+      </GlassCard>
+    );
+  }
   
   return (
     <GlassCard className="h-full">
@@ -209,7 +222,13 @@ export const PriceChart = ({
               tickFormatter={(value) => `$${value}`}
             />
             <Tooltip content={<CustomTooltip />} />
-            <ReferenceLine y={chartData[0]?.price} stroke="#ADB5BD" strokeDasharray="3 3" />
+            {chartData.length > 0 && chartData[0]?.price && (
+              <ReferenceLine 
+                y={chartData[0].price} 
+                stroke="#ADB5BD" 
+                strokeDasharray="3 3" 
+              />
+            )}
             <Line 
               type="monotone" 
               dataKey="price"

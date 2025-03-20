@@ -18,7 +18,12 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     queryKey: ['price-prediction', ipoId, selectedTimeframe, selectedModel],
     queryFn: async () => {
       if (!ipoId) return null;
-      return await mockAIValuationAPI.predictPriceMovement(ipoId, selectedTimeframe, selectedModel);
+      try {
+        return await mockAIValuationAPI.predictPriceMovement(ipoId, selectedTimeframe, selectedModel);
+      } catch (error) {
+        console.error('Error fetching price prediction:', error);
+        return null;
+      }
     },
     enabled: !!ipoId,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -30,7 +35,12 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     queryKey: ['market-depth', ipoId],
     queryFn: async () => {
       if (!ipoId) return null;
-      return await mockAIValuationAPI.getMarketDepth(ipoId);
+      try {
+        return await mockAIValuationAPI.getMarketDepth(ipoId);
+      } catch (error) {
+        console.error('Error fetching market depth:', error);
+        return null;
+      }
     },
     enabled: !!ipoId,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -42,7 +52,12 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     queryKey: ['social-sentiment', ipoId],
     queryFn: async () => {
       if (!ipoId) return null;
-      return await mockAIValuationAPI.getSocialSentiment(ipoId);
+      try {
+        return await mockAIValuationAPI.getSocialSentiment(ipoId);
+      } catch (error) {
+        console.error('Error fetching social sentiment:', error);
+        return null;
+      }
     },
     enabled: !!ipoId,
     staleTime: 1000 * 60 * 10, // 10 minutes
@@ -54,7 +69,12 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     queryKey: ['dividend-info', ipoId],
     queryFn: async () => {
       if (!ipoId) return null;
-      return await mockAIValuationAPI.getDividendInfo(ipoId);
+      try {
+        return await mockAIValuationAPI.getDividendInfo(ipoId);
+      } catch (error) {
+        console.error('Error fetching dividend info:', error);
+        return null;
+      }
     },
     enabled: !!ipoId,
     staleTime: 1000 * 60 * 30, // 30 minutes
@@ -66,7 +86,12 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     queryKey: ['vesting-rules', ipoId],
     queryFn: async () => {
       if (!ipoId) return null;
-      return await mockAIValuationAPI.getVestingAndStakingRules(ipoId);
+      try {
+        return await mockAIValuationAPI.getVestingAndStakingRules(ipoId);
+      } catch (error) {
+        console.error('Error fetching vesting rules:', error);
+        return null;
+      }
     },
     enabled: !!ipoId,
     staleTime: 1000 * 60 * 60, // 60 minutes
@@ -78,7 +103,12 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     queryKey: ['liquidation-rules', ipoId],
     queryFn: async () => {
       if (!ipoId) return null;
-      return await mockAIValuationAPI.getLiquidationRules(ipoId);
+      try {
+        return await mockAIValuationAPI.getLiquidationRules(ipoId);
+      } catch (error) {
+        console.error('Error fetching liquidation rules:', error);
+        return null;
+      }
     },
     enabled: !!ipoId,
     staleTime: 1000 * 60 * 60, // 60 minutes
@@ -118,6 +148,7 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     for (const query of queries) {
       if (query.error) {
         toast.error(`Error fetching AI data: ${query.error instanceof Error ? query.error.message : 'Unknown error'}`);
+        console.error('AI data fetch error:', query.error);
         break;
       }
     }
