@@ -1,22 +1,22 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { mockAuthAPI, User } from '@/utils/mockApi';
+import { User, Session } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 // Define user roles
 export type UserRole = 'guest' | 'user' | 'admin';
 
-// Map between API roles and our application roles
-const mapApiRoleToUserRole = (apiRole: 'investor' | 'creator' | undefined): UserRole => {
-  if (apiRole === 'creator') return 'admin';
-  return 'user'; // Default regular users (investors) to 'user' role
-};
-
 // Enhanced user with roles
-export interface AuthenticatedUser extends Omit<User, 'role'> {
+export interface AuthenticatedUser {
+  id: string;
+  name: string;
+  email: string;
   role: UserRole;
-  apiRole?: 'investor' | 'creator'; // Keep the original API role
+  profileImage?: string;
+  walletAddress?: string;
+  kycVerified: boolean;
 }
 
 interface AuthContextType {
@@ -24,7 +24,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (userData: Partial<User>, password: string) => Promise<void>;
+  register: (userData: Partial<AuthenticatedUser>, password: string) => Promise<void>;
   logout: () => Promise<void>;
   completeKYC: (kycData: any) => Promise<void>;
   hasPermission: (requiredRole: UserRole) => boolean;
@@ -32,79 +32,95 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper function to map Supabase user to AuthenticatedUser
+const mapSupabaseUser = (user: User | null): AuthenticatedUser | null => {
+  if (!user) return null;
+  
+  return {
+    id: user.id,
+    name: user.user_metadata?.name || 'User',
+    email: user.email || '',
+    role: (user.user_metadata?.role as UserRole) || 'user',
+    profileImage: user.user_metadata?.avatar_url,
+    walletAddress: user.user_metadata?.wallet_address,
+    kycVerified: user.user_metadata?.kyc_verified || false
+  };
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthenticatedUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for existing user session on mount
-    const checkAuthStatus = () => {
-      try {
-        setIsLoading(true);
-        const currentUser = mockAuthAPI.getCurrentUser();
-        if (currentUser) {
-          // Map the API role to our application role
-          const userWithRole: AuthenticatedUser = {
-            ...currentUser,
-            apiRole: currentUser.role, // Store the original API role
-            role: mapApiRoleToUserRole(currentUser.role)
-          };
-          setUser(userWithRole);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-        setUser(null);
-      } finally {
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session ? mapSupabaseUser(session.user) : null);
         setIsLoading(false);
       }
-    };
+    );
 
-    checkAuthStatus();
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session ? mapSupabaseUser(session.user) : null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const { user } = await mockAuthAPI.login(email, password);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
       
-      // Map the API role to our application role
-      const userWithRole: AuthenticatedUser = {
-        ...user,
-        apiRole: user.role, // Store the original API role
-        role: mapApiRoleToUserRole(user.role)
-      };
+      if (error) throw error;
       
-      setUser(userWithRole);
-      toast.success(`Welcome back, ${user.name}!`);
+      const authenticatedUser = mapSupabaseUser(data.user);
+      setUser(authenticatedUser);
+      toast.success(`Welcome back, ${authenticatedUser?.name || 'User'}!`);
       navigate('/dashboard');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Login failed');
+    } catch (error: any) {
+      toast.error(error.message || 'Login failed');
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (userData: Partial<User>, password: string) => {
+  const register = async (userData: Partial<AuthenticatedUser>, password: string) => {
     try {
       setIsLoading(true);
-      const { user } = await mockAuthAPI.register(userData, password);
       
-      // Map the API role to our application role
-      const userWithRole: AuthenticatedUser = {
-        ...user,
-        apiRole: user.role, // Store the original API role
-        role: mapApiRoleToUserRole(user.role)
-      };
+      if (!userData.email) throw new Error('Email is required');
       
-      setUser(userWithRole);
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email,
+        password,
+        options: {
+          data: {
+            name: userData.name,
+            role: 'user',
+            kyc_verified: false
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      const authenticatedUser = mapSupabaseUser(data.user);
+      setUser(authenticatedUser);
       toast.success('Registration successful!');
       navigate('/dashboard');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Registration failed');
+    } catch (error: any) {
+      toast.error(error.message || 'Registration failed');
       throw error;
     } finally {
       setIsLoading(false);
@@ -114,12 +130,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
-      await mockAuthAPI.logout();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
       setUser(null);
+      setSession(null);
       toast.success('You have been logged out');
       navigate('/');
-    } catch (error) {
-      toast.error('Logout failed');
+    } catch (error: any) {
+      toast.error(error.message || 'Logout failed');
     } finally {
       setIsLoading(false);
     }
@@ -130,19 +149,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     try {
       setIsLoading(true);
-      const updatedUser = await mockAuthAPI.completeKYC(user.id, kycData);
       
-      // Maintain the role when updating user data
-      const updatedUserWithRole: AuthenticatedUser = {
-        ...updatedUser,
-        apiRole: updatedUser.role, // Store the original API role
-        role: user.role // Keep the existing mapped role
-      };
+      const { data, error } = await supabase.auth.updateUser({
+        data: {
+          ...kycData,
+          kyc_verified: true
+        }
+      });
       
-      setUser(updatedUserWithRole);
+      if (error) throw error;
+      
+      const updatedUser = mapSupabaseUser(data.user);
+      setUser(updatedUser);
       toast.success('KYC verification completed successfully');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'KYC verification failed');
+    } catch (error: any) {
+      toast.error(error.message || 'KYC verification failed');
       throw error;
     } finally {
       setIsLoading(false);

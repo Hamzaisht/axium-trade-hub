@@ -4,7 +4,8 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import { AuthForm } from "@/components/auth/AuthForm";
 import Navbar from "@/components/layout/Navbar";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Login = () => {
   const location = useLocation();
@@ -28,9 +29,16 @@ const Login = () => {
             </Link>
             
             <h1 className="text-3xl font-bold text-center mb-6">Welcome Back</h1>
-            <p className="text-axium-gray-600 text-center max-w-md mb-10">
+            <p className="text-axium-gray-600 text-center max-w-md mb-4">
               Sign in to your account to access your dashboard, portfolio, and trading features.
             </p>
+            
+            <Alert variant="info" className="max-w-md mb-6">
+              <Info className="h-4 w-4 mr-2" />
+              <AlertDescription>
+                Authentication now uses Supabase. Create an account to get started.
+              </AlertDescription>
+            </Alert>
             
             <AuthForm mode="login" onSuccess={handleSuccess} />
             
