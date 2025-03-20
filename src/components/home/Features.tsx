@@ -80,6 +80,9 @@ export const Features = () => {
       return () => clearInterval(interval);
     }
   }, [isVisible]);
+
+  // Get the current feature's icon component
+  const ActiveFeatureIcon = features[activeFeature].icon;
   
   return (
     <section ref={sectionRef} className="section-padding bg-gradient-to-b from-white to-axium-gray-100/30">
@@ -157,7 +160,7 @@ export const Features = () => {
                     </div>
                     
                     <div className="flex-1 flex items-center justify-center">
-                      <features[activeFeature].icon className="h-24 w-24 text-axium-blue/20" />
+                      <ActiveFeatureIcon className="h-24 w-24 text-axium-blue/20" />
                     </div>
                     
                     <p className="text-axium-gray-600 mt-auto">
