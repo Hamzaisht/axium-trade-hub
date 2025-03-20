@@ -1,10 +1,9 @@
-
 import { useEffect, useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useExternalData } from '@/hooks/useExternalData';
 import { useAPIConfiguration } from '@/hooks/useAPIConfiguration';
-import { Users, BarChart2, Radio, ShoppingBag, TrendingUp, RefreshCw, AlertCircle } from 'lucide-react';
+import { Users, BarChart2, Radio, ShoppingBag, TrendingUp, RefreshCw, AlertCircle, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -95,6 +94,12 @@ export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCar
             <div className="ml-2 flex items-center text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
               <span className="h-2 w-2 bg-green-500 rounded-full mr-1"></span>
               Live APIs
+            </div>
+          )}
+          {apiServiceStatus === 'secure' && (
+            <div className="ml-2 flex items-center text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+              <Shield className="h-3 w-3 mr-1" />
+              Secure APIs
             </div>
           )}
         </div>

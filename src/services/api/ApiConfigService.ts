@@ -1,4 +1,3 @@
-
 import { SocialMediaApiService, SocialMediaMetrics } from './SocialMediaApiService';
 import { StreamingApiService, StreamingMetrics } from './StreamingApiService';
 import { BrandDealsApiService, BrandDealMetrics } from './BrandDealsApiService';
@@ -24,22 +23,42 @@ class ApiConfigService {
     googleTrends: import.meta.env.VITE_GOOGLE_TRENDS_API_KEY || 'mock-google-trends-key',
   };
 
+  private useProxyEndpoints: boolean;
   private socialMediaService: SocialMediaApiService;
   private streamingService: StreamingApiService;
   private brandDealsService: BrandDealsApiService;
 
   constructor() {
-    // Initialize services
-    this.socialMediaService = new SocialMediaApiService(this.apiKeys.twitter);
-    this.streamingService = new StreamingApiService(this.apiKeys.spotify);
-    this.brandDealsService = new BrandDealsApiService(this.apiKeys.googleTrends);
+    // Check if we should use proxy endpoints (more secure)
+    this.useProxyEndpoints = import.meta.env.VITE_USE_API_PROXY === 'true';
     
-    console.log('API Configuration Service initialized');
+    // Initialize services
+    this.socialMediaService = new SocialMediaApiService(
+      this.apiKeys.twitter, 
+      this.useProxyEndpoints
+    );
+    
+    this.streamingService = new StreamingApiService(
+      this.apiKeys.spotify, 
+      this.useProxyEndpoints
+    );
+    
+    this.brandDealsService = new BrandDealsApiService(
+      this.apiKeys.googleTrends, 
+      this.useProxyEndpoints
+    );
+    
+    console.log(`API Configuration Service initialized (${this.useProxyEndpoints ? 'proxy mode' : 'direct mode'})`);
   }
 
   // Method to check if we have valid API keys (non-mock)
   areRealApisConfigured(): boolean {
     return Object.values(this.apiKeys).some(key => key && !key.startsWith('mock-'));
+  }
+
+  // Method to check if we're using proxy endpoints
+  isUsingProxyEndpoints(): boolean {
+    return this.useProxyEndpoints;
   }
 
   // Get all creator metrics in one call

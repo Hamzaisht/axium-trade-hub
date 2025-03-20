@@ -1,4 +1,3 @@
-
 import { BaseApiService } from './BaseApiService';
 
 export interface StreamingMetrics {
@@ -11,8 +10,8 @@ export interface StreamingMetrics {
 }
 
 export class StreamingApiService extends BaseApiService {
-  constructor(apiKey: string) {
-    super(apiKey);
+  constructor(apiKey: string, useProxyEndpoint = false) {
+    super(apiKey, useProxyEndpoint);
   }
 
   protected generateMockData(endpoint: string): StreamingMetrics {
@@ -71,7 +70,6 @@ export class StreamingApiService extends BaseApiService {
     }
   }
 
-  // Public methods for fetching data
   async getSpotifyMetrics(artistId: string): Promise<StreamingMetrics> {
     const endpoint = `spotify/${artistId}`;
     const url = `https://api.spotify.com/v1/artists/${artistId}`;

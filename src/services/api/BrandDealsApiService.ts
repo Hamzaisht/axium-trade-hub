@@ -1,4 +1,3 @@
-
 import { BaseApiService } from './BaseApiService';
 
 export interface BrandDealMetrics {
@@ -11,8 +10,8 @@ export interface BrandDealMetrics {
 }
 
 export class BrandDealsApiService extends BaseApiService {
-  constructor(apiKey: string) {
-    super(apiKey);
+  constructor(apiKey: string, useProxyEndpoint = false) {
+    super(apiKey, useProxyEndpoint);
   }
 
   protected generateMockData(endpoint: string): BrandDealMetrics {

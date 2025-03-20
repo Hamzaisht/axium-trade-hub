@@ -1,14 +1,17 @@
-
 import { toast } from 'sonner';
 
 export abstract class BaseApiService {
   protected apiKey: string;
+  protected useProxyEndpoint: boolean;
+  protected proxyBaseUrl: string;
   protected cache: Map<string, { data: any; timestamp: number }> = new Map();
   protected CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, useProxyEndpoint = false) {
     this.apiKey = apiKey;
-    console.log(`${this.constructor.name} initialized`);
+    this.useProxyEndpoint = useProxyEndpoint;
+    this.proxyBaseUrl = import.meta.env.VITE_API_PROXY_URL || 'https://api.myapp.com/proxy';
+    console.log(`${this.constructor.name} initialized (${useProxyEndpoint ? 'proxy mode' : 'direct mode'})`);
   }
 
   // Utility method for caching
@@ -63,29 +66,71 @@ export abstract class BaseApiService {
         return this.generateMockData(endpoint) as T;
       }
       
-      console.log(`Making API call to ${url}`);
-      
-      // Add authorization if we have an API key
-      const requestHeaders = {
-        'Authorization': `Bearer ${this.apiKey}`,
-        ...headers
-      };
-      
-      // Make the actual API call
-      const response = await fetch(url, { headers: requestHeaders });
-      
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      // Use proxy endpoint if configured
+      if (this.useProxyEndpoint) {
+        console.log(`Making API call via proxy for ${endpoint}`);
+        
+        // Transform direct API URL to proxy endpoint format
+        // endpoint structure: service/resource/id
+        const proxyUrl = `${this.proxyBaseUrl}/${endpoint}`;
+        
+        // The API key is NOT sent to the frontend, it will be added by the proxy server
+        const proxyHeaders = {
+          'Content-Type': 'application/json',
+          ...headers
+        };
+        
+        // Make the API call via proxy
+        const response = await fetch(proxyUrl, { 
+          method: 'POST',
+          headers: proxyHeaders,
+          body: JSON.stringify({
+            originalUrl: url,
+            // We only send metadata about the request, not the actual API key
+            service: endpoint.split('/')[0],
+            resource: endpoint.split('/')[1] || '',
+            id: endpoint.split('/')[2] || ''
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Proxy API error: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Transform the API response into our standardized format
+        const transformedData = this.transformApiResponse(endpoint, data);
+        
+        // Cache the result
+        this.setCachedData(cacheKey, transformedData);
+        return transformedData as T;
+      } else {
+        // Direct API call (using API key in the frontend - less secure)
+        console.log(`Making direct API call to ${url}`);
+        
+        // Add authorization if we have an API key
+        const requestHeaders = {
+          'Authorization': `Bearer ${this.apiKey}`,
+          ...headers
+        };
+        
+        // Make the actual API call
+        const response = await fetch(url, { headers: requestHeaders });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Transform the API response into our standardized format
+        const transformedData = this.transformApiResponse(endpoint, data);
+        
+        // Cache the result
+        this.setCachedData(cacheKey, transformedData);
+        return transformedData as T;
       }
-      
-      const data = await response.json();
-      
-      // Transform the API response into our standardized format
-      const transformedData = this.transformApiResponse(endpoint, data);
-      
-      // Cache the result
-      this.setCachedData(cacheKey, transformedData);
-      return transformedData as T;
     } catch (error) {
       console.error(`API error (${endpoint}):`, error);
       

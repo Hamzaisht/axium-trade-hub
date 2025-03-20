@@ -1,4 +1,3 @@
-
 import { BaseApiService } from './BaseApiService';
 import { toast } from 'sonner';
 
@@ -12,8 +11,8 @@ export interface SocialMediaMetrics {
 }
 
 export class SocialMediaApiService extends BaseApiService {
-  constructor(apiKey: string) {
-    super(apiKey);
+  constructor(apiKey: string, useProxyEndpoint = false) {
+    super(apiKey, useProxyEndpoint);
   }
 
   protected generateMockData(endpoint: string): SocialMediaMetrics {
