@@ -26,12 +26,11 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     queryFn: async () => {
       if (!ipoId) return null;
       try {
-        // Pass external metrics to the AI model if available
+        // Pass correct parameters according to API definition
         return await mockAIValuationAPI.predictPriceMovement(
           ipoId, 
           selectedTimeframe, 
-          selectedModel,
-          externalMetrics // Pass the external metrics to the AI model
+          selectedModel
         );
       } catch (error) {
         console.error('Error fetching price prediction:', error);
@@ -66,7 +65,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     queryFn: async () => {
       if (!ipoId) return null;
       try {
-        return await mockAIValuationAPI.getSocialSentiment(ipoId, externalMetrics);
+        // Pass only ipoId as per API definition
+        return await mockAIValuationAPI.getSocialSentiment(ipoId);
       } catch (error) {
         console.error('Error fetching social sentiment:', error);
         return null;

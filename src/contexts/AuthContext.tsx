@@ -7,9 +7,16 @@ import { useNavigate } from 'react-router-dom';
 // Define user roles
 export type UserRole = 'guest' | 'user' | 'admin';
 
+// Map between API roles and our application roles
+const mapApiRoleToUserRole = (apiRole: 'investor' | 'creator' | undefined): UserRole => {
+  if (apiRole === 'creator') return 'admin';
+  return 'user'; // Default regular users (investors) to 'user' role
+};
+
 // Enhanced user with roles
-export interface AuthenticatedUser extends User {
+export interface AuthenticatedUser extends Omit<User, 'role'> {
   role: UserRole;
+  apiRole?: 'investor' | 'creator'; // Keep the original API role
 }
 
 interface AuthContextType {
@@ -37,10 +44,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(true);
         const currentUser = mockAuthAPI.getCurrentUser();
         if (currentUser) {
-          // Ensure user has a role property
-          const userWithRole = {
+          // Map the API role to our application role
+          const userWithRole: AuthenticatedUser = {
             ...currentUser,
-            role: (currentUser as any).role || 'user' as UserRole
+            apiRole: currentUser.role, // Store the original API role
+            role: mapApiRoleToUserRole(currentUser.role)
           };
           setUser(userWithRole);
         } else {
@@ -61,11 +69,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       const { user } = await mockAuthAPI.login(email, password);
-      // Ensure user has a role property
-      const userWithRole = {
+      
+      // Map the API role to our application role
+      const userWithRole: AuthenticatedUser = {
         ...user,
-        role: (user as any).role || 'user' as UserRole
+        apiRole: user.role, // Store the original API role
+        role: mapApiRoleToUserRole(user.role)
       };
+      
       setUser(userWithRole);
       toast.success(`Welcome back, ${user.name}!`);
       navigate('/dashboard');
@@ -81,11 +92,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       const { user } = await mockAuthAPI.register(userData, password);
-      // Ensure user has a role property, default to 'user'
-      const userWithRole = {
+      
+      // Map the API role to our application role
+      const userWithRole: AuthenticatedUser = {
         ...user,
-        role: 'user' as UserRole
+        apiRole: user.role, // Store the original API role
+        role: mapApiRoleToUserRole(user.role)
       };
+      
       setUser(userWithRole);
       toast.success('Registration successful!');
       navigate('/dashboard');
@@ -117,11 +131,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       const updatedUser = await mockAuthAPI.completeKYC(user.id, kycData);
+      
       // Maintain the role when updating user data
-      const updatedUserWithRole = {
+      const updatedUserWithRole: AuthenticatedUser = {
         ...updatedUser,
-        role: user.role
+        apiRole: updatedUser.role, // Store the original API role
+        role: user.role // Keep the existing mapped role
       };
+      
       setUser(updatedUserWithRole);
       toast.success('KYC verification completed successfully');
     } catch (error) {

@@ -132,7 +132,8 @@ export const IPOProvider = ({ children }: { children: ReactNode }) => {
       throw new Error('Not authenticated');
     }
 
-    if (user?.role !== 'creator') {
+    // Check for creator access using the apiRole property
+    if (user?.apiRole !== 'creator') {
       toast.error('Only creators can launch IPOs');
       throw new Error('Not authorized');
     }
