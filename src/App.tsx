@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
@@ -21,6 +22,17 @@ import { mockWebSocket } from "@/utils/mockWebSocket";
 
 // Components
 import "./App.css";
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 function App() {
   // Connect to the mock WebSocket when the app loads
@@ -43,25 +55,27 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <IPOProvider>
-        <TradingProvider>
-          <PortfolioProvider>
-            <Router>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/creators" element={<Creators />} />
-                <Route path="/portfolio" element={<Portfolio />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Router>
-            <SonnerToaster position="top-right" closeButton />
-            <Toaster />
-          </PortfolioProvider>
-        </TradingProvider>
-      </IPOProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <IPOProvider>
+          <TradingProvider>
+            <PortfolioProvider>
+              <Router>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/creators" element={<Creators />} />
+                  <Route path="/portfolio" element={<Portfolio />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Router>
+              <SonnerToaster position="top-right" closeButton />
+              <Toaster />
+            </PortfolioProvider>
+          </TradingProvider>
+        </IPOProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
