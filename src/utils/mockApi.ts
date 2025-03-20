@@ -1,3 +1,4 @@
+
 /**
  * Mock API
  * Simulates API endpoints for fetching creator data, IPOs, and AI valuations.
@@ -19,13 +20,51 @@ export interface IPO {
   engagementScore: number;
   aiScore: number;
   averageDailyVolume?: number;
+  socialLinks?: {
+    twitter?: string;
+    instagram?: string;
+    youtube?: string;
+    tiktok?: string;
+  };
+}
+
+export interface Order {
+  id: string;
+  userId: string;
+  ipoId: string;
+  price: number;
+  quantity: number;
+  type: 'buy' | 'sell';
+  status: 'pending' | 'filled' | 'cancelled';
+  createdAt: string;
+}
+
+export interface Trade {
+  id: string;
+  buyerId: string;
+  sellerId: string;
+  ipoId: string;
+  price: number;
+  quantity: number;
+  timestamp: string;
+}
+
+export interface Portfolio {
+  userId: string;
+  holdings: {
+    ipoId: string;
+    quantity: number;
+    averagePurchasePrice: number;
+  }[];
+  totalValue: number;
+  cash: number;
 }
 
 // Utility function to generate a delay
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 // Mock IPO data
-const mockIPOs: IPO[] = Array(20).fill(null).map((_, i) => {
+export const mockIPOs: IPO[] = Array(20).fill(null).map((_, i) => {
   const creatorName = faker.person.firstName() + " " + faker.person.lastName();
   const initialPrice = parseFloat(faker.number.float({ min: 1, max: 50, precision: 0.01 }).toFixed(2));
   const engagementScore = faker.number.int({ min: 20, max: 99 });
@@ -44,7 +83,44 @@ const mockIPOs: IPO[] = Array(20).fill(null).map((_, i) => {
     revenueUSD: revenueUSD,
     engagementScore: engagementScore,
     aiScore: aiScore,
-    averageDailyVolume: faker.number.int({ min: 1000, max: 10000 })
+    averageDailyVolume: faker.number.int({ min: 1000, max: 10000 }),
+    socialLinks: {
+      twitter: `@${creatorName.replace(' ', '').toLowerCase()}`,
+      instagram: `${creatorName.replace(' ', '').toLowerCase()}`,
+      youtube: `channel/${creatorName.replace(' ', '').toLowerCase()}`,
+      tiktok: `@${creatorName.replace(' ', '').toLowerCase()}`
+    }
+  };
+});
+
+// Mock orders
+export const mockOrders: Order[] = Array(50).fill(null).map(() => {
+  const price = parseFloat(faker.number.float({ min: 1, max: 100, precision: 0.01 }).toFixed(2));
+  
+  return {
+    id: faker.string.uuid(),
+    userId: faker.string.uuid(),
+    ipoId: mockIPOs[Math.floor(Math.random() * mockIPOs.length)].id,
+    price,
+    quantity: faker.number.int({ min: 1, max: 1000 }),
+    type: Math.random() > 0.5 ? 'buy' : 'sell',
+    status: Math.random() > 0.7 ? 'pending' : (Math.random() > 0.5 ? 'filled' : 'cancelled'),
+    createdAt: faker.date.recent().toISOString()
+  };
+});
+
+// Mock trades
+export const mockTrades: Trade[] = Array(100).fill(null).map(() => {
+  const price = parseFloat(faker.number.float({ min: 1, max: 100, precision: 0.01 }).toFixed(2));
+  
+  return {
+    id: faker.string.uuid(),
+    buyerId: faker.string.uuid(),
+    sellerId: faker.string.uuid(),
+    ipoId: mockIPOs[Math.floor(Math.random() * mockIPOs.length)].id,
+    price,
+    quantity: faker.number.int({ min: 1, max: 1000 }),
+    timestamp: faker.date.recent().toISOString()
   };
 });
 
@@ -83,8 +159,80 @@ export class MockIPOAPI {
   }
 }
 
-// Instantiate the mock API
+// Mock Trading API class
+export class MockTradingAPI {
+  async placeOrder(order: Order): Promise<Order> {
+    await delay(300);
+    const newOrder = { ...order, id: faker.string.uuid(), createdAt: new Date().toISOString() };
+    return newOrder;
+  }
+
+  async getOrdersForUser(userId: string): Promise<Order[]> {
+    await delay(400);
+    return mockOrders.filter(order => order.userId === userId);
+  }
+
+  async getOrdersForIPO(ipoId: string): Promise<Order[]> {
+    await delay(400);
+    return mockOrders.filter(order => order.ipoId === ipoId);
+  }
+
+  async cancelOrder(orderId: string): Promise<{ success: boolean; message: string }> {
+    await delay(300);
+    return { success: true, message: "Order cancelled successfully" };
+  }
+
+  async getTradesForIPO(ipoId: string, limit: number = 10): Promise<Trade[]> {
+    await delay(300);
+    const trades = mockTrades.filter(trade => trade.ipoId === ipoId);
+    return trades.slice(0, limit);
+  }
+}
+
+// Mock Portfolio API class
+export class MockPortfolioAPI {
+  async getPortfolio(userId: string): Promise<Portfolio> {
+    await delay(500);
+    
+    // Generate random holdings
+    const holdings = Array(Math.floor(Math.random() * 10) + 1).fill(null).map(() => {
+      const randomIPO = mockIPOs[Math.floor(Math.random() * mockIPOs.length)];
+      const quantity = faker.number.int({ min: 10, max: 1000 });
+      const averagePurchasePrice = parseFloat(faker.number.float({ 
+        min: randomIPO.currentPrice * 0.7, 
+        max: randomIPO.currentPrice * 1.3, 
+        precision: 0.01 
+      }).toFixed(2));
+      
+      return {
+        ipoId: randomIPO.id,
+        quantity,
+        averagePurchasePrice
+      };
+    });
+    
+    // Calculate total value
+    const totalValue = holdings.reduce((sum, holding) => {
+      const ipo = mockIPOs.find(ipo => ipo.id === holding.ipoId);
+      if (!ipo) return sum;
+      return sum + (ipo.currentPrice * holding.quantity);
+    }, 0);
+    
+    const cash = parseFloat(faker.number.float({ min: 1000, max: 100000, precision: 0.01 }).toFixed(2));
+    
+    return {
+      userId,
+      holdings,
+      totalValue,
+      cash
+    };
+  }
+}
+
+// Instantiate the mock APIs
 export const mockIPOAPI = new MockIPOAPI();
+export const mockTradingAPI = new MockTradingAPI();
+export const mockPortfolioAPI = new MockPortfolioAPI();
 
 /**
  * Mock AI Valuation API
@@ -223,8 +371,8 @@ class AIValuationAPI {
     return getLiquidationRulesUtil(ipo);
   }
 
-  // Add this method to the AIValuationAPI class
-  getCreatorMarketScore: async (ipoId: string, externalMetrics?: any, socialSentiment?: any, anomalyData?: any): Promise<any> => {
+  // Method for Creator Market Score
+  async getCreatorMarketScore(ipoId: string, externalMetrics?: any, socialSentiment?: any, anomalyData?: any): Promise<any> {
     // Find the IPO
     const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
@@ -373,7 +521,8 @@ class AIValuationAPI {
       },
       lastUpdated: new Date().toISOString()
     };
-  },
+  }
 }
 
 export const mockAIValuationAPI = new AIValuationAPI();
+
