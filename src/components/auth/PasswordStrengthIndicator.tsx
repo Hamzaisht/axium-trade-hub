@@ -37,7 +37,15 @@ export const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicato
       { strength: 6, label: "Very strong", color: "bg-green-600" }
     ];
     
-    const result = strengthMap.findLast(s => strength >= s.strength) || strengthMap[0];
+    // Find the appropriate strength level (replacing findLast with a compatible alternative)
+    let result = strengthMap[0]; // Default to the first level
+    for (let i = strengthMap.length - 1; i >= 0; i--) {
+      if (strength >= strengthMap[i].strength) {
+        result = strengthMap[i];
+        break;
+      }
+    }
+    
     return { ...result, strength: (strength / 6) * 100 };
   };
   
