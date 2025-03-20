@@ -118,7 +118,7 @@ export const IPOProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       const ipo = await mockIPOAPI.getIPOById(ipoId);
-      setSelectedIPO(ipo);
+      setSelectedIPO(ipo || null);
     } catch (error) {
       toast.error('Failed to fetch IPO details');
     } finally {
@@ -180,7 +180,8 @@ export const IPOProvider = ({ children }: { children: ReactNode }) => {
   const predictPriceMovement = async (ipoId: string) => {
     try {
       setIsLoading(true);
-      return await mockAIValuationAPI.predictPriceMovement(ipoId);
+      // Using default values for timeframe and modelType
+      return await mockAIValuationAPI.predictPriceMovement(ipoId, 'short_term', 'standard');
     } catch (error) {
       toast.error('Failed to predict price movement');
       throw error;

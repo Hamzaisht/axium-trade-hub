@@ -20,6 +20,7 @@ export interface IPO {
   engagementScore: number;
   aiScore: number;
   averageDailyVolume?: number;
+  description?: string;
   socialLinks?: {
     twitter?: string;
     instagram?: string;
@@ -35,7 +36,8 @@ export interface Order {
   price: number;
   quantity: number;
   type: 'buy' | 'sell';
-  status: 'pending' | 'filled' | 'cancelled';
+  orderType?: 'market' | 'limit';
+  status: 'pending' | 'filled' | 'cancelled' | 'open';
   createdAt: string;
 }
 
@@ -47,6 +49,7 @@ export interface Trade {
   price: number;
   quantity: number;
   timestamp: string;
+  creatorSymbol?: string;
 }
 
 export interface Portfolio {
@@ -55,9 +58,14 @@ export interface Portfolio {
     ipoId: string;
     quantity: number;
     averagePurchasePrice: number;
+    currentPrice?: number;
   }[];
   totalValue: number;
   cash: number;
+  history?: {
+    date: string;
+    value: number;
+  }[];
 }
 
 // Utility function to generate a delay
@@ -84,6 +92,7 @@ export const mockIPOs: IPO[] = Array(20).fill(null).map((_, i) => {
     engagementScore: engagementScore,
     aiScore: aiScore,
     averageDailyVolume: faker.number.int({ min: 1000, max: 10000 }),
+    description: faker.lorem.paragraph(),
     socialLinks: {
       twitter: `@${creatorName.replace(' ', '').toLowerCase()}`,
       instagram: `${creatorName.replace(' ', '').toLowerCase()}`,
@@ -104,7 +113,8 @@ export const mockOrders: Order[] = Array(50).fill(null).map(() => {
     price,
     quantity: faker.number.int({ min: 1, max: 1000 }),
     type: Math.random() > 0.5 ? 'buy' : 'sell',
-    status: Math.random() > 0.7 ? 'pending' : (Math.random() > 0.5 ? 'filled' : 'cancelled'),
+    orderType: Math.random() > 0.5 ? 'market' : 'limit',
+    status: Math.random() > 0.7 ? 'open' : (Math.random() > 0.5 ? 'filled' : 'cancelled'),
     createdAt: faker.date.recent().toISOString()
   };
 });
@@ -112,15 +122,17 @@ export const mockOrders: Order[] = Array(50).fill(null).map(() => {
 // Mock trades
 export const mockTrades: Trade[] = Array(100).fill(null).map(() => {
   const price = parseFloat(faker.number.float({ min: 1, max: 100, precision: 0.01 }).toFixed(2));
+  const ipo = mockIPOs[Math.floor(Math.random() * mockIPOs.length)];
   
   return {
     id: faker.string.uuid(),
     buyerId: faker.string.uuid(),
     sellerId: faker.string.uuid(),
-    ipoId: mockIPOs[Math.floor(Math.random() * mockIPOs.length)].id,
+    ipoId: ipo.id,
     price,
     quantity: faker.number.int({ min: 1, max: 1000 }),
-    timestamp: faker.date.recent().toISOString()
+    timestamp: faker.date.recent().toISOString(),
+    creatorSymbol: ipo.symbol
   };
 });
 
@@ -131,9 +143,42 @@ export class MockIPOAPI {
     return mockIPOs;
   }
 
-  async getIPO(id: string): Promise<IPO | undefined> {
+  async getIPOById(id: string): Promise<IPO | undefined> {
     await delay(300);
     return mockIPOs.find(ipo => ipo.id === id);
+  }
+
+  // Create a new IPO
+  async createIPO(ipoData: Partial<IPO>): Promise<IPO> {
+    await delay(500);
+    
+    // Generate a new IPO object with provided data and default values for missing fields
+    const newIPO: IPO = {
+      id: faker.string.uuid(),
+      creatorName: faker.person.fullName(),
+      symbol: ipoData.symbol || faker.finance.currencyCode(),
+      initialPrice: ipoData.initialPrice || 10,
+      currentPrice: ipoData.initialPrice || 10, // Start current price at initial price
+      totalSupply: ipoData.totalSupply || 1000000,
+      availableSupply: ipoData.availableSupply || 250000,
+      launchDate: new Date().toISOString(),
+      revenueUSD: faker.number.int({ min: 100000, max: 5000000 }),
+      engagementScore: faker.number.int({ min: 50, max: 95 }),
+      aiScore: faker.number.int({ min: 60, max: 90 }),
+      averageDailyVolume: 0, // New IPO has no volume yet
+      description: ipoData.description || '',
+      socialLinks: ipoData.socialLinks || {
+        twitter: '',
+        instagram: '',
+        youtube: '',
+        tiktok: ''
+      }
+    };
+    
+    // Add to mock data
+    mockIPOs.push(newIPO);
+    
+    return newIPO;
   }
 
   // Simulate fetching recent trades for an IPO
@@ -152,7 +197,8 @@ export class MockIPOAPI {
       quantity: faker.number.int({ min: 10, max: 500 }),
       timestamp: faker.date.recent().toISOString(),
       buyerId: faker.string.uuid(),
-      sellerId: faker.string.uuid()
+      sellerId: faker.string.uuid(),
+      creatorSymbol: ipo.symbol
     }));
     
     return trades;
@@ -161,15 +207,28 @@ export class MockIPOAPI {
 
 // Mock Trading API class
 export class MockTradingAPI {
-  async placeOrder(order: Order): Promise<Order> {
+  async placeOrder(orderData: Partial<Order>): Promise<Order> {
     await delay(300);
-    const newOrder = { ...order, id: faker.string.uuid(), createdAt: new Date().toISOString() };
+    const newOrder: Order = {
+      id: faker.string.uuid(),
+      userId: orderData.userId || faker.string.uuid(),
+      ipoId: orderData.ipoId || mockIPOs[0].id,
+      price: orderData.price || 10,
+      quantity: orderData.quantity || 1,
+      type: orderData.type || 'buy',
+      orderType: orderData.orderType || 'market',
+      status: 'open',
+      createdAt: new Date().toISOString()
+    };
+    
+    mockOrders.push(newOrder);
     return newOrder;
   }
 
-  async getOrdersForUser(userId: string): Promise<Order[]> {
+  async getUserOrders(): Promise<Order[]> {
     await delay(400);
-    return mockOrders.filter(order => order.userId === userId);
+    // This would normally filter by user ID, but for mock purposes we'll return random orders
+    return mockOrders.slice(0, 10);
   }
 
   async getOrdersForIPO(ipoId: string): Promise<Order[]> {
@@ -177,15 +236,36 @@ export class MockTradingAPI {
     return mockOrders.filter(order => order.ipoId === ipoId);
   }
 
-  async cancelOrder(orderId: string): Promise<{ success: boolean; message: string }> {
+  async cancelOrder(orderId: string): Promise<Order> {
     await delay(300);
-    return { success: true, message: "Order cancelled successfully" };
+    const orderIndex = mockOrders.findIndex(order => order.id === orderId);
+    if (orderIndex >= 0) {
+      mockOrders[orderIndex].status = 'cancelled';
+      return mockOrders[orderIndex];
+    }
+    throw new Error("Order not found");
+  }
+
+  async getUserTrades(): Promise<Trade[]> {
+    await delay(400);
+    // This would normally filter by user ID, but for mock purposes we'll return random trades
+    return mockTrades.slice(0, 15);
   }
 
   async getTradesForIPO(ipoId: string, limit: number = 10): Promise<Trade[]> {
     await delay(300);
     const trades = mockTrades.filter(trade => trade.ipoId === ipoId);
     return trades.slice(0, limit);
+  }
+
+  async getOrderBook(ipoId: string): Promise<{ bids: Order[]; asks: Order[]; }> {
+    await delay(400);
+    const orders = mockOrders.filter(order => order.ipoId === ipoId && order.status === 'open');
+    
+    return {
+      bids: orders.filter(order => order.type === 'buy').sort((a, b) => b.price - a.price),
+      asks: orders.filter(order => order.type === 'sell').sort((a, b) => a.price - b.price)
+    };
   }
 }
 
@@ -207,32 +287,45 @@ export class MockPortfolioAPI {
       return {
         ipoId: randomIPO.id,
         quantity,
-        averagePurchasePrice
+        averagePurchasePrice,
+        currentPrice: randomIPO.currentPrice
       };
     });
     
     // Calculate total value
     const totalValue = holdings.reduce((sum, holding) => {
-      const ipo = mockIPOs.find(ipo => ipo.id === holding.ipoId);
-      if (!ipo) return sum;
-      return sum + (ipo.currentPrice * holding.quantity);
+      return sum + (holding.currentPrice * holding.quantity);
     }, 0);
     
     const cash = parseFloat(faker.number.float({ min: 1000, max: 100000, precision: 0.01 }).toFixed(2));
+    
+    // Generate history data for the portfolio value
+    const history = Array(30).fill(null).map((_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (30 - i));
+      
+      return {
+        date: date.toISOString(),
+        value: parseFloat(faker.number.float({ 
+          min: totalValue * 0.8, 
+          max: totalValue * 1.2, 
+          precision: 0.01 
+        }).toFixed(2))
+      };
+    });
+    
+    // Make sure the last history entry matches the current total value
+    history[history.length - 1].value = totalValue + cash;
     
     return {
       userId,
       holdings,
       totalValue,
-      cash
+      cash,
+      history
     };
   }
 }
-
-// Instantiate the mock APIs
-export const mockIPOAPI = new MockIPOAPI();
-export const mockTradingAPI = new MockTradingAPI();
-export const mockPortfolioAPI = new MockPortfolioAPI();
 
 /**
  * Mock AI Valuation API
@@ -265,8 +358,8 @@ class AIValuationAPI {
 
   async predictPriceMovement(
     ipoId: string, 
-    timeframe: PredictionTimeframe,
-    modelType: AIModelType
+    timeframe: PredictionTimeframe = 'short_term',
+    modelType: AIModelType = 'standard'
   ): Promise<{
     prediction: PriceMovement;
     confidence: number;
@@ -337,7 +430,7 @@ class AIValuationAPI {
     };
   }
 
-  async getVestingRules(ipoId: string): Promise<{
+  async getVestingAndStakingRules(ipoId: string): Promise<{
     creatorVesting: {
       initialUnlock: number;
       vestingPeriod: number;
@@ -369,6 +462,31 @@ class AIValuationAPI {
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
 
     return getLiquidationRulesUtil(ipo);
+  }
+
+  // Method for getting valuation factors
+  async getValuationFactors(ipoId: string): Promise<any> {
+    await delay(400);
+    const ipo = mockIPOs.find(item => item.id === ipoId);
+    if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
+    
+    return {
+      revenueFactors: [
+        { name: 'Annual Revenue', impact: 35, value: `$${ipo.revenueUSD?.toLocaleString()}` },
+        { name: 'Business Diversification', impact: 15, value: 'Multiple income streams' },
+        { name: 'Revenue Growth', impact: 25, value: '+18% YoY' }
+      ],
+      socialFactors: [
+        { name: 'Engagement Rate', impact: 30, value: `${ipo.engagementScore}%` },
+        { name: 'Follower Growth', impact: 20, value: '+12% monthly' },
+        { name: 'Content Consistency', impact: 15, value: 'High' }
+      ],
+      riskFactors: [
+        { name: 'Platform Dependency', impact: -10, value: 'Moderate' },
+        { name: 'Competitive Pressure', impact: -15, value: 'Medium' },
+        { name: 'Audience Loyalty', impact: 25, value: 'Strong' }
+      ]
+    };
   }
 
   // Method for Creator Market Score
@@ -524,5 +642,8 @@ class AIValuationAPI {
   }
 }
 
+// Instantiate the mock APIs
+export const mockIPOAPI = new MockIPOAPI();
+export const mockTradingAPI = new MockTradingAPI();
+export const mockPortfolioAPI = new MockPortfolioAPI();
 export const mockAIValuationAPI = new AIValuationAPI();
-

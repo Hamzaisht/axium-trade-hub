@@ -26,13 +26,15 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
   const [portfolioHistory, setPortfolioHistory] = useState<{date: string; value: number}[]>([]);
 
   const fetchPortfolio = async (): Promise<void> => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !user) return;
 
     try {
       setIsLoading(true);
-      const userPortfolio = await mockPortfolioAPI.getUserPortfolio();
+      const userPortfolio = await mockPortfolioAPI.getPortfolio(user.id);
       setPortfolio(userPortfolio);
-      setPortfolioHistory(userPortfolio.history);
+      if (userPortfolio.history) {
+        setPortfolioHistory(userPortfolio.history);
+      }
     } catch (error) {
       toast.error('Failed to fetch portfolio');
     } finally {
@@ -61,25 +63,29 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
         const updatedPortfolio = { ...portfolio };
         
         // Update the current price of the holding
-        updatedPortfolio.holdings[holdingIndex].currentPrice = data.newPrice;
+        const updatedHolding = { ...updatedPortfolio.holdings[holdingIndex], currentPrice: data.newPrice };
+        updatedPortfolio.holdings[holdingIndex] = updatedHolding;
         
         // Recalculate total value
         updatedPortfolio.totalValue = updatedPortfolio.cash + updatedPortfolio.holdings.reduce(
-          (sum, holding) => sum + holding.quantity * holding.currentPrice, 0
+          (sum, holding) => sum + holding.quantity * (holding.currentPrice || holding.averagePurchasePrice), 0
         );
         
         // Add a new history point if the value has changed significantly
-        const lastHistory = updatedPortfolio.history[updatedPortfolio.history.length - 1];
-        const valueDifference = Math.abs(lastHistory.value - updatedPortfolio.totalValue);
-        const percentChange = valueDifference / lastHistory.value;
-        
-        if (percentChange > 0.005) { // Only add history if value changed by more than 0.5%
-          updatedPortfolio.history.push({
-            date: new Date().toISOString(),
-            value: updatedPortfolio.totalValue
-          });
+        if (updatedPortfolio.history && updatedPortfolio.history.length > 0) {
+          const lastHistory = updatedPortfolio.history[updatedPortfolio.history.length - 1];
+          const valueDifference = Math.abs(lastHistory.value - updatedPortfolio.totalValue);
+          const percentChange = valueDifference / lastHistory.value;
           
-          setPortfolioHistory(updatedPortfolio.history);
+          if (percentChange > 0.005) { // Only add history if value changed by more than 0.5%
+            const newHistory = [...updatedPortfolio.history, {
+              date: new Date().toISOString(),
+              value: updatedPortfolio.totalValue
+            }];
+            
+            updatedPortfolio.history = newHistory;
+            setPortfolioHistory(newHistory);
+          }
         }
         
         setPortfolio(updatedPortfolio);
@@ -123,10 +129,10 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
 
   // Fetch portfolio on mount if authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
       fetchPortfolio();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   return (
     <PortfolioContext.Provider

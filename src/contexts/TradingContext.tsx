@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { mockTradingAPI, mockIPOAPI, Order, Trade, IPO } from '@/utils/mockApi';
+import { mockTradingAPI, Order, Trade, IPO } from '@/utils/mockApi';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
 import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';
@@ -59,7 +59,7 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
     };
 
     // Handle trade executions that involve the current user
-    const tradeHandler = (data: Trade) => {
+    const tradeHandler = (data: Trade & { creatorSymbol?: string }) => {
       if (user && (data.buyerId === user.id || data.sellerId === user.id)) {
         setTrades(prev => {
           // Don't add duplicate trades
@@ -68,7 +68,7 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
         });
         
         // Toast notification for trade execution
-        toast.success(`Trade executed: ${data.buyerId === user?.id ? 'Bought' : 'Sold'} ${data.quantity} ${data.creatorSymbol} at $${data.price}`);
+        toast.success(`Trade executed: ${data.buyerId === user?.id ? 'Bought' : 'Sold'} ${data.quantity} ${data.creatorSymbol || 'tokens'} at $${data.price}`);
       }
     };
 
@@ -98,14 +98,20 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
   }, [user, orderBook]);
 
   const placeOrder = async (orderData: Partial<Order>): Promise<Order> => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
       toast.error('Please log in to place an order');
       throw new Error('Not authenticated');
     }
 
     try {
       setIsLoading(true);
-      const newOrder = await mockTradingAPI.placeOrder(orderData);
+      // Add the userId from the authenticated user
+      const orderWithUserId = {
+        ...orderData,
+        userId: user.id
+      };
+      
+      const newOrder = await mockTradingAPI.placeOrder(orderWithUserId);
       
       // Emit order event via WebSocket
       mockWebSocket.emit(WSEvents.ORDER_UPDATED, newOrder);
