@@ -4,6 +4,7 @@ import { mockAIValuationAPI } from '@/utils/mockApi';
 import { AIModelType, PredictionTimeframe } from '@/utils/mockAIModels';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import useExternalData from '@/hooks/useExternalData';
 
 interface UseAIValuationProps {
   ipoId?: string;
@@ -13,13 +14,25 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState<PredictionTimeframe>('24h');
   const [selectedModel, setSelectedModel] = useState<AIModelType>(AIModelType.HYBRID);
 
+  // Fetch external data for this creator
+  const { metrics: externalMetrics, aggregatedMetrics } = useExternalData({ 
+    creatorId: ipoId,
+    enabled: !!ipoId 
+  });
+
   // Get price prediction using the selected model and timeframe
   const pricePredictionQuery = useQuery({
-    queryKey: ['price-prediction', ipoId, selectedTimeframe, selectedModel],
+    queryKey: ['price-prediction', ipoId, selectedTimeframe, selectedModel, externalMetrics?.lastUpdated],
     queryFn: async () => {
       if (!ipoId) return null;
       try {
-        return await mockAIValuationAPI.predictPriceMovement(ipoId, selectedTimeframe, selectedModel);
+        // Pass external metrics to the AI model if available
+        return await mockAIValuationAPI.predictPriceMovement(
+          ipoId, 
+          selectedTimeframe, 
+          selectedModel,
+          externalMetrics // Pass the external metrics to the AI model
+        );
       } catch (error) {
         console.error('Error fetching price prediction:', error);
         return null;
@@ -47,13 +60,13 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     refetchOnWindowFocus: false
   });
 
-  // Get social sentiment data
+  // Get social sentiment data - now incorporating real external data
   const socialSentimentQuery = useQuery({
-    queryKey: ['social-sentiment', ipoId],
+    queryKey: ['social-sentiment', ipoId, externalMetrics?.lastUpdated],
     queryFn: async () => {
       if (!ipoId) return null;
       try {
-        return await mockAIValuationAPI.getSocialSentiment(ipoId);
+        return await mockAIValuationAPI.getSocialSentiment(ipoId, externalMetrics);
       } catch (error) {
         console.error('Error fetching social sentiment:', error);
         return null;
@@ -169,6 +182,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     dividendInfo: dividendInfoQuery.data,
     vestingRules: vestingRulesQuery.data,
     liquidationRules: liquidationRulesQuery.data,
+    externalMetrics,
+    aggregatedMetrics,
     
     // Loading states
     isLoading,

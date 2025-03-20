@@ -5,11 +5,17 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+// Pages
 import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import Creators from "@/pages/Creators";
 import Portfolio from "@/pages/Portfolio";
 import NotFound from "@/pages/NotFound";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+
+// Components
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 // Context Providers
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -20,7 +26,7 @@ import { PortfolioProvider } from "@/contexts/PortfolioContext";
 // WebSocket connection
 import { mockWebSocket } from "@/utils/mockWebSocket";
 
-// Components
+// Styles
 import "./App.css";
 
 // Create a client
@@ -56,25 +62,34 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <IPOProvider>
-          <TradingProvider>
-            <PortfolioProvider>
-              <Router>
+      <Router>
+        <AuthProvider>
+          <IPOProvider>
+            <TradingProvider>
+              <PortfolioProvider>
                 <Routes>
+                  {/* Public routes */}
                   <Route path="/" element={<Index />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/creators" element={<Creators />} />
-                  <Route path="/portfolio" element={<Portfolio />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  
+                  {/* Protected routes */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/creators" element={<Creators />} />
+                    <Route path="/portfolio" element={<Portfolio />} />
+                  </Route>
+                  
+                  {/* 404 route */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </Router>
-              <SonnerToaster position="top-right" closeButton />
-              <Toaster />
-            </PortfolioProvider>
-          </TradingProvider>
-        </IPOProvider>
-      </AuthProvider>
+                <SonnerToaster position="top-right" closeButton />
+                <Toaster />
+              </PortfolioProvider>
+            </TradingProvider>
+          </IPOProvider>
+        </AuthProvider>
+      </Router>
     </QueryClientProvider>
   );
 }

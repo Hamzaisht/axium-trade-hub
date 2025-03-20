@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AuthFormProps {
   mode: "login" | "register";
@@ -13,6 +15,7 @@ interface AuthFormProps {
 
 export const AuthForm = ({ mode, onSuccess }: AuthFormProps) => {
   const { login, register, isLoading } = useAuth();
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -23,10 +26,13 @@ export const AuthForm = ({ mode, onSuccess }: AuthFormProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (error) setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     try {
       if (mode === "login") {
@@ -46,7 +52,7 @@ export const AuthForm = ({ mode, onSuccess }: AuthFormProps) => {
         onSuccess();
       }
     } catch (error) {
-      // Error is handled in the context and displayed via toast
+      setError(error instanceof Error ? error.message : 'Authentication failed');
       console.error(error);
     }
   };
@@ -56,6 +62,12 @@ export const AuthForm = ({ mode, onSuccess }: AuthFormProps) => {
       <h2 className="text-2xl font-bold text-center mb-6">
         {mode === "login" ? "Sign In" : "Create Account"}
       </h2>
+      
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       
       <form onSubmit={handleSubmit} className="space-y-4">
         {mode === "register" && (
@@ -68,6 +80,8 @@ export const AuthForm = ({ mode, onSuccess }: AuthFormProps) => {
               value={formData.name}
               onChange={handleChange}
               required
+              disabled={isLoading}
+              className="bg-white/80"
             />
           </div>
         )}
@@ -82,6 +96,8 @@ export const AuthForm = ({ mode, onSuccess }: AuthFormProps) => {
             value={formData.email}
             onChange={handleChange}
             required
+            disabled={isLoading}
+            className="bg-white/80"
           />
         </div>
         
@@ -95,6 +111,8 @@ export const AuthForm = ({ mode, onSuccess }: AuthFormProps) => {
             value={formData.password}
             onChange={handleChange}
             required
+            disabled={isLoading}
+            className="bg-white/80"
           />
         </div>
         
@@ -106,7 +124,8 @@ export const AuthForm = ({ mode, onSuccess }: AuthFormProps) => {
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+              disabled={isLoading}
+              className="flex h-10 w-full rounded-md border border-input bg-white/80 px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             >
               <option value="investor">Investor</option>
               <option value="creator">Creator</option>
@@ -119,11 +138,14 @@ export const AuthForm = ({ mode, onSuccess }: AuthFormProps) => {
           className="w-full bg-axium-blue hover:bg-axium-blue/90"
           disabled={isLoading}
         >
-          {isLoading
-            ? "Loading..."
-            : mode === "login"
-            ? "Sign In"
-            : "Create Account"}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {mode === "login" ? "Signing In..." : "Creating Account..."}
+            </>
+          ) : (
+            mode === "login" ? "Sign In" : "Create Account"
+          )}
         </Button>
       </form>
     </GlassCard>

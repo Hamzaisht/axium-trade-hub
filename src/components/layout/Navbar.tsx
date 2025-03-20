@@ -1,21 +1,32 @@
 
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Menu, X, ChevronRight } from "lucide-react";
+import { Menu, X, ChevronRight, LogOut, User, Bell, Settings } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navLinks = [
   { name: "Home", path: "/" },
-  { name: "Dashboard", path: "/dashboard" },
-  { name: "Creators", path: "/creators" },
-  { name: "Portfolio", path: "/portfolio" },
+  { name: "Dashboard", path: "/dashboard", protected: true },
+  { name: "Creators", path: "/creators", protected: true },
+  { name: "Portfolio", path: "/portfolio", protected: true },
 ];
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -31,6 +42,16 @@ export const Navbar = () => {
     setIsMenuOpen(false);
   }, [location.pathname]);
   
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+  
+  // Filter protected links for non-authenticated users
+  const filteredNavLinks = navLinks.filter(link => 
+    !link.protected || isAuthenticated
+  );
+  
   return (
     <nav className={cn(
       "fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 sm:px-6 lg:px-8",
@@ -45,7 +66,7 @@ export const Navbar = () => {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8">
           <div className="flex items-center space-x-6">
-            {navLinks.map((link) => (
+            {filteredNavLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
@@ -62,15 +83,69 @@ export const Navbar = () => {
           </div>
           
           <div className="flex items-center space-x-3">
-            <Button 
-              variant="outline" 
-              className="font-medium border-axium-gray-200 text-axium-gray-800 hover:bg-axium-gray-100"
-            >
-              Log In
-            </Button>
-            <Button className="font-medium bg-axium-blue hover:bg-axium-blue/90">
-              Sign Up <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="bg-white"
+                >
+                  <Bell className="h-5 w-5 text-axium-gray-600" />
+                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="bg-white">
+                      <User className="h-5 w-5 text-axium-gray-600" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>
+                      {user?.name || 'My Account'}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="cursor-pointer"
+                      onClick={() => navigate('/account')}
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="cursor-pointer"
+                      onClick={() => navigate('/settings')}
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="cursor-pointer text-red-600"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  className="font-medium border-axium-gray-200 text-axium-gray-800 hover:bg-axium-gray-100"
+                  onClick={() => navigate('/login')}
+                >
+                  Log In
+                </Button>
+                <Button 
+                  className="font-medium bg-axium-blue hover:bg-axium-blue/90"
+                  onClick={() => navigate('/register')}
+                >
+                  Sign Up <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
         
@@ -94,7 +169,7 @@ export const Navbar = () => {
         isMenuOpen ? "max-h-screen py-4" : "max-h-0 py-0"
       )}>
         <div className="px-4 space-y-3 flex flex-col">
-          {navLinks.map((link) => (
+          {filteredNavLinks.map((link) => (
             <Link
               key={link.name}
               to={link.path}
@@ -109,15 +184,50 @@ export const Navbar = () => {
             </Link>
           ))}
           <div className="flex flex-col space-y-2 pt-2">
-            <Button 
-              variant="outline" 
-              className="w-full justify-center font-medium border-axium-gray-200"
-            >
-              Log In
-            </Button>
-            <Button className="w-full justify-center font-medium bg-axium-blue">
-              Sign Up
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <div className="flex items-center justify-between p-2 bg-axium-gray-100 rounded-md">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-axium-blue rounded-full flex items-center justify-center text-white">
+                      {user?.name?.charAt(0) || 'U'}
+                    </div>
+                    <span className="ml-2 font-medium">{user?.name || 'User'}</span>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-center font-medium"
+                  onClick={() => navigate('/account')}
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-center font-medium text-red-600 border-red-200 hover:bg-red-50"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-center font-medium border-axium-gray-200"
+                  onClick={() => navigate('/login')}
+                >
+                  Log In
+                </Button>
+                <Button 
+                  className="w-full justify-center font-medium bg-axium-blue"
+                  onClick={() => navigate('/register')}
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
