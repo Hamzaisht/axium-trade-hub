@@ -1,12 +1,13 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import { useMarketData } from "@/hooks/useMarketData";
 
-// Mock data for the chart
-const generateMockData = (days: number, startPrice: number, volatility: number) => {
+// Only used for initial data load, then we use real-time data
+const generateHistoricalData = (days: number, startPrice: number, volatility: number) => {
   const data = [];
   let currentPrice = startPrice;
   
@@ -40,34 +41,77 @@ interface PriceChartProps {
   symbol?: string;
   name?: string;
   currentPrice?: number;
+  ipoId?: string;
 }
 
 export const PriceChart = ({ 
   symbol = "$EMW", 
   name = "Emma Watson",
-  currentPrice = 24.82 
+  currentPrice = 24.82,
+  ipoId 
 }: PriceChartProps) => {
   const [activeRange, setActiveRange] = useState(timeRanges[2]); // Default to 1M
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [priceChange, setPriceChange] = useState({ value: 0, percentage: 0 });
+  const [baseChartData, setBaseChartData] = useState<any[]>([]);
+  const [livePrice, setLivePrice] = useState(currentPrice);
   
+  // Use our WebSocket hook for real-time market data
+  const { isConnected, priceUpdates, latestPrices } = useMarketData(ipoId);
+  
+  // Generate initial historical data
   useEffect(() => {
-    const data = generateMockData(activeRange.days, currentPrice, currentPrice * 0.05);
-    setChartData(data);
+    setBaseChartData(generateHistoricalData(activeRange.days, currentPrice, currentPrice * 0.05));
+    setLivePrice(currentPrice);
+  }, [activeRange, currentPrice]);
+  
+  // Update live price when we get updates
+  useEffect(() => {
+    if (ipoId && latestPrices[ipoId]) {
+      setLivePrice(latestPrices[ipoId]);
+    }
+  }, [ipoId, latestPrices]);
+  
+  // Merge historical data with real-time updates for chart display
+  const chartData = useMemo(() => {
+    if (!baseChartData.length) return [];
     
-    // Calculate price change
-    if (data.length > 1) {
-      const firstPrice = data[0].price;
-      const lastPrice = data[data.length - 1].price;
-      const change = lastPrice - firstPrice;
-      const percentage = (change / firstPrice) * 100;
+    // Clone base data
+    const combinedData = [...baseChartData];
+    
+    // Add real-time price updates if available
+    if (priceUpdates.length > 0 && ipoId) {
+      // Filter only relevant updates for this IPO
+      const relevantUpdates = priceUpdates
+        .filter(update => update.ipoId === ipoId)
+        .slice(0, 20); // Take most recent 20 updates
       
-      setPriceChange({
-        value: parseFloat(change.toFixed(2)),
-        percentage: parseFloat(percentage.toFixed(2))
+      // Add live data points
+      relevantUpdates.forEach((update, index) => {
+        const date = new Date(update.timestamp);
+        combinedData.push({
+          date: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          price: update.newPrice,
+          isLive: true
+        });
       });
     }
-  }, [activeRange, currentPrice]);
+    
+    return combinedData;
+  }, [baseChartData, priceUpdates, ipoId]);
+  
+  // Calculate price change
+  const priceChange = useMemo(() => {
+    if (chartData.length < 2) return { value: 0, percentage: 0 };
+    
+    const firstPrice = chartData[0].price;
+    const lastPrice = livePrice;
+    const change = lastPrice - firstPrice;
+    const percentage = (change / firstPrice) * 100;
+    
+    return {
+      value: parseFloat(change.toFixed(2)),
+      percentage: parseFloat(percentage.toFixed(2))
+    };
+  }, [chartData, livePrice]);
   
   const isPositiveChange = priceChange.value >= 0;
   
@@ -77,6 +121,9 @@ export const PriceChart = ({
         <GlassCard className="px-4 py-2 border-none">
           <p className="text-axium-gray-800 font-medium">{label}</p>
           <p className="text-axium-blue font-semibold">${payload[0].value.toFixed(2)}</p>
+          {payload[0].payload.isLive && (
+            <p className="text-xs text-axium-success">Live Data</p>
+          )}
         </GlassCard>
       );
     }
@@ -92,9 +139,13 @@ export const PriceChart = ({
             <span className="text-axium-gray-500 text-base font-normal ml-2">
               {name}
             </span>
+            {isConnected && (
+              <span className="ml-2 inline-block w-2 h-2 bg-green-500 rounded-full" 
+                title="Live data connected"></span>
+            )}
           </h2>
           <div className="mt-1 flex items-baseline space-x-3">
-            <span className="text-3xl font-semibold">${currentPrice.toFixed(2)}</span>
+            <span className="text-3xl font-semibold">${livePrice.toFixed(2)}</span>
             <span className={cn(
               "flex items-center text-sm font-medium",
               isPositiveChange ? "text-axium-success" : "text-axium-error"

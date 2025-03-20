@@ -1,8 +1,9 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { mockTradingAPI, mockIPOAPI, Order, Trade, IPO } from '@/utils/mockApi';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
+import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';
 
 interface OrderBookData {
   bids: Order[];
@@ -19,16 +20,82 @@ interface TradingContextType {
   fetchUserOrders: () => Promise<void>;
   fetchUserTrades: () => Promise<void>;
   fetchOrderBook: (ipoId: string) => Promise<void>;
+  isConnected: boolean;
 }
 
 const TradingContext = createContext<TradingContextType | undefined>(undefined);
 
 export const TradingProvider = ({ children }: { children: ReactNode }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [orderBook, setOrderBook] = useState<OrderBookData | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+
+  // Connect to the mock WebSocket when the context is initialized
+  useEffect(() => {
+    mockWebSocket.connect();
+    
+    // Handle connection status
+    const connectionHandler = (data: { status: string }) => {
+      setIsConnected(data.status === 'connected');
+    };
+
+    // Handle order updates that belong to the current user
+    const orderUpdateHandler = (data: Order) => {
+      if (user && data.userId === user.id) {
+        // Update orders if this is the current user's order
+        setOrders(prev => {
+          const orderIndex = prev.findIndex(o => o.id === data.id);
+          if (orderIndex >= 0) {
+            const newOrders = [...prev];
+            newOrders[orderIndex] = data;
+            return newOrders;
+          }
+          return [...prev, data];
+        });
+      }
+    };
+
+    // Handle trade executions that involve the current user
+    const tradeHandler = (data: Trade) => {
+      if (user && (data.buyerId === user.id || data.sellerId === user.id)) {
+        setTrades(prev => {
+          // Don't add duplicate trades
+          if (prev.some(t => t.id === data.id)) return prev;
+          return [data, ...prev];
+        });
+        
+        // Toast notification for trade execution
+        toast.success(`Trade executed: ${data.buyerId === user?.id ? 'Bought' : 'Sold'} ${data.quantity} ${data.creatorSymbol} at $${data.price}`);
+      }
+    };
+
+    // Handle order book updates for the currently selected IPO
+    const orderBookHandler = (data: { ipoId: string, bids: Order[], asks: Order[] }) => {
+      if (orderBook && orderBook.bids[0]?.ipoId === data.ipoId) {
+        setOrderBook({
+          bids: data.bids,
+          asks: data.asks
+        });
+      }
+    };
+
+    // Subscribe to WebSocket events
+    mockWebSocket.on(WSEvents.CONNECTION, connectionHandler);
+    mockWebSocket.on(WSEvents.ORDER_UPDATED, orderUpdateHandler);
+    mockWebSocket.on(WSEvents.TRADE_EXECUTED, tradeHandler);
+    mockWebSocket.on(WSEvents.ORDERBOOK_UPDATE, orderBookHandler);
+
+    // Cleanup function
+    return () => {
+      mockWebSocket.off(WSEvents.CONNECTION, connectionHandler);
+      mockWebSocket.off(WSEvents.ORDER_UPDATED, orderUpdateHandler);
+      mockWebSocket.off(WSEvents.TRADE_EXECUTED, tradeHandler);
+      mockWebSocket.off(WSEvents.ORDERBOOK_UPDATE, orderBookHandler);
+    };
+  }, [user, orderBook]);
 
   const placeOrder = async (orderData: Partial<Order>): Promise<Order> => {
     if (!isAuthenticated) {
@@ -39,6 +106,9 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       const newOrder = await mockTradingAPI.placeOrder(orderData);
+      
+      // Emit order event via WebSocket
+      mockWebSocket.emit(WSEvents.ORDER_UPDATED, newOrder);
       
       // Refresh orders after placing a new one
       await fetchUserOrders();
@@ -60,7 +130,10 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setIsLoading(true);
-      await mockTradingAPI.cancelOrder(orderId);
+      const cancelledOrder = await mockTradingAPI.cancelOrder(orderId);
+      
+      // Emit order update via WebSocket
+      mockWebSocket.emit(WSEvents.ORDER_UPDATED, cancelledOrder);
       
       // Refresh orders after cancellation
       await fetchUserOrders();
@@ -125,7 +198,8 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
         cancelOrder,
         fetchUserOrders,
         fetchUserTrades,
-        fetchOrderBook
+        fetchOrderBook,
+        isConnected
       }}
     >
       {children}
