@@ -7,3 +7,4 @@ export * from './useSocialSentiment';
 export * from './useDividendInfo';
 export * from './useVestingRules';
 export * from './useLiquidationRules';
+export * from './useAnomalyDetection';

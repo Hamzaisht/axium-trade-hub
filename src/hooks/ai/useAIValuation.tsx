@@ -9,6 +9,8 @@ import { useSocialSentiment } from './useSocialSentiment';
 import { useDividendInfo } from './useDividendInfo';
 import { useVestingRules } from './useVestingRules';
 import { useLiquidationRules } from './useLiquidationRules';
+import { useAnomalyDetection, useAnomalyAlerts } from './useAnomalyDetection';
+import { useMarketData } from '@/hooks/useMarketData';
 
 interface UseAIValuationProps {
   ipoId?: string;
@@ -23,6 +25,9 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     creatorId: ipoId,
     enabled: !!ipoId 
   });
+
+  // Get market data including recent trades for anomaly detection
+  const { recentTrades } = useMarketData(ipoId);
 
   // Use individual hooks for each data type
   const pricePredictionQuery = usePricePrediction({
@@ -42,6 +47,19 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
   const dividendInfoQuery = useDividendInfo({ ipoId });
   const vestingRulesQuery = useVestingRules({ ipoId });
   const liquidationRulesQuery = useLiquidationRules({ ipoId });
+  
+  // Add anomaly detection
+  const anomalyDetectionQuery = useAnomalyDetection({
+    ipoId,
+    recentTrades,
+    enabled: !!ipoId && recentTrades.length > 0
+  });
+  
+  // Setup anomaly alerts
+  useAnomalyAlerts({
+    anomalyData: anomalyDetectionQuery.data,
+    enabled: !anomalyDetectionQuery.isLoading && !anomalyDetectionQuery.isError
+  });
 
   // Determine if there's any loading happening
   const isLoading = useMemo(() => {
@@ -51,7 +69,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
       socialSentimentQuery.isLoading ||
       dividendInfoQuery.isLoading ||
       vestingRulesQuery.isLoading ||
-      liquidationRulesQuery.isLoading
+      liquidationRulesQuery.isLoading ||
+      anomalyDetectionQuery.isLoading
     );
   }, [
     pricePredictionQuery.isLoading,
@@ -59,7 +78,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     socialSentimentQuery.isLoading,
     dividendInfoQuery.isLoading,
     vestingRulesQuery.isLoading,
-    liquidationRulesQuery.isLoading
+    liquidationRulesQuery.isLoading,
+    anomalyDetectionQuery.isLoading
   ]);
 
   // Handle any errors from the queries
@@ -70,7 +90,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
       socialSentimentQuery,
       dividendInfoQuery,
       vestingRulesQuery,
-      liquidationRulesQuery
+      liquidationRulesQuery,
+      anomalyDetectionQuery
     ];
 
     for (const query of queries) {
@@ -86,7 +107,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     socialSentimentQuery.error,
     dividendInfoQuery.error,
     vestingRulesQuery.error,
-    liquidationRulesQuery.error
+    liquidationRulesQuery.error,
+    anomalyDetectionQuery.error
   ]);
 
   return {
@@ -97,6 +119,7 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     dividendInfo: dividendInfoQuery.data,
     vestingRules: vestingRulesQuery.data,
     liquidationRules: liquidationRulesQuery.data,
+    anomalyData: anomalyDetectionQuery.data,
     externalMetrics,
     aggregatedMetrics,
     
@@ -108,10 +131,12 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     isDividendInfoLoading: dividendInfoQuery.isLoading,
     isVestingRulesLoading: vestingRulesQuery.isLoading,
     isLiquidationRulesLoading: liquidationRulesQuery.isLoading,
+    isAnomalyDetectionLoading: anomalyDetectionQuery.isLoading,
     
     // Errors
     hasErrors: pricePredictionQuery.error || marketDepthQuery.error || socialSentimentQuery.error ||
-               dividendInfoQuery.error || vestingRulesQuery.error || liquidationRulesQuery.error,
+               dividendInfoQuery.error || vestingRulesQuery.error || liquidationRulesQuery.error ||
+               anomalyDetectionQuery.error,
     
     // Controls
     selectedTimeframe,
@@ -127,12 +152,14 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
       dividendInfoQuery.refetch();
       vestingRulesQuery.refetch();
       liquidationRulesQuery.refetch();
+      anomalyDetectionQuery.refetch();
     },
     refetchPricePrediction: () => pricePredictionQuery.refetch(),
     refetchMarketDepth: () => marketDepthQuery.refetch(),
     refetchSocialSentiment: () => socialSentimentQuery.refetch(),
     refetchDividendInfo: () => dividendInfoQuery.refetch(),
     refetchVestingRules: () => vestingRulesQuery.refetch(),
-    refetchLiquidationRules: () => liquidationRulesQuery.refetch()
+    refetchLiquidationRules: () => liquidationRulesQuery.refetch(),
+    refetchAnomalyDetection: () => anomalyDetectionQuery.refetch()
   };
 };

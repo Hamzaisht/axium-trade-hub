@@ -1,4 +1,3 @@
-
 /**
  * Mock AI Models
  * Simulates AI-driven analysis for creator valuations, market trends, and price predictions
@@ -12,7 +11,9 @@ export enum AIModelType {
   SENTIMENT = "sentiment",
   GROWTH = "growth",
   CONSISTENCY = "consistency",
-  HYBRID = "hybrid"
+  HYBRID = "hybrid",
+  REVENUE_WEIGHTED = "revenue_weighted",  // New model type focusing on revenue metrics
+  SOCIAL_WEIGHTED = "social_weighted"     // New model type focusing on social metrics
 }
 
 // Sentiment trends - represents market sentiment towards a creator
@@ -36,6 +37,33 @@ export interface MarketDepthModel {
   supportLevels: number[];
   // Price levels where significant sell resistance exists
   resistanceLevels: number[];
+  // Current spread
+  currentSpread: { bid: number, ask: number };
+}
+
+// Anomaly types for detecting unusual patterns
+export enum AnomalyType {
+  WASH_TRADING = "wash_trading",
+  PUMP_AND_DUMP = "pump_and_dump",
+  SPOOFING = "spoofing",
+  UNUSUAL_VOLUME = "unusual_volume",
+  RAPID_PRICE_CHANGE = "rapid_price_change",
+  CIRCULAR_TRADING = "circular_trading"
+}
+
+// Anomaly detection result
+export interface AnomalyDetectionResult {
+  detected: boolean;
+  anomalies: {
+    type: AnomalyType;
+    confidence: number;
+    severity: number; // 1-10 scale
+    description: string;
+    affectedMetrics: string[];
+    timestamp: string;
+  }[];
+  riskScore: number; // 0-100
+  recommendations: string[];
 }
 
 // Function to calculate market depth model for an IPO
@@ -63,21 +91,34 @@ export const calculateMarketDepth = (ipo: IPO): MarketDepthModel => {
   const buyWallStrength = 0.2 + (ipo.aiScore / 150) + (Math.random() * 0.3); // Higher AI score = stronger buy walls
   const sellWallStrength = 0.1 + ((100 - ipo.engagementScore) / 200) + (Math.random() * 0.3); // Lower engagement = stronger sell walls
 
+  // Calculate spread
+  const spreadResult = calculateSpread(ipo);
+
   return {
     orderConcentration: parseFloat(orderConcentration.toFixed(2)),
     buyWallStrength: parseFloat(buyWallStrength.toFixed(2)),
     sellWallStrength: parseFloat(sellWallStrength.toFixed(2)),
     supportLevels,
-    resistanceLevels
+    resistanceLevels,
+    currentSpread: spreadResult
   };
 };
 
 // Calculate spread based on market depth and trading activity
 export const calculateSpread = (ipo: IPO): { bid: number, ask: number } => {
-  const depth = calculateMarketDepth(ipo);
+  // Improved spread calculation that takes engagement score into account
+  // Higher engagement scores tend to have more liquidity and tighter spreads
+  const engagementFactor = Math.max(0.5, Math.min(1.5, (100 - ipo.engagementScore) / 50));
   
-  // Tighter spreads for higher engagement scores and more concentrated orders
-  const spreadPercentage = 0.01 * (1 - (depth.orderConcentration * 0.5));
+  // Base spread percentage (improved algorithm with revenue consideration)
+  const baseSpreadPercentage = 0.01 * engagementFactor;
+  
+  // Apply revenue-based adjustments
+  // Higher revenue = tighter spreads
+  const revenueAdjustment = ipo.revenueUSD ? Math.max(0.5, Math.min(1.0, 100000 / ipo.revenueUSD)) : 1.0;
+  
+  // Calculate final spread percentage with randomness
+  const spreadPercentage = baseSpreadPercentage * revenueAdjustment * (0.9 + Math.random() * 0.2);
   
   // Calculate bid and ask prices
   const spreadAmount = ipo.currentPrice * spreadPercentage;
@@ -98,7 +139,7 @@ export const predictPriceMovement = (
   targetPrice: number;
   factors: string[];
 } => {
-  // Base factors that influence the prediction
+  // Enhanced list of factors that influence the prediction
   const baseFactors = [
     'Recent social media engagement trends',
     'Market sentiment analysis',
@@ -107,7 +148,17 @@ export const predictPriceMovement = (
     'Historical price support/resistance levels',
     'Brand partnership announcements',
     'Content release schedule',
-    'Fan growth rate'
+    'Fan growth rate',
+    'Revenue growth trajectory',
+    'Platform algorithm changes',
+    'Competitor creator performance',
+    'Seasonal engagement patterns',
+    'New content format adoption',
+    'Creator collaboration network',
+    'Merchandise sales velocity',
+    'Live event attendance',
+    'Subscription retention rates',
+    'Viral content probability'
   ];
   
   // Random selection of factors that influenced this prediction
@@ -118,7 +169,7 @@ export const predictPriceMovement = (
   // Calculate a base prediction score (-1 to 1 scale)
   let predictionScore = 0;
   
-  // Different models emphasize different creator attributes
+  // Different models emphasize different creator attributes with improved weighting
   switch (modelType) {
     case AIModelType.ENGAGEMENT:
       // Heavily influenced by engagement score
@@ -140,14 +191,48 @@ export const predictPriceMovement = (
       predictionScore = ((ipo.engagementScore + ipo.aiScore - 100) / 100) * 0.4 + (Math.random() * 0.2 - 0.1);
       break;
       
+    case AIModelType.REVENUE_WEIGHTED:
+      // Heavily weighted towards revenue metrics
+      const revenueScore = ipo.revenueUSD ? Math.min(1, ipo.revenueUSD / 1000000) : 0.5;
+      predictionScore = (
+        (revenueScore * 0.7) + 
+        ((ipo.engagementScore - 50) / 50) * 0.2 + 
+        (Math.random() * 0.2 - 0.1)
+      );
+      break;
+      
+    case AIModelType.SOCIAL_WEIGHTED:
+      // Heavily weighted towards social engagement metrics
+      predictionScore = (
+        ((ipo.engagementScore - 40) / 60) * 0.8 + 
+        ((ipo.aiScore - 50) / 50) * 0.1 + 
+        (Math.random() * 0.2 - 0.1)
+      );
+      break;
+      
     case AIModelType.HYBRID:
     default:
-      // Balanced approach using all factors
-      predictionScore = (
-        ((ipo.engagementScore - 50) / 50) * 0.4 + 
-        ((ipo.aiScore - 50) / 50) * 0.4 + 
-        (Math.random() * 0.4 - 0.2)
-      );
+      // Balanced approach using all factors with improved weighting
+      // Revenue gets higher weight for established creators, engagement for newer ones
+      const isEstablished = ipo.launchDate ? (new Date().getTime() - new Date(ipo.launchDate).getTime()) > 1000 * 60 * 60 * 24 * 90 : false;
+      
+      if (isEstablished) {
+        // For established creators, revenue and consistency matter more
+        const revenueScore = ipo.revenueUSD ? Math.min(1, ipo.revenueUSD / 1000000) : 0.5;
+        predictionScore = (
+          (revenueScore * 0.4) + 
+          ((ipo.engagementScore - 50) / 50) * 0.3 + 
+          ((ipo.aiScore - 50) / 50) * 0.2 + 
+          (Math.random() * 0.2 - 0.1)
+        );
+      } else {
+        // For newer creators, engagement and growth potential matter more
+        predictionScore = (
+          ((ipo.engagementScore - 40) / 60) * 0.5 + 
+          ((ipo.aiScore - 50) / 50) * 0.3 + 
+          (Math.random() * 0.4 - 0.2)
+        );
+      }
       break;
   }
   
@@ -172,7 +257,7 @@ export const predictPriceMovement = (
   else if (Math.abs(predictionScore) < 0.15) prediction = "stable";
   else prediction = "volatile";
   
-  // Calculate target price based on prediction
+  // Calculate target price based on prediction with improved precision
   let priceChangePercent = 0;
   switch (prediction) {
     case "strong_up": priceChangePercent = 0.15 + (Math.random() * 0.25); break;
@@ -190,7 +275,13 @@ export const predictPriceMovement = (
   const targetPrice = parseFloat((ipo.currentPrice * (1 + priceChangePercent)).toFixed(2));
   
   // Calculate confidence level (50-95%)
-  const confidence = Math.min(95, 50 + Math.floor(Math.abs(predictionScore) * 50));
+  // Higher confidence for revenue-based models for established creators
+  let confidenceBoost = 0;
+  if (modelType === AIModelType.REVENUE_WEIGHTED && ipo.revenueUSD && ipo.revenueUSD > 500000) {
+    confidenceBoost = 10;
+  }
+  
+  const confidence = Math.min(95, 50 + Math.floor(Math.abs(predictionScore) * 50) + confidenceBoost);
   
   return {
     prediction,
@@ -207,7 +298,8 @@ export const getSocialSentiment = (ipo: IPO): {
     twitter: { score: number; trend: SentimentTrend; volume: number };
     instagram: { score: number; trend: SentimentTrend; volume: number };
     youtube: { score: number; trend: SentimentTrend; volume: number };
-  }
+  };
+  keywords: string[];
 } => {
   // Base sentiment is influenced by engagement score
   const baseSentiment = (ipo.engagementScore - 50) / 50;
@@ -235,6 +327,22 @@ export const getSocialSentiment = (ipo: IPO): {
   const instagramVolume = Math.floor(20000 + Math.random() * 1980000);
   const youtubeVolume = Math.floor(5000 + Math.random() * 495000);
   
+  // Generate trending keywords
+  const positiveKeywords = ['viral', 'trending', 'collaboration', 'launch', 'exclusive', 'partnership'];
+  const neutralKeywords = ['announcement', 'update', 'content', 'release', 'feature', 'interview'];
+  const negativeKeywords = ['controversy', 'delay', 'criticism', 'issue', 'problem', 'cancel'];
+  
+  let keywordPool = [...neutralKeywords];
+  if (overallScore > 0.3) {
+    keywordPool = [...keywordPool, ...positiveKeywords];
+  } else if (overallScore < -0.3) {
+    keywordPool = [...keywordPool, ...negativeKeywords];
+  }
+  
+  const keywords = keywordPool
+    .sort(() => Math.random() - 0.5)
+    .slice(0, Math.floor(Math.random() * 3) + 3);
+  
   return {
     overall: overallTrend,
     metrics: {
@@ -253,7 +361,154 @@ export const getSocialSentiment = (ipo: IPO): {
         trend: scoreToTrend(youtubeScore),
         volume: youtubeVolume
       }
+    },
+    keywords
+  };
+};
+
+// New function to detect trading anomalies
+export const detectAnomalies = (ipo: IPO, recentTrades: any[] = []): AnomalyDetectionResult => {
+  const anomalies = [];
+  let riskScore = 0;
+  
+  // We need a minimum number of trades to detect patterns
+  if (recentTrades.length < 3) {
+    return {
+      detected: false,
+      anomalies: [],
+      riskScore: 0,
+      recommendations: ["Insufficient trading data for analysis"]
+    };
+  }
+  
+  // 1. Check for unusual volume
+  const averageVolume = ipo.averageDailyVolume || 5000;
+  const recentVolume = recentTrades.reduce((sum, trade) => sum + trade.quantity, 0);
+  const volumeRatio = recentVolume / averageVolume;
+  
+  if (volumeRatio > 3) {
+    const severity = Math.min(10, Math.floor(volumeRatio * 1.5));
+    anomalies.push({
+      type: AnomalyType.UNUSUAL_VOLUME,
+      confidence: Math.min(95, 60 + Math.floor(volumeRatio * 5)),
+      severity,
+      description: `Trading volume is ${volumeRatio.toFixed(1)}x higher than average`,
+      affectedMetrics: ['volume', 'liquidity', 'volatility'],
+      timestamp: new Date().toISOString()
+    });
+    riskScore += severity * 5;
+  }
+  
+  // 2. Check for rapid price changes
+  if (recentTrades.length >= 5) {
+    const prices = recentTrades.map(t => t.price);
+    const maxPrice = Math.max(...prices);
+    const minPrice = Math.min(...prices);
+    const priceRange = (maxPrice - minPrice) / minPrice;
+    
+    if (priceRange > 0.05) { // 5% price swing in recent trades
+      const severity = Math.min(10, Math.floor(priceRange * 100));
+      anomalies.push({
+        type: AnomalyType.RAPID_PRICE_CHANGE,
+        confidence: Math.min(90, 50 + Math.floor(priceRange * 500)),
+        severity,
+        description: `Price fluctuated by ${(priceRange * 100).toFixed(1)}% in a short time period`,
+        affectedMetrics: ['price', 'volatility', 'investor sentiment'],
+        timestamp: new Date().toISOString()
+      });
+      riskScore += severity * 6;
     }
+  }
+  
+  // 3. Check for wash trading (same buyer and seller)
+  const traderMap = new Map();
+  recentTrades.forEach(trade => {
+    const key = `${trade.buyerId}-${trade.sellerId}`;
+    traderMap.set(key, (traderMap.get(key) || 0) + 1);
+  });
+  
+  let potentialWashTrades = 0;
+  traderMap.forEach((count, key) => {
+    if (count >= 3) { // Multiple trades between same parties
+      potentialWashTrades += count;
+    }
+  });
+  
+  if (potentialWashTrades > 0) {
+    const washTradeRatio = potentialWashTrades / recentTrades.length;
+    if (washTradeRatio > 0.2) { // If more than 20% look suspicious
+      const severity = Math.min(10, Math.floor(washTradeRatio * 10) + 5);
+      anomalies.push({
+        type: AnomalyType.WASH_TRADING,
+        confidence: Math.min(85, 50 + Math.floor(washTradeRatio * 150)),
+        severity,
+        description: `Possible wash trading detected (${(washTradeRatio * 100).toFixed(0)}% of recent trades)`,
+        affectedMetrics: ['volume', 'price discovery', 'market integrity'],
+        timestamp: new Date().toISOString()
+      });
+      riskScore += severity * 8;
+    }
+  }
+  
+  // 4. Check for circular trading patterns
+  const tradingGraph = new Map();
+  recentTrades.forEach(trade => {
+    if (!tradingGraph.has(trade.buyerId)) {
+      tradingGraph.set(trade.buyerId, new Set());
+    }
+    tradingGraph.get(trade.buyerId).add(trade.sellerId);
+  });
+  
+  let circularPaths = 0;
+  tradingGraph.forEach((sellers, buyer) => {
+    sellers.forEach(seller => {
+      if (tradingGraph.has(seller) && tradingGraph.get(seller).has(buyer)) {
+        circularPaths++;
+      }
+    });
+  });
+  
+  if (circularPaths > 0) {
+    const severity = Math.min(10, 5 + circularPaths);
+    anomalies.push({
+      type: AnomalyType.CIRCULAR_TRADING,
+      confidence: Math.min(80, 40 + (circularPaths * 10)),
+      severity,
+      description: `Circular trading pattern detected between multiple parties`,
+      affectedMetrics: ['price', 'volume', 'market manipulation risk'],
+      timestamp: new Date().toISOString()
+    });
+    riskScore += severity * 7;
+  }
+  
+  // Generate recommendations based on detected anomalies
+  const recommendations: string[] = [];
+  
+  if (riskScore > 50) {
+    recommendations.push("Consider temporarily halting trading while investigating market manipulation");
+  }
+  
+  if (anomalies.some(a => a.type === AnomalyType.UNUSUAL_VOLUME)) {
+    recommendations.push("Monitor for sudden influx of new investors or coordinated trading activity");
+  }
+  
+  if (anomalies.some(a => a.type === AnomalyType.WASH_TRADING || a.type === AnomalyType.CIRCULAR_TRADING)) {
+    recommendations.push("Review transaction history to identify potential manipulative trading patterns");
+  }
+  
+  if (anomalies.some(a => a.type === AnomalyType.RAPID_PRICE_CHANGE)) {
+    recommendations.push("Implement circuit breakers to prevent extreme price volatility");
+  }
+  
+  if (recommendations.length === 0 && anomalies.length > 0) {
+    recommendations.push("Continue monitoring trading patterns for further anomalies");
+  }
+  
+  return {
+    detected: anomalies.length > 0,
+    anomalies,
+    riskScore: Math.min(100, riskScore),
+    recommendations: recommendations.length > 0 ? recommendations : ["No action recommended at this time"]
   };
 };
 

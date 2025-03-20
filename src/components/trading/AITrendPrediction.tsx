@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useAIValuation } from '@/hooks/useAIValuation';
 import { PredictionTimeframe, AIModelType } from '@/utils/mockAIModels';
-import { ArrowUp, ArrowDown, ArrowRight, BrainCircuit, Sparkles, TrendingUp, LineChart, BarChart3 } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowRight, BrainCircuit, Sparkles, TrendingUp, LineChart, BarChart3, AlertTriangle, DollarSign } from 'lucide-react';
 
 interface AITrendPredictionProps {
   ipoId?: string;
@@ -21,8 +21,10 @@ export const AITrendPrediction = ({ ipoId, symbol = 'EMW', currentPrice = 24.82 
   const { 
     pricePrediction, 
     socialSentiment, 
+    anomalyData,
     isPredictionLoading, 
     isSocialSentimentLoading,
+    isAnomalyDetectionLoading,
     selectedTimeframe,
     setSelectedTimeframe,
     selectedModel,
@@ -210,14 +212,128 @@ export const AITrendPrediction = ({ ipoId, symbol = 'EMW', currentPrice = 24.82 
     );
   };
   
+  // New component to render anomaly detection information
+  const renderAnomalyDetection = () => {
+    if (isAnomalyDetectionLoading) {
+      return (
+        <div className="flex items-center justify-center h-40">
+          <div className="animate-pulse flex space-x-4">
+            <div className="h-4 w-32 bg-axium-gray-200 rounded"></div>
+          </div>
+        </div>
+      );
+    }
+    
+    if (!anomalyData) {
+      return (
+        <div className="text-center py-10 text-axium-gray-500">
+          <p>No anomaly detection data available</p>
+        </div>
+      );
+    }
+    
+    // Get severity color class
+    const getSeverityColor = (severity: number): string => {
+      if (severity >= 8) return 'text-axium-error';
+      if (severity >= 5) return 'text-amber-500';
+      return 'text-axium-gray-600';
+    };
+    
+    const getSeverityBgColor = (severity: number): string => {
+      if (severity >= 8) return 'bg-axium-error/10';
+      if (severity >= 5) return 'bg-amber-500/10';
+      return 'bg-axium-gray-100';
+    };
+    
+    return (
+      <div className="space-y-5">
+        <div className="flex items-center space-x-3">
+          <div className={cn(
+            "h-10 w-10 rounded-full flex items-center justify-center",
+            anomalyData.detected ? 
+              anomalyData.riskScore > 50 ? 'bg-axium-error/10 text-axium-error' : 'bg-amber-500/10 text-amber-500' 
+              : 'bg-green-500/10 text-green-500'
+          )}>
+            <AlertTriangle className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className={cn(
+              "text-lg font-semibold",
+              anomalyData.detected ? 
+                anomalyData.riskScore > 50 ? 'text-axium-error' : 'text-amber-500' 
+                : 'text-green-500'
+            )}>
+              {anomalyData.detected ? 'Anomalies Detected' : 'No Anomalies Detected'}
+            </h3>
+            <p className="text-axium-gray-500 text-sm">
+              Risk score: {anomalyData.riskScore}/100
+            </p>
+          </div>
+        </div>
+        
+        {anomalyData.detected && (
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold">Detected Anomalies:</h4>
+            <div className="space-y-2">
+              {anomalyData.anomalies.map((anomaly, idx) => (
+                <div key={idx} className={cn(
+                  "rounded-lg p-3",
+                  getSeverityBgColor(anomaly.severity)
+                )}>
+                  <div className="flex justify-between items-start">
+                    <div className={cn("font-medium capitalize", getSeverityColor(anomaly.severity))}>
+                      {anomaly.type.replace('_', ' ')}
+                    </div>
+                    <Badge variant="outline" className={cn(
+                      "text-xs",
+                      getSeverityColor(anomaly.severity)
+                    )}>
+                      Severity: {anomaly.severity}/10
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-axium-gray-600 mt-1">{anomaly.description}</p>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {anomaly.affectedMetrics.map((metric, i) => (
+                      <Badge key={i} variant="outline" className="text-xs bg-white bg-opacity-50">
+                        {metric}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-semibold mb-1">Recommendations:</h4>
+              <ul className="space-y-1 text-sm text-axium-gray-600">
+                {anomalyData.recommendations.map((rec, idx) => (
+                  <li key={idx} className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>{rec}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+        
+        {!anomalyData.detected && (
+          <div className="rounded-lg bg-green-50 p-3 text-green-800">
+            <p>No unusual trading patterns have been detected. Trading activity appears normal.</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
   // Render AI model selection
   const renderModelSelection = () => {
     const models = [
       { id: AIModelType.HYBRID, name: 'Hybrid', icon: BrainCircuit, description: 'Balanced analysis using all factors' },
       { id: AIModelType.ENGAGEMENT, name: 'Engagement', icon: TrendingUp, description: 'Focuses on social engagement metrics' },
       { id: AIModelType.SENTIMENT, name: 'Sentiment', icon: Sparkles, description: 'Emphasizes public sentiment analysis' },
-      { id: AIModelType.GROWTH, name: 'Growth', icon: LineChart, description: 'Prioritizes growth potential indicators' },
-      { id: AIModelType.CONSISTENCY, name: 'Consistency', icon: BarChart3, description: 'Values consistent performance metrics' }
+      { id: AIModelType.REVENUE_WEIGHTED, name: 'Revenue', icon: DollarSign, description: 'Prioritizes revenue and financial metrics' },
+      { id: AIModelType.SOCIAL_WEIGHTED, name: 'Social', icon: BarChart3, description: 'Focuses heavily on social metrics' }
     ];
     
     return (
@@ -262,9 +378,10 @@ export const AITrendPrediction = ({ ipoId, symbol = 'EMW', currentPrice = 24.82 
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-2 mb-4">
+        <TabsList className="grid grid-cols-3 mb-4">
           <TabsTrigger value="price">Price Prediction</TabsTrigger>
           <TabsTrigger value="sentiment">Social Sentiment</TabsTrigger>
+          <TabsTrigger value="anomalies">Anomaly Detection</TabsTrigger>
         </TabsList>
         
         <TabsContent value="price" className="pt-2">
@@ -274,6 +391,10 @@ export const AITrendPrediction = ({ ipoId, symbol = 'EMW', currentPrice = 24.82 
         
         <TabsContent value="sentiment" className="pt-2">
           {renderSocialSentiment()}
+        </TabsContent>
+        
+        <TabsContent value="anomalies" className="pt-2">
+          {renderAnomalyDetection()}
         </TabsContent>
       </Tabs>
     </GlassCard>
