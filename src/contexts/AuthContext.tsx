@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { toast } from 'sonner';
@@ -6,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 // Define user roles
-export type UserRole = 'guest' | 'user' | 'admin';
+export type UserRole = 'guest' | 'user' | 'admin' | 'creator' | 'investor';
 
 // Enhanced user with roles
 export interface AuthenticatedUser {
@@ -17,6 +16,7 @@ export interface AuthenticatedUser {
   profileImage?: string;
   walletAddress?: string;
   kycVerified: boolean;
+  apiRole?: string; // Add apiRole property for IPOContext
 }
 
 interface AuthContextType {
@@ -43,7 +43,8 @@ const mapSupabaseUser = (user: User | null): AuthenticatedUser | null => {
     role: (user.user_metadata?.role as UserRole) || 'user',
     profileImage: user.user_metadata?.avatar_url,
     walletAddress: user.user_metadata?.wallet_address,
-    kycVerified: user.user_metadata?.kyc_verified || false
+    kycVerified: user.user_metadata?.kyc_verified || false,
+    apiRole: user.user_metadata?.api_role
   };
 };
 

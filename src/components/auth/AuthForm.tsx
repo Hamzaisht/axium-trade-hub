@@ -111,11 +111,15 @@ export const AuthForm = ({ mode, onSuccess }: AuthFormProps) => {
       if (mode === "login") {
         await login(formData.email, formData.password);
       } else {
+        // Map form role to UserRole type
+        const userRole = formData.role === "creator" ? "creator" : "investor";
+        
         await register(
           {
             name: formData.name,
             email: formData.email,
-            role: formData.role as "investor" | "creator"
+            role: userRole,
+            apiRole: formData.role // Store original role value in apiRole for IPOContext
           },
           formData.password
         );
