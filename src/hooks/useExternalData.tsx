@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { externalApiService, CreatorMetrics } from '@/services/externalApiService';
+import { apiConfigService, CreatorMetrics } from '@/services/api/ApiConfigService';
 import { toast } from 'sonner';
 
 interface UseExternalDataProps {
@@ -15,7 +15,7 @@ export const useExternalData = ({ creatorId, enabled = true }: UseExternalDataPr
     queryKey: ['creator-metrics', creatorId],
     queryFn: async () => {
       if (!creatorId) return null;
-      return await externalApiService.getCreatorMetrics(creatorId);
+      return await apiConfigService.getCreatorMetrics(creatorId);
     },
     enabled: !!creatorId && enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
