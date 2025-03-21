@@ -89,7 +89,8 @@ export const useMarketAnomalies = (ipoIds: string[] = []) => {
       try {
         // Fetch anomalies for all provided IPO IDs
         const anomalyPromises = ipoIds.map(id => 
-          mockAIValuationAPI.detectAnomalies(id)
+          // Fix: Pass an empty array as the second parameter for recentTrades
+          mockAIValuationAPI.detectAnomalies(id, [])
         );
         
         const results = await Promise.all(anomalyPromises);
