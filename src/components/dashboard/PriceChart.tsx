@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-// Only used for initial data load, then we use real-time data
 const generateHistoricalData = (days: number, startPrice: number, volatility: number) => {
   const data = [];
   let currentPrice = startPrice;
@@ -38,12 +36,10 @@ const generateHistoricalData = (days: number, startPrice: number, volatility: nu
   let date = new Date();
   date.setDate(date.getDate() - days);
   
-  // For candlestick data
   while (date <= now) {
     const change = (Math.random() - 0.5) * volatility;
     currentPrice = Math.max(0.1, currentPrice + change);
     
-    // Generate OHLC data for candlesticks
     const open = currentPrice;
     const high = open * (1 + (Math.random() * 0.02));
     const low = open * (1 - (Math.random() * 0.02));
@@ -62,18 +58,13 @@ const generateHistoricalData = (days: number, startPrice: number, volatility: nu
       volume
     });
     
-    // Increment by appropriate interval based on timeframe
     if (days <= 1) {
-      // For 1D, increment by 15 minutes
       date = new Date(date.getTime() + 15 * 60 * 1000);
     } else if (days <= 7) {
-      // For 1W, increment by 1 hour
       date = new Date(date.getTime() + 60 * 60 * 1000);
     } else if (days <= 30) {
-      // For 1M, increment by 4 hours
       date = new Date(date.getTime() + 4 * 60 * 60 * 1000);
     } else {
-      // For longer periods, increment by 1 day
       date.setDate(date.getDate() + 1);
     }
   }
@@ -99,13 +90,25 @@ interface PriceChartProps {
   ipoId?: string;
 }
 
+const calculateEMA = (data: any[], index: number, period: number, key: string) => {
+  if (index < period - 1) {
+    return data[index][key];
+  } else if (index === period - 1) {
+    return data.slice(0, period).reduce((sum, item) => sum + item[key], 0) / period;
+  } else {
+    const multiplier = 2 / (period + 1);
+    const previousEMA = calculateEMA(data, index - 1, period, key);
+    return ((data[index][key] - previousEMA) * multiplier) + previousEMA;
+  }
+};
+
 export const PriceChart = ({ 
   symbol = "$EMW", 
   name = "Emma Watson",
   currentPrice = 24.82,
   ipoId 
 }: PriceChartProps) => {
-  const [activeRange, setActiveRange] = useState(timeRanges[4]); // Default to 1W
+  const [activeRange, setActiveRange] = useState(timeRanges[4]);
   const [baseChartData, setBaseChartData] = useState<any[]>([]);
   const [livePrice, setLivePrice] = useState(currentPrice);
   const [chartType, setChartType] = useState<'line' | 'candle'>('candle');
@@ -119,21 +122,14 @@ export const PriceChart = ({
     volume: true
   });
   
-  // Use our WebSocket hook for real-time market data
   const { isConnected, priceUpdates, latestPrices } = useMarketData(ipoId);
-  
-  // Check for anomalies
   const { data: anomalyData } = useAnomalyDetection({
     ipoId,
     enabled: !!ipoId
   });
   
-  // Generate initial historical data
   useEffect(() => {
-    // Ensure we have a valid current price before generating data
     const price = currentPrice || 25.0;
-    
-    // For YTD, calculate days from Jan 1 to now
     let days = activeRange.days;
     if (activeRange.isYTD) {
       const now = new Date();
@@ -145,14 +141,12 @@ export const PriceChart = ({
     setLivePrice(price);
   }, [activeRange, currentPrice]);
   
-  // Update live price when we get updates
   useEffect(() => {
     if (ipoId && latestPrices[ipoId] !== undefined) {
       setLivePrice(latestPrices[ipoId]);
     }
   }, [ipoId, latestPrices]);
   
-  // Warn users about anomalies
   useEffect(() => {
     if (anomalyData?.detected && anomalyData.anomalies?.some(a => a.severity >= 7)) {
       const anomaly = anomalyData.anomalies.find(a => a.severity >= 7);
@@ -165,25 +159,19 @@ export const PriceChart = ({
     }
   }, [anomalyData]);
   
-  // Merge historical data with real-time updates for chart display
   const chartData = useMemo(() => {
     if (!baseChartData.length) return [];
     
-    // Clone base data
     const combinedData = [...baseChartData];
     
-    // Add real-time price updates if available
     if (priceUpdates.length > 0 && ipoId) {
-      // Filter only relevant updates for this IPO
       const relevantUpdates = priceUpdates
         .filter(update => update.ipoId === ipoId)
-        .slice(0, 20); // Take most recent 20 updates
+        .slice(0, 20);
       
-      // Add live data points
       relevantUpdates.forEach((update, index) => {
         const date = new Date(update.timestamp);
         
-        // Generate OHLC data based on last known price
         const lastKnownPrice = combinedData[combinedData.length - 1]?.close || update.newPrice;
         const open = lastKnownPrice;
         const close = update.newPrice;
@@ -204,9 +192,7 @@ export const PriceChart = ({
       });
     }
     
-    // Calculate technical indicators
     return combinedData.map((item, index, array) => {
-      // Calculate SMA (Simple Moving Average)
       const sma7 = index >= 6 
         ? array.slice(index - 6, index + 1).reduce((sum, i) => sum + i.close, 0) / 7 
         : null;
@@ -215,8 +201,7 @@ export const PriceChart = ({
         ? array.slice(index - 29, index + 1).reduce((sum, i) => sum + i.close, 0) / 30 
         : null;
       
-      // Calculate RSI (Relative Strength Index)
-      let rsi = 50; // Default neutral RSI
+      let rsi = 50;
       if (index >= 14) {
         const changes = array.slice(index - 14, index + 1)
           .map((item, i, arr) => i === 0 ? 0 : item.close - arr[i - 1].close);
@@ -227,16 +212,14 @@ export const PriceChart = ({
         const avgGain = gains.reduce((sum, gain) => sum + gain, 0) / 14;
         const avgLoss = losses.reduce((sum, loss) => sum + loss, 0) / 14;
         
-        const rs = avgGain / (avgLoss || 0.001); // Avoid division by zero
+        const rs = avgGain / (avgLoss || 0.001);
         rsi = 100 - (100 / (1 + rs));
       }
       
-      // Calculate VWAP (Volume Weighted Average Price)
       const vwap = array.slice(0, index + 1)
         .reduce((sum, item) => sum + (item.close * item.volume), 0) / 
         array.slice(0, index + 1).reduce((sum, item) => sum + item.volume, 1);
       
-      // Calculate Bollinger Bands (20-period SMA with 2 standard deviations)
       let upperBB = null;
       let lowerBB = null;
       let middleBB = null;
@@ -254,7 +237,6 @@ export const PriceChart = ({
         lowerBB = middleBB - (2 * stdDev);
       }
       
-      // Calculate MACD
       const ema12 = calculateEMA(array, index, 12, 'close');
       const ema26 = calculateEMA(array, index, 26, 'close');
       const macd = ema12 - ema26;
@@ -285,23 +267,6 @@ export const PriceChart = ({
     });
   }, [baseChartData, priceUpdates, ipoId]);
   
-  // Helper function to calculate EMA (Exponential Moving Average)
-  const calculateEMA = (data: any[], index: number, period: number, key: string) => {
-    if (index < period - 1) {
-      // Not enough data
-      return data[index][key];
-    } else if (index === period - 1) {
-      // First EMA is SMA
-      return data.slice(0, period).reduce((sum, item) => sum + item[key], 0) / period;
-    } else {
-      // Calculate EMA
-      const multiplier = 2 / (period + 1);
-      const previousEMA = calculateEMA(data, index - 1, period, key);
-      return ((data[index][key] - previousEMA) * multiplier) + previousEMA;
-    }
-  };
-  
-  // Calculate price change
   const priceChange = useMemo(() => {
     if (chartData.length < 2) return { value: 0, percentage: 0 };
     
@@ -348,7 +313,6 @@ export const PriceChart = ({
             <p className="text-axium-blue font-semibold">${payload[0].value.toFixed(2)}</p>
           )}
           
-          {/* Show technical indicators if enabled */}
           {(showTechnicals.rsi || showTechnicals.macd || showTechnicals.vwap || showTechnicals.bb) && (
             <div className="mt-1 pt-1 border-t border-gray-200 space-y-1">
               {showTechnicals.rsi && (
@@ -379,7 +343,6 @@ export const PriceChart = ({
     return null;
   };
   
-  // Safeguard against empty data
   if (chartData.length === 0) {
     return (
       <GlassCard className="h-full p-4">
@@ -390,7 +353,6 @@ export const PriceChart = ({
     );
   }
   
-  // Get custom date formatter based on selected timeframe
   const getDateFormatter = () => {
     switch (activeRange.interval) {
       case 'minute':
@@ -708,7 +670,6 @@ export const PriceChart = ({
           
           <TabsContent value="technicals" className="h-[300px]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-              {/* RSI Chart */}
               <div className="h-full">
                 <p className="text-sm font-medium mb-1">RSI (14)</p>
                 <ResponsiveContainer width="100%" height="90%">
@@ -743,7 +704,6 @@ export const PriceChart = ({
                 </ResponsiveContainer>
               </div>
               
-              {/* MACD Chart */}
               <div className="h-full">
                 <p className="text-sm font-medium mb-1">MACD (12,26,9)</p>
                 <ResponsiveContainer width="100%" height="90%">
@@ -778,8 +738,8 @@ export const PriceChart = ({
                     />
                     <Bar 
                       dataKey="histogram" 
-                      fill={(data) => data > 0 ? "#2dd4bf" : "#f87171"}
-                      stroke={(data) => data > 0 ? "#2dd4bf" : "#f87171"}
+                      fill="#2dd4bf"
+                      stroke="#2dd4bf"
                       barSize={3}
                     />
                   </ComposedChart>

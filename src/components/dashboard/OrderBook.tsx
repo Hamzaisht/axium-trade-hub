@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowDownUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMarketData } from "@/hooks/useMarketData";
 
 // Mock data for buy and sell orders
 const generateMockOrders = (type: 'buy' | 'sell', basePrice: number) => {
@@ -32,17 +33,42 @@ const generateMockOrders = (type: 'buy' | 'sell', basePrice: number) => {
 interface OrderBookProps {
   symbol?: string;
   currentPrice?: number;
+  ipoId?: string;
 }
 
 export const OrderBook = ({ 
   symbol = "$EMW", 
-  currentPrice = 24.82 
+  currentPrice = 24.82,
+  ipoId
 }: OrderBookProps) => {
-  const [buyOrders] = useState(generateMockOrders('buy', currentPrice));
-  const [sellOrders] = useState(generateMockOrders('sell', currentPrice));
+  const [buyOrders, setBuyOrders] = useState(generateMockOrders('buy', currentPrice));
+  const [sellOrders, setSellOrders] = useState(generateMockOrders('sell', currentPrice));
   const [activeTab, setActiveTab] = useState('buy');
   const [orderAmount, setOrderAmount] = useState('1');
   const [orderPrice, setOrderPrice] = useState(currentPrice.toFixed(2));
+  
+  // Use our WebSocket hook for real-time market data if ipoId is provided
+  const { orderBook } = useMarketData(ipoId);
+
+  // Update orders when orderBook changes
+  useEffect(() => {
+    if (orderBook && orderBook.ipoId === ipoId) {
+      if (orderBook.bids && orderBook.bids.length > 0) {
+        setBuyOrders(orderBook.bids.map(bid => ({
+          price: bid.price,
+          amount: bid.amount,
+          total: bid.price * bid.amount
+        })));
+      }
+      if (orderBook.asks && orderBook.asks.length > 0) {
+        setSellOrders(orderBook.asks.map(ask => ({
+          price: ask.price,
+          amount: ask.amount,
+          total: ask.price * ask.amount
+        })));
+      }
+    }
+  }, [orderBook, ipoId]);
   
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
