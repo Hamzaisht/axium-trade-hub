@@ -1,67 +1,47 @@
 
-import { Network, Gauge, Server } from "lucide-react";
-import { APIEndpointType } from "@/hooks/useAPIConfiguration";
+import { useAPIConfiguration, APIServiceStatus } from "@/hooks/useAPIConfiguration";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, AlertCircle, Clock, Server } from "lucide-react";
 
-interface ApiStatusIndicatorsProps {
-  tradingLatency: number;
-  endpoints: Record<APIEndpointType, any>;
-  coLocationEnabled: boolean;
-}
-
-export const ApiStatusIndicators = ({
-  tradingLatency,
-  endpoints,
-  coLocationEnabled
-}: ApiStatusIndicatorsProps) => {
-  // Get the status color for API endpoints
-  const getStatusColor = (endpoint: APIEndpointType) => {
-    const status = endpoints[endpoint].status;
-    switch (status) {
-      case 'live':
-        return "bg-axium-success";
-      case 'secure':
-        return "bg-amber-500";
-      case 'mock':
-        return "bg-axium-gray-400";
-      case 'mixed':
-        return "bg-axium-blue";
-    }
+export const ApiStatusIndicators = () => {
+  const { apiServiceStatus } = useAPIConfiguration();
+  
+  const renderServiceStatus = (service: string, status: 'operational' | 'degraded' | 'maintenance') => {
+    return (
+      <div className="flex items-center">
+        {status === 'operational' && (
+          <CheckCircle2 className="h-4 w-4 text-green-500 mr-1.5" />
+        )}
+        {status === 'degraded' && (
+          <AlertCircle className="h-4 w-4 text-amber-500 mr-1.5" />
+        )}
+        {status === 'maintenance' && (
+          <Clock className="h-4 w-4 text-blue-500 mr-1.5" />
+        )}
+        <span className="text-xs text-axium-gray-700">{service}</span>
+      </div>
+    );
   };
 
   return (
-    <div className="grid grid-cols-3 gap-3 mb-4">
-      <div className="border border-axium-gray-200 rounded-md p-3 flex flex-col items-center bg-axium-gray-50">
-        <Gauge className="h-5 w-5 mb-1 text-axium-gray-600" />
-        <div className="text-xs text-axium-gray-600">Trading Latency</div>
-        <div className={`font-bold ${
-          tradingLatency < 50 ? "text-axium-success" : 
-          tradingLatency < 200 ? "text-axium-blue" : 
-          "text-axium-gray-700"
-        }`}>
-          {tradingLatency}ms
-        </div>
+    <div className="mb-4">
+      <div className="flex items-center mb-2">
+        <Server className="h-4 w-4 text-axium-gray-500 mr-1.5" />
+        <span className="text-sm font-medium text-axium-gray-700">Services Status</span>
+        <Badge variant="outline" className="ml-2 text-xs">
+          {apiServiceStatus === 'live' ? 'Production' : 
+           apiServiceStatus === 'secure' ? 'Secure' : 
+           apiServiceStatus === 'mixed' ? 'Mixed' : 'Mocked'}
+        </Badge>
       </div>
       
-      <div className="border border-axium-gray-200 rounded-md p-3 flex flex-col items-center bg-axium-gray-50">
-        <Network className="h-5 w-5 mb-1 text-axium-gray-600" />
-        <div className="text-xs text-axium-gray-600">API Status</div>
-        <div className="flex space-x-1 mt-1">
-          <div className={`h-2 w-2 rounded-full ${getStatusColor('market-data')}`}></div>
-          <div className={`h-2 w-2 rounded-full ${getStatusColor('order-execution')}`}></div>
-          <div className={`h-2 w-2 rounded-full ${getStatusColor('analytics')}`}></div>
-        </div>
-      </div>
-      
-      <div className="border border-axium-gray-200 rounded-md p-3 flex flex-col items-center bg-axium-gray-50">
-        <Server className="h-5 w-5 mb-1 text-axium-gray-600" />
-        <div className="text-xs text-axium-gray-600">Co-Location</div>
-        <div className="font-medium text-xs">
-          {coLocationEnabled ? (
-            <span className="text-axium-success">Enabled</span>
-          ) : (
-            <span className="text-axium-gray-500">Disabled</span>
-          )}
-        </div>
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-4 gap-y-2 mt-1.5">
+        {renderServiceStatus('Order Execution', 'operational')}
+        {renderServiceStatus('Market Data', 'operational')}
+        {renderServiceStatus('Analytics', 'operational')}
+        {renderServiceStatus('Risk Engine', 'operational')}
+        {renderServiceStatus('Liquidity Pools', 'maintenance')}
+        {renderServiceStatus('FIX Protocol', 'degraded')}
       </div>
     </div>
   );

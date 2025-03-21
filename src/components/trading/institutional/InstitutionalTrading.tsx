@@ -1,138 +1,77 @@
 
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { AdvancedOrderTypes } from "../AdvancedOrderTypes";
-import { LiquidityPoolInfo } from "../liquidity-pool/LiquidityPoolInfo";
-import { Timer, Globe, Laptop } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useAPIConfiguration } from "@/hooks/useAPIConfiguration";
-import { toast } from "@/components/ui/use-toast";
-
-// Import our new components
-import { ApiStatusIndicators } from "./ApiStatusIndicators";
-import { InfrastructureTab } from "./InfrastructureTab";
-import { RestrictedAccess } from "./RestrictedAccess";
 import { Header } from "./Header";
+import { InfrastructureTab } from "./InfrastructureTab";
+import { ApiStatusIndicators } from "./ApiStatusIndicators";
+import { RestrictedAccess } from "./RestrictedAccess";
 
-interface InstitutionalTradingProps {
-  symbol: string;
-  currentPrice: number;
-  className?: string;
-}
-
-export const InstitutionalTrading = ({ 
-  symbol = "$AXM", 
-  currentPrice = 25.74,
-  className 
-}: InstitutionalTradingProps) => {
+export const InstitutionalTrading = () => {
   const { user } = useAuth();
-  const isInstitutional = user?.role === 'admin' || user?.role === 'investor';
-  const isAdmin = user?.role === 'admin';
+  const [activeTab, setActiveTab] = useState("infrastructure");
   
-  const { 
-    endpoints, 
-    tradingLatency, 
-    toggleEndpointStatus, 
-    updateAPIConfig 
-  } = useAPIConfiguration();
+  // Check if user has institutional access (admin or investor role)
+  const hasInstitutionalAccess = user?.role === 'admin' || user?.role === 'investor';
   
-  const [activeTab, setActiveTab] = useState<string>("orders");
-  const [coLocationEnabled, setCoLocationEnabled] = useState<boolean>(false);
-  
-  // Handle enabling co-location server (HFT)
-  const handleEnableCoLocation = () => {
-    if (!isAdmin) {
-      toast({
-        title: "Access Restricted",
-        description: "Co-location servers require administrator access.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setCoLocationEnabled(prev => !prev);
-    
-    // Update API endpoints with reduced latency
-    if (!coLocationEnabled) {
-      // Enable HFT co-location
-      updateAPIConfig({
-        'market-data': { latency: 5, status: 'live' },
-        'order-execution': { latency: 10, status: 'live' }
-      });
-      
-      toast({
-        title: "Co-Location Enabled",
-        description: "Low-latency trading enabled with 15ms round-trip time.",
-      });
-    } else {
-      // Disable HFT co-location
-      updateAPIConfig({
-        'market-data': { latency: 50, status: 'mock' },
-        'order-execution': { latency: 100, status: 'mock' }
-      });
-      
-      toast({
-        title: "Co-Location Disabled",
-        description: "Returning to standard API connectivity.",
-      });
-    }
-  };
+  if (!hasInstitutionalAccess) {
+    return <RestrictedAccess />;
+  }
   
   return (
-    <GlassCard className={className}>
-      <Header isInstitutional={isInstitutional} />
+    <GlassCard className="p-5">
+      <Header />
       
-      {isInstitutional ? (
-        <>
-          <ApiStatusIndicators 
-            tradingLatency={tradingLatency}
-            endpoints={endpoints}
-            coLocationEnabled={coLocationEnabled}
-          />
-          
-          <Tabs defaultValue="orders" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-3 mb-4">
-              <TabsTrigger value="orders">
-                <Timer className="h-4 w-4 mr-1" />
-                Advanced Orders
-              </TabsTrigger>
-              <TabsTrigger value="liquidity">
-                <Globe className="h-4 w-4 mr-1" />
-                Liquidity Pool
-              </TabsTrigger>
-              <TabsTrigger value="infrastructure">
-                <Laptop className="h-4 w-4 mr-1" />
-                Infrastructure
-              </TabsTrigger>
-            </TabsList>
+      <ApiStatusIndicators />
+      
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="mt-6"
+      >
+        <TabsList className="grid grid-cols-3">
+          <TabsTrigger value="infrastructure">Infrastructure</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="liquidity">Liquidity</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="infrastructure" className="mt-4">
+          <InfrastructureTab />
+        </TabsContent>
+        
+        <TabsContent value="analytics" className="mt-4">
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Market Analytics</h3>
+            <p className="text-axium-gray-600">
+              Advanced analytics tools for institutional traders, including market depth analysis,
+              order flow imbalance indicators, and volume profile visualization.
+            </p>
             
-            <TabsContent value="orders" className="mt-0">
-              <AdvancedOrderTypes
-                symbol={symbol}
-                currentPrice={currentPrice}
-              />
-            </TabsContent>
+            {/* Analytics components would go here */}
+            <div className="p-4 border border-dashed border-axium-gray-300 rounded-md text-center text-axium-gray-500">
+              Advanced analytics dashboard coming soon
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="liquidity" className="mt-4">
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Liquidity Management</h3>
+            <p className="text-axium-gray-600">
+              Tools for liquidity providers to manage contributions, monitor pools, and track rebates.
+              Institutional traders can access deep liquidity through smart order routing.
+            </p>
             
-            <TabsContent value="liquidity" className="mt-0">
-              <LiquidityPoolInfo symbol={symbol} />
-            </TabsContent>
-            
-            <TabsContent value="infrastructure" className="mt-0">
-              <InfrastructureTab 
-                coLocationEnabled={coLocationEnabled}
-                setCoLocationEnabled={setCoLocationEnabled}
-                toggleEndpointStatus={toggleEndpointStatus}
-                endpoints={endpoints}
-                handleEnableCoLocation={handleEnableCoLocation}
-                isAdmin={isAdmin}
-              />
-            </TabsContent>
-          </Tabs>
-        </>
-      ) : (
-        <RestrictedAccess />
-      )}
+            {/* Liquidity components would go here */}
+            <div className="p-4 border border-dashed border-axium-gray-300 rounded-md text-center text-axium-gray-500">
+              Liquidity management tools coming soon
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </GlassCard>
   );
 };
+
+export default InstitutionalTrading;
