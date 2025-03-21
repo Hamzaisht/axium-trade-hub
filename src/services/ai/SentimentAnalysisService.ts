@@ -1,7 +1,7 @@
 
 import { faker } from "@faker-js/faker";
 import { apiConfigService } from "../api/ApiConfigService";
-import { apiKeysService } from "../api/APIKeysService";
+import { APIKeysService, apiKeysService } from "../api/APIKeysService";
 
 export type SentimentDirection = 'positive' | 'negative' | 'neutral';
 export type SentimentStrength = 'strong' | 'moderate' | 'weak';

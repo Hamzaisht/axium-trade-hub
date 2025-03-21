@@ -1,66 +1,72 @@
-import { BaseApiService } from './BaseApiService';
 
-export interface BrandDealMetrics {
-  brand: string;
-  dealValue: number;
-  startDate: string;
-  endDate: string;
-  engagement: number;
-  conversionRate: number;
-}
+import { BaseApiService } from './BaseApiService';
+import { BrandDealMetrics } from './ApiConfigService';
+import { faker } from '@faker-js/faker';
 
 export class BrandDealsApiService extends BaseApiService {
   constructor(apiKey: string, useProxyEndpoint = false) {
     super(apiKey, useProxyEndpoint);
   }
 
-  protected generateMockData(endpoint: string): BrandDealMetrics {
-    const brands = ['Nike', 'Adidas', 'Puma', 'Apple', 'Samsung', 'Google', 'Amazon', 'Coca-Cola'];
-    const brand = brands[Math.floor(Math.random() * brands.length)];
-    
-    // Random date in the last 3 months
+  // Generate mock brand deal data
+  private generateMockBrandDeal(brand: string): BrandDealMetrics {
+    // Get current date
     const now = new Date();
-    const startDate = new Date(now.getTime() - Math.random() * 7776000000); // 90 days in ms
-    const endDate = new Date(startDate.getTime() + Math.random() * 7776000000); // Up to 90 days later
+    
+    // Start date between 1-6 months ago
+    const startDate = new Date(now);
+    startDate.setMonth(now.getMonth() - faker.number.int({ min: 1, max: 6 }));
+    
+    // End date between now and 12 months in the future
+    const endDate = new Date(now);
+    endDate.setMonth(now.getMonth() + faker.number.int({ min: 0, max: 12 }));
+    
+    // Generate deal value ($1k to $500k)
+    const dealValue = faker.number.int({ min: 1000, max: 500000 });
+    
+    // Generate engagement rate (1% to 15%)
+    const engagement = faker.number.float({ min: 1, max: 15, fractionDigits: 1 });
     
     return {
       brand,
-      dealValue: 5000 + Math.random() * 995000, // $5K to $1M
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0],
-      engagement: 1 + Math.random() * 20,
-      conversionRate: Math.random() * 5
+      dealValue,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      engagement
     };
   }
 
-  protected transformApiResponse(endpoint: string, data: any): BrandDealMetrics {
+  /**
+   * Get all brand deals for a creator
+   * @param creatorId The creator's ID
+   * @returns List of brand deals
+   */
+  async getCreatorDeals(creatorId: string): Promise<BrandDealMetrics[]> {
     try {
-      // For Google Trends or similar data, we'd transform it here
-      // For now, we'll return mock data since the transformation would be complex
-      return this.generateMockData(endpoint);
-    } catch (error) {
-      console.error('Error transforming API response:', error);
-      // Return mock data as fallback
-      return this.generateMockData(endpoint);
-    }
-  }
-
-  // Public methods for fetching data
-  async getBrandDeals(creatorId: string): Promise<BrandDealMetrics[]> {
-    // For mock purposes, generate 1-5 random brand deals
-    const numDeals = 1 + Math.floor(Math.random() * 5);
-    const deals: BrandDealMetrics[] = [];
-    
-    // For real implementation, we would make API calls to sources with brand deal data
-    for (let i = 0; i < numDeals; i++) {
-      const endpoint = `deals/${creatorId}/${i}`;
-      const url = `https://trends.google.com/trends/api/explore?q=${creatorId}&geo=US`;
+      // For now, return mock data
+      // In the future this could connect to a real brand deals API
       
-      deals.push(
-        await this.makeApiCall<BrandDealMetrics>(endpoint, url)
-      );
+      // Generate between 1-5 brand deals
+      const dealCount = faker.number.int({ min: 1, max: 5 });
+      
+      // List of potential brands
+      const potentialBrands = [
+        'Nike', 'Adidas', 'Puma', 'Under Armour', 'New Balance',
+        'Coca-Cola', 'Pepsi', 'Red Bull', 'Monster Energy', 'Gatorade',
+        'Apple', 'Samsung', 'Google', 'Microsoft', 'Sony',
+        'McDonalds', 'Burger King', 'Wendys', 'Taco Bell', 'KFC',
+        'Amazon', 'Walmart', 'Target', 'Best Buy', 'GameStop',
+        'Spotify', 'Netflix', 'Disney+', 'HBO Max', 'Hulu'
+      ];
+      
+      // Select random brands for this creator
+      const selectedBrands = faker.helpers.arrayElements(potentialBrands, dealCount);
+      
+      // Generate deal for each brand
+      return selectedBrands.map(brand => this.generateMockBrandDeal(brand));
+    } catch (error) {
+      console.error('Error fetching brand deals:', error);
+      return [];
     }
-    
-    return deals;
   }
 }

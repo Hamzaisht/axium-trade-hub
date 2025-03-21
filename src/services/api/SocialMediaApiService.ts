@@ -1,7 +1,7 @@
 
 import { BaseApiService } from './BaseApiService';
 import { toast } from 'sonner';
-import { apiKeysService } from './APIKeysService';
+import { APIKeysService, apiKeysService } from './APIKeysService';
 
 export interface SocialMediaMetrics {
   platform: string;
@@ -14,7 +14,7 @@ export interface SocialMediaMetrics {
 }
 
 export class SocialMediaApiService extends BaseApiService {
-  constructor(apiKey: string, useProxyEndpoint = false) {
+  constructor(apiKey: string = '', useProxyEndpoint = false) {
     super(apiKey, useProxyEndpoint);
   }
 
@@ -120,7 +120,7 @@ export class SocialMediaApiService extends BaseApiService {
   // Public methods for fetching data
   async getTwitterMetrics(username: string): Promise<SocialMediaMetrics> {
     const endpoint = `twitter/${username}`;
-    const platform = apiKeysService.PLATFORMS.TWITTER;
+    const platform = APIKeysService.PLATFORMS.TWITTER;
     
     // Check if we have a real API key
     if (this.isRealApiKey(platform)) {
@@ -138,7 +138,7 @@ export class SocialMediaApiService extends BaseApiService {
 
   async getInstagramMetrics(username: string): Promise<SocialMediaMetrics> {
     const endpoint = `instagram/${username}`;
-    const platform = apiKeysService.PLATFORMS.INSTAGRAM;
+    const platform = APIKeysService.PLATFORMS.INSTAGRAM;
     
     // Check if we have a real API key
     if (this.isRealApiKey(platform)) {
@@ -157,7 +157,7 @@ export class SocialMediaApiService extends BaseApiService {
 
   async getYouTubeMetrics(channelId: string): Promise<SocialMediaMetrics> {
     const endpoint = `youtube/${channelId}`;
-    const platform = apiKeysService.PLATFORMS.YOUTUBE;
+    const platform = APIKeysService.PLATFORMS.YOUTUBE;
     
     // Check if we have a real API key
     if (this.isRealApiKey(platform)) {
@@ -176,7 +176,7 @@ export class SocialMediaApiService extends BaseApiService {
 
   async getTikTokMetrics(username: string): Promise<SocialMediaMetrics> {
     const endpoint = `tiktok/${username}`;
-    const platform = apiKeysService.PLATFORMS.TIKTOK;
+    const platform = APIKeysService.PLATFORMS.TIKTOK;
     
     // Check if we have a real API key
     if (this.isRealApiKey(platform)) {
@@ -198,7 +198,7 @@ export class SocialMediaApiService extends BaseApiService {
 
   async getSnapchatMetrics(username: string): Promise<SocialMediaMetrics> {
     const endpoint = `snapchat/${username}`;
-    const platform = apiKeysService.PLATFORMS.SNAPCHAT;
+    const platform = APIKeysService.PLATFORMS.SNAPCHAT;
     
     // Check if we have a real API key
     if (this.isRealApiKey(platform)) {
@@ -213,6 +213,30 @@ export class SocialMediaApiService extends BaseApiService {
         ...this.generateMockData(endpoint),
         platform: 'Snapchat'
       });
+    }
+  }
+  
+  // Add getter method for creator metrics
+  async getCreatorMetrics(creatorId: string): Promise<SocialMediaMetrics[]> {
+    try {
+      // For now, just return metrics for the major platforms
+      const twitterMetrics = await this.getTwitterMetrics(creatorId);
+      const instagramMetrics = await this.getInstagramMetrics(creatorId);
+      const youtubeMetrics = await this.getYouTubeMetrics(creatorId);
+      const tiktokMetrics = await this.getTikTokMetrics(creatorId);
+      const snapchatMetrics = await this.getSnapchatMetrics(creatorId);
+      
+      return [
+        twitterMetrics,
+        instagramMetrics,
+        youtubeMetrics,
+        tiktokMetrics,
+        snapchatMetrics
+      ];
+    } catch (error) {
+      console.error('Error fetching social media metrics:', error);
+      toast.error('Error fetching social media data');
+      return [];
     }
   }
 }

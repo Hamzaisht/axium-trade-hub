@@ -1,6 +1,6 @@
 
 import { BaseApiService } from './BaseApiService';
-import { apiKeysService } from './APIKeysService';
+import { APIKeysService, apiKeysService } from './APIKeysService';
 
 export interface StreamingMetrics {
   platform: string;
@@ -13,7 +13,7 @@ export interface StreamingMetrics {
 }
 
 export class StreamingApiService extends BaseApiService {
-  constructor(apiKey: string, useProxyEndpoint = false) {
+  constructor(apiKey: string = '', useProxyEndpoint = false) {
     super(apiKey, useProxyEndpoint);
   }
 
@@ -112,7 +112,7 @@ export class StreamingApiService extends BaseApiService {
 
   async getSpotifyMetrics(artistId: string): Promise<StreamingMetrics> {
     const endpoint = `spotify/${artistId}`;
-    const platform = apiKeysService.PLATFORMS.SPOTIFY;
+    const platform = APIKeysService.PLATFORMS.SPOTIFY;
     
     // Check if we have a real API key
     if (this.isRealApiKey(platform)) {
@@ -146,7 +146,7 @@ export class StreamingApiService extends BaseApiService {
 
   async getYouTubeMusicMetrics(channelId: string): Promise<StreamingMetrics> {
     const endpoint = `youtubeMusic/${channelId}`;
-    const platform = apiKeysService.PLATFORMS.YOUTUBE;
+    const platform = APIKeysService.PLATFORMS.YOUTUBE;
     
     // Check if we have a real API key
     if (this.isRealApiKey(platform)) {
@@ -165,7 +165,7 @@ export class StreamingApiService extends BaseApiService {
 
   async getTwitchMetrics(username: string): Promise<StreamingMetrics> {
     const endpoint = `twitch/${username}`;
-    const platform = apiKeysService.PLATFORMS.TWITCH;
+    const platform = APIKeysService.PLATFORMS.TWITCH;
     
     // Check if we have a real API key
     if (this.isRealApiKey(platform)) {
@@ -188,7 +188,7 @@ export class StreamingApiService extends BaseApiService {
 
   async getKickMetrics(username: string): Promise<StreamingMetrics> {
     const endpoint = `kick/${username}`;
-    const platform = apiKeysService.PLATFORMS.KICK;
+    const platform = APIKeysService.PLATFORMS.KICK;
     
     // Check if we have a real API key
     if (this.isRealApiKey(platform)) {
@@ -208,7 +208,7 @@ export class StreamingApiService extends BaseApiService {
 
   async getRumbleMetrics(channelId: string): Promise<StreamingMetrics> {
     const endpoint = `rumble/${channelId}`;
-    const platform = apiKeysService.PLATFORMS.RUMBLE;
+    const platform = APIKeysService.PLATFORMS.RUMBLE;
     
     // Check if we have a real API key
     if (this.isRealApiKey(platform)) {
@@ -223,6 +223,29 @@ export class StreamingApiService extends BaseApiService {
         ...this.generateMockData(endpoint),
         platform: 'Rumble'
       });
+    }
+  }
+  
+  // Add getter method for creator metrics
+  async getCreatorMetrics(creatorId: string): Promise<StreamingMetrics[]> {
+    try {
+      // For now, just return metrics for the major platforms
+      const spotifyMetrics = await this.getSpotifyMetrics(creatorId);
+      const youtubeMusicMetrics = await this.getYouTubeMusicMetrics(creatorId);
+      const twitchMetrics = await this.getTwitchMetrics(creatorId);
+      const kickMetrics = await this.getKickMetrics(creatorId);
+      const rumbleMetrics = await this.getRumbleMetrics(creatorId);
+      
+      return [
+        spotifyMetrics,
+        youtubeMusicMetrics,
+        twitchMetrics,
+        kickMetrics,
+        rumbleMetrics
+      ];
+    } catch (error) {
+      console.error('Error fetching streaming metrics:', error);
+      return [];
     }
   }
 }

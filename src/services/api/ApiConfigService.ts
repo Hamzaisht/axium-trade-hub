@@ -49,10 +49,10 @@ class ApiConfigService {
   private brandDealsApi: BrandDealsApiService;
 
   private constructor() {
-    // Initialize API services
+    // Initialize API services with empty constructor params
     this.socialMediaApi = new SocialMediaApiService();
     this.streamingApi = new StreamingApiService();
-    this.brandDealsApi = new BrandDealsApiService();
+    this.brandDealsApi = new BrandDealsApiService('');
   }
 
   // Singleton pattern
