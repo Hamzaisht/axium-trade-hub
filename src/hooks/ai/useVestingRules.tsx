@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { mockAIValuationAPI } from '@/utils/mockApi';
 import { toast } from 'sonner';
 
-export function useVestingRules(ipoId: string | undefined) {
+export function useVestingRules({ ipoId }: { ipoId?: string }) {
   return useQuery({
     queryKey: ['vesting', ipoId],
     queryFn: async () => {

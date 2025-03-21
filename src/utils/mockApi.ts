@@ -1,4 +1,3 @@
-
 /**
  * Mock API
  * Simulates API endpoints for fetching creator data, IPOs, and AI valuations.
@@ -74,7 +73,7 @@ const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 // Mock IPO data
 export const mockIPOs: IPO[] = Array(20).fill(null).map((_, i) => {
   const creatorName = faker.person.firstName() + " " + faker.person.lastName();
-  const initialPrice = parseFloat(faker.number.float({ min: 1, max: 50, precision: 0.01 }).toFixed(2));
+  const initialPrice = parseFloat(faker.number.float({ min: 1, max: 50, fractionDigits: 2 }).toFixed(2));
   const engagementScore = faker.number.int({ min: 20, max: 99 });
   const aiScore = faker.number.int({ min: 30, max: 95 });
   const revenueUSD = faker.number.int({ min: 100000, max: 10000000 });
@@ -84,7 +83,7 @@ export const mockIPOs: IPO[] = Array(20).fill(null).map((_, i) => {
     creatorName: creatorName,
     symbol: creatorName.substring(0, 3).toUpperCase(),
     initialPrice: initialPrice,
-    currentPrice: parseFloat(faker.number.float({ min: initialPrice * 0.5, max: initialPrice * 2, precision: 0.01 }).toFixed(2)),
+    currentPrice: parseFloat(faker.number.float({ min: initialPrice * 0.5, max: initialPrice * 2, fractionDigits: 2 }).toFixed(2)),
     totalSupply: faker.number.int({ min: 1000000, max: 10000000 }),
     availableSupply: faker.number.int({ min: 100000, max: 1000000 }),
     launchDate: faker.date.past({ years: 1 }).toISOString(),
@@ -104,7 +103,7 @@ export const mockIPOs: IPO[] = Array(20).fill(null).map((_, i) => {
 
 // Mock orders
 export const mockOrders: Order[] = Array(50).fill(null).map(() => {
-  const price = parseFloat(faker.number.float({ min: 1, max: 100, precision: 0.01 }).toFixed(2));
+  const price = parseFloat(faker.number.float({ min: 1, max: 100, fractionDigits: 2 }).toFixed(2));
   
   return {
     id: faker.string.uuid(),
@@ -121,7 +120,7 @@ export const mockOrders: Order[] = Array(50).fill(null).map(() => {
 
 // Mock trades
 export const mockTrades: Trade[] = Array(100).fill(null).map(() => {
-  const price = parseFloat(faker.number.float({ min: 1, max: 100, precision: 0.01 }).toFixed(2));
+  const price = parseFloat(faker.number.float({ min: 1, max: 100, fractionDigits: 2 }).toFixed(2));
   const ipo = mockIPOs[Math.floor(Math.random() * mockIPOs.length)];
   
   return {
@@ -358,8 +357,8 @@ class AIValuationAPI {
 
   async predictPriceMovement(
     ipoId: string, 
-    timeframe: PredictionTimeframe = 'short_term',
-    modelType: AIModelType = 'standard'
+    timeframe: PredictionTimeframe = "24h",
+    modelType: AIModelType = AIModelType.STANDARD
   ): Promise<{
     prediction: PriceMovement;
     confidence: number;

@@ -1,3 +1,4 @@
+
 /**
  * Mock AI Models
  * Simulates AI-driven analysis for creator valuations, market trends, and price predictions
@@ -13,7 +14,8 @@ export enum AIModelType {
   CONSISTENCY = "consistency",
   HYBRID = "hybrid",
   REVENUE_WEIGHTED = "revenue_weighted",  // New model type focusing on revenue metrics
-  SOCIAL_WEIGHTED = "social_weighted"     // New model type focusing on social metrics
+  SOCIAL_WEIGHTED = "social_weighted",     // New model type focusing on social metrics
+  STANDARD = "standard"  // Add standard type to match existing code
 }
 
 // Sentiment trends - represents market sentiment towards a creator
@@ -23,7 +25,7 @@ export type SentimentTrend = "positive" | "neutral" | "negative" | "very_positiv
 export type PriceMovement = "up" | "strong_up" | "down" | "strong_down" | "stable" | "volatile";
 
 // Timeframes for predictions
-export type PredictionTimeframe = "24h" | "7d" | "30d" | "90d";
+export type PredictionTimeframe = "24h" | "7d" | "30d" | "90d" | "short_term"; // Add short_term to match existing code
 
 // Market depth model - simulates the order book depth
 export interface MarketDepthModel {
