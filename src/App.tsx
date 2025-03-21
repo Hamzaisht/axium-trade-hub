@@ -10,9 +10,9 @@ import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import Creators from "@/pages/Creators";
 import Portfolio from "@/pages/Portfolio";
+import Trading from "@/pages/Trading";
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
-import Register from "@/pages/Register";
 
 // Components
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -72,8 +72,6 @@ function App() {
                   <Route path="/" element={<Index />} />
                   <Route path="/login" element={<Login />} />
                   
-                  {/* Remove the standalone Register route since it's now integrated in Login page */}
-                  
                   {/* Protected routes with role-based access */}
                   {/* Base protection - requires authentication */}
                   <Route element={<ProtectedRoute />}>
@@ -85,6 +83,9 @@ function App() {
                     
                     {/* Creators section - for both creators and investors */}
                     <Route path="/creators" element={<Creators />} />
+                    
+                    {/* Trading dashboard - for authenticated users */}
+                    <Route path="/trading" element={<Trading />} />
                   </Route>
                   
                   {/* Admin-only routes */}
