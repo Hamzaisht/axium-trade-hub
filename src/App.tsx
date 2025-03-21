@@ -46,26 +46,43 @@ function App() {
                       <Route path="/" element={<Index />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
-                      <Route path="/dashboard" element={
-                        <ProtectedRoute>
-                          <Dashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/portfolio" element={
-                        <ProtectedRoute>
-                          <Portfolio />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/creators" element={
-                        <ProtectedRoute>
-                          <Creators />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/trading" element={
-                        <ProtectedRoute>
-                          <Trading />
-                        </ProtectedRoute>
-                      } />
+                      
+                      <Route 
+                        path="/dashboard" 
+                        element={
+                          <ProtectedRoute>
+                            <Dashboard />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      <Route 
+                        path="/portfolio" 
+                        element={
+                          <ProtectedRoute>
+                            <Portfolio />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      <Route 
+                        path="/creators" 
+                        element={
+                          <ProtectedRoute>
+                            <Creators />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      <Route 
+                        path="/trading" 
+                        element={
+                          <ProtectedRoute>
+                            <Trading />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </TradingProvider>

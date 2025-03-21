@@ -1,20 +1,22 @@
 
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth, UserRole } from '@/contexts/AuthContext';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, ShieldAlert } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ReactNode } from 'react';
 
 interface ProtectedRouteProps {
   requiredRole?: UserRole;
   allowCreator?: boolean;
   allowInvestor?: boolean;
+  children: ReactNode;
 }
 
 export const ProtectedRoute = ({ 
   requiredRole = 'user',
   allowCreator = true,
-  allowInvestor = true
+  allowInvestor = true,
+  children
 }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, hasPermission, user } = useAuth();
   const location = useLocation();
@@ -82,8 +84,8 @@ export const ProtectedRoute = ({
     );
   }
 
-  // User is authenticated and has permissions, render the routes
-  return <Outlet />;
+  // User is authenticated and has permissions, render the children
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;
