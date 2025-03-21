@@ -28,6 +28,7 @@ export interface TradeUpdate {
   price: number;
   quantity: number;
   timestamp: string;
+  side: 'buy' | 'sell'; // Added the side property
 }
 
 export const useMarketData = (ipoId?: string) => {
@@ -36,14 +37,22 @@ export const useMarketData = (ipoId?: string) => {
   const [latestPrices, setLatestPrices] = useState<Record<string, number>>({});
   const [orderBook, setOrderBook] = useState<OrderBookUpdate | null>(null);
   const [recentTrades, setRecentTrades] = useState<TradeUpdate[]>([]);
+  const [isLoading, setIsLoading] = useState(true); // Added isLoading state
 
   useEffect(() => {
     // Connect to the mock WebSocket
     mockWebSocket.connect();
+    
+    // Set initial loading state
+    setIsLoading(true);
 
     // Handle connection status
     const connectionHandler = (data: { status: string }) => {
       setIsConnected(data.status === 'connected');
+      if (data.status === 'connected') {
+        // Once connected, we're no longer loading
+        setTimeout(() => setIsLoading(false), 1000); // Simulate a small delay for loading state
+      }
     };
 
     // Handle price updates every 2-5 seconds
@@ -98,6 +107,7 @@ export const useMarketData = (ipoId?: string) => {
     latestPrices,
     orderBook,
     recentTrades,
+    isLoading, // Added isLoading to the return object
     connect: () => mockWebSocket.connect(),
     disconnect: () => mockWebSocket.disconnect()
   };

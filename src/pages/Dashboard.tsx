@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -36,6 +35,7 @@ import {
 } from "@/components/ui/skeleton-components";
 import { Button } from "@/components/ui/button";
 import { showNotification } from "@/components/notifications/ToastContainer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -213,34 +213,109 @@ const Dashboard = () => {
                 selectedTab={selectedTab}
                 onTabChange={setSelectedTab}
               >
-                <TabsContent value="trading" className="mt-6 space-y-6">
-                  <div className="grid grid-cols-1 gap-6">
-                    {isLoading ? (
-                      <ChartSkeleton />
-                    ) : (
-                      <PriceChart 
-                        symbol={selectedCreator?.symbol}
-                        name={selectedCreator?.creatorName}
-                        currentPrice={selectedCreator?.currentPrice}
-                        ipoId={selectedCreator?.id}
-                      />
-                    )}
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+                  <TabsList>
+                    <TabsTrigger value="trading">Trading</TabsTrigger>
+                    <TabsTrigger value="sentiment">Sentiment</TabsTrigger>
+                    <TabsTrigger value="ai">AI</TabsTrigger>
+                    <TabsTrigger value="risk">Risk</TabsTrigger>
+                    <TabsTrigger value="dividends">Dividends</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="trading" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 gap-6">
                       {isLoading ? (
-                        <>
-                          <ChartSkeleton height="300px" />
-                          <ChartSkeleton height="300px" />
-                        </>
+                        <ChartSkeleton />
                       ) : (
-                        <>
-                          <VirtualizedOrderBook 
-                            symbol={selectedCreator?.symbol}
-                            currentPrice={selectedCreator?.currentPrice}
-                            ipoId={selectedCreator?.id}
-                          />
-                          
-                          <div className="space-y-6">
+                        <PriceChart 
+                          symbol={selectedCreator?.symbol}
+                          name={selectedCreator?.creatorName}
+                          currentPrice={selectedCreator?.currentPrice}
+                          ipoId={selectedCreator?.id}
+                        />
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {isLoading ? (
+                          <>
+                            <ChartSkeleton height="300px" />
+                            <ChartSkeleton height="300px" />
+                          </>
+                        ) : (
+                          <>
+                            <VirtualizedOrderBook 
+                              symbol={selectedCreator?.symbol}
+                              currentPrice={selectedCreator?.currentPrice}
+                              ipoId={selectedCreator?.id}
+                            />
+                            
+                            <div className="space-y-6">
+                              <MarketDepthChart 
+                                ipoId={selectedCreator?.id}
+                                symbol={selectedCreator?.symbol}
+                                currentPrice={selectedCreator?.currentPrice}
+                              />
+                              
+                              <VirtualizedTradeHistory 
+                                ipoId={selectedCreator?.id} 
+                                symbol={selectedCreator?.symbol}
+                                limit={10}
+                              />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="sentiment" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 gap-6">
+                      {isLoading ? (
+                        <SentimentInsightsSkeleton />
+                      ) : (
+                        <SentimentInsights creatorId={selectedCreator?.id} />
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {isLoading ? (
+                          <>
+                            <ChartSkeleton height="300px" />
+                            <ChartSkeleton height="300px" />
+                          </>
+                        ) : (
+                          <>
+                            <ExternalMetricsCard creatorId={selectedCreator?.id} />
+                            
+                            <VirtualizedTradeHistory 
+                              ipoId={selectedCreator?.id} 
+                              symbol={selectedCreator?.symbol}
+                            />
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="ai" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 gap-6">
+                      {isLoading ? (
+                        <ChartSkeleton />
+                      ) : (
+                        <AITrendPrediction 
+                          ipoId={selectedCreator?.id}
+                          symbol={selectedCreator?.symbol}
+                          currentPrice={selectedCreator?.currentPrice}
+                        />
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {isLoading ? (
+                          <>
+                            <ChartSkeleton height="300px" />
+                            <ChartSkeleton height="300px" />
+                          </>
+                        ) : (
+                          <>
                             <MarketDepthChart 
                               ipoId={selectedCreator?.id}
                               symbol={selectedCreator?.symbol}
@@ -250,116 +325,51 @@ const Dashboard = () => {
                             <VirtualizedTradeHistory 
                               ipoId={selectedCreator?.id} 
                               symbol={selectedCreator?.symbol}
-                              limit={10}
                             />
-                          </div>
-                        </>
-                      )}
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="sentiment" className="mt-6 space-y-6">
-                  <div className="grid grid-cols-1 gap-6">
+                  </TabsContent>
+                  
+                  <TabsContent value="risk" className="mt-6">
+                    <RiskAnomalyCenter />
+                  </TabsContent>
+                  
+                  <TabsContent value="dividends" className="mt-6 space-y-6">
                     {isLoading ? (
-                      <SentimentInsightsSkeleton />
+                      <>
+                        <ChartSkeleton />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <ChartSkeleton height="300px" />
+                          <ChartSkeleton height="300px" />
+                        </div>
+                      </>
                     ) : (
-                      <SentimentInsights creatorId={selectedCreator?.id} />
-                    )}
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {isLoading ? (
-                        <>
-                          <ChartSkeleton height="300px" />
-                          <ChartSkeleton height="300px" />
-                        </>
-                      ) : (
-                        <>
-                          <ExternalMetricsCard creatorId={selectedCreator?.id} />
-                          
-                          <VirtualizedTradeHistory 
-                            ipoId={selectedCreator?.id} 
+                      <>
+                        <DividendAndVesting 
+                          ipoId={selectedCreator?.id}
+                          symbol={selectedCreator?.symbol}
+                        />
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <PriceChart 
                             symbol={selectedCreator?.symbol}
+                            name={selectedCreator?.creatorName}
+                            currentPrice={selectedCreator?.currentPrice}
+                            ipoId={selectedCreator?.id}
                           />
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="ai" className="mt-6 space-y-6">
-                  <div className="grid grid-cols-1 gap-6">
-                    {isLoading ? (
-                      <ChartSkeleton />
-                    ) : (
-                      <AITrendPrediction 
-                        ipoId={selectedCreator?.id}
-                        symbol={selectedCreator?.symbol}
-                        currentPrice={selectedCreator?.currentPrice}
-                      />
-                    )}
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {isLoading ? (
-                        <>
-                          <ChartSkeleton height="300px" />
-                          <ChartSkeleton height="300px" />
-                        </>
-                      ) : (
-                        <>
-                          <MarketDepthChart 
+                          
+                          <AITrendPrediction 
                             ipoId={selectedCreator?.id}
                             symbol={selectedCreator?.symbol}
                             currentPrice={selectedCreator?.currentPrice}
                           />
-                          
-                          <VirtualizedTradeHistory 
-                            ipoId={selectedCreator?.id} 
-                            symbol={selectedCreator?.symbol}
-                          />
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="risk" className="mt-6">
-                  <RiskAnomalyCenter />
-                </TabsContent>
-                
-                <TabsContent value="dividends" className="mt-6 space-y-6">
-                  {isLoading ? (
-                    <>
-                      <ChartSkeleton />
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <ChartSkeleton height="300px" />
-                        <ChartSkeleton height="300px" />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <DividendAndVesting 
-                        ipoId={selectedCreator?.id}
-                        symbol={selectedCreator?.symbol}
-                      />
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <PriceChart 
-                          symbol={selectedCreator?.symbol}
-                          name={selectedCreator?.creatorName}
-                          currentPrice={selectedCreator?.currentPrice}
-                          ipoId={selectedCreator?.id}
-                        />
-                        
-                        <AITrendPrediction 
-                          ipoId={selectedCreator?.id}
-                          symbol={selectedCreator?.symbol}
-                          currentPrice={selectedCreator?.currentPrice}
-                        />
-                      </div>
-                    </>
-                  )}
-                </TabsContent>
+                        </div>
+                      </>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </DashboardTabs>
             </div>
           </div>

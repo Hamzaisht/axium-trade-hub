@@ -1,4 +1,4 @@
 
-import LiquidityPoolInfo from '@/components/trading/liquidity-pool/LiquidityPoolInfo';
+import LiquidityPoolInfo from './LiquidityPoolInfo';
 
 export default LiquidityPoolInfo;
