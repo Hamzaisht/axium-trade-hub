@@ -25,12 +25,17 @@ import {
   Lock,
   ShieldCheck,
   KeyRound,
-  Building2
+  Building2,
+  Network,
+  Timer,
+  AreaChart,
+  BarChart4
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAPIConfiguration, APIServiceStatus } from "@/hooks/useAPIConfiguration";
+import { toast } from "@/components/ui/use-toast";
 
 export interface TimeframeOption {
   label: string;
@@ -50,6 +55,14 @@ interface RegionCompliance {
   region: 'US' | 'EU' | 'Asia' | 'Global';
   enabled: boolean;
   restrictedFeatures?: string[];
+}
+
+interface InstitutionalOption {
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  requiresAccess: 'standard' | 'pro' | 'enterprise';
 }
 
 interface AdvancedTradingSettingsProps {
@@ -75,6 +88,7 @@ export const AdvancedTradingSettings = ({
 }: AdvancedTradingSettingsProps) => {
   const [isIndicatorsOpen, setIsIndicatorsOpen] = useState(false);
   const [isComplianceOpen, setIsComplianceOpen] = useState(false);
+  const [isInstitutionalOpen, setIsInstitutionalOpen] = useState(false);
   const [institutionalMode, setInstitutionalMode] = useState(false);
   
   const { user } = useAuth();
@@ -88,6 +102,45 @@ export const AdvancedTradingSettings = ({
     { region: 'Global', enabled: true }
   ]);
   
+  // Institutional-grade trading options
+  const [institutionalOptions, setInstitutionalOptions] = useState<InstitutionalOption[]>([
+    { 
+      id: 'hft', 
+      name: 'High-Frequency Trading', 
+      description: 'Low-latency co-location for ultra-fast execution',
+      enabled: false,
+      requiresAccess: 'enterprise'
+    },
+    { 
+      id: 'dma', 
+      name: 'Direct Market Access', 
+      description: 'Direct order routing to liquidity pools',
+      enabled: false,
+      requiresAccess: 'pro'
+    },
+    { 
+      id: 'sor', 
+      name: 'Smart Order Routing', 
+      description: 'Automatic best-price execution across pools',
+      enabled: true,
+      requiresAccess: 'pro'
+    },
+    { 
+      id: 'darkpool', 
+      name: 'Dark Pool Access', 
+      description: 'Hidden liquidity for large orders',
+      enabled: false,
+      requiresAccess: 'enterprise'
+    },
+    { 
+      id: 'twap', 
+      name: 'TWAP/VWAP Execution', 
+      description: 'Time/Volume-weighted execution algorithms',
+      enabled: false,
+      requiresAccess: 'pro'
+    }
+  ]);
+  
   // Toggle compliance for a region
   const toggleRegionCompliance = (region: 'US' | 'EU' | 'Asia' | 'Global') => {
     setComplianceSettings(prev => 
@@ -97,6 +150,44 @@ export const AdvancedTradingSettings = ({
           : setting
       )
     );
+  };
+  
+  // Toggle institutional trading features
+  const toggleInstitutionalOption = (id: string) => {
+    const option = institutionalOptions.find(opt => opt.id === id);
+    
+    if (option) {
+      // Check if user has access to this feature
+      const hasAccess = 
+        (option.requiresAccess === 'standard') || 
+        (option.requiresAccess === 'pro' && (user?.role === 'admin' || user?.role === 'investor')) ||
+        (option.requiresAccess === 'enterprise' && user?.role === 'admin');
+        
+      if (!hasAccess) {
+        toast({
+          title: "Access Restricted",
+          description: `${option.name} requires ${option.requiresAccess} access. Please upgrade your account.`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setInstitutionalOptions(prev => 
+        prev.map(opt => 
+          opt.id === id 
+            ? { ...opt, enabled: !opt.enabled } 
+            : opt
+        )
+      );
+      
+      // Show confirmation toast
+      toast({
+        title: option.enabled ? `${option.name} Disabled` : `${option.name} Enabled`,
+        description: option.enabled 
+          ? `You've turned off ${option.name}`
+          : `You've activated ${option.name}. This may affect your trading experience.`,
+      });
+    }
   };
   
   // Service API status indicator
@@ -129,10 +220,19 @@ export const AdvancedTradingSettings = ({
     }
   };
   
+  // Calculate timeframes to display based on user access level
+  const visibleTimeframes = timeframes.filter(tf => {
+    // Simple users don't get access to very fine-grained timeframes
+    if ((tf.value === '1m' || tf.value === '5m') && !user?.role) {
+      return false;
+    }
+    return true;
+  });
+  
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
-      <div className="flex items-center space-x-1">
-        {timeframes.map((timeframe) => (
+      <div className="flex items-center space-x-1 overflow-x-auto thin-scrollbar">
+        {visibleTimeframes.map((timeframe) => (
           <Button
             key={timeframe.value}
             variant="ghost"
@@ -268,6 +368,86 @@ export const AdvancedTradingSettings = ({
         </DropdownMenuContent>
       </DropdownMenu>
       
+      {/* New Institutional Features Dropdown */}
+      <DropdownMenu open={isInstitutionalOpen} onOpenChange={setIsInstitutionalOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className="h-8">
+            <Network className="h-4 w-4 mr-1" />
+            Advanced
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-72 p-4">
+          <DropdownMenuLabel className="flex items-center">
+            <Timer className="h-4 w-4 mr-2 text-axium-gray-500" />
+            Execution Options
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup className="space-y-3 mt-2">
+            {institutionalOptions.filter(opt => 
+              opt.id === 'hft' || opt.id === 'dma' || opt.id === 'sor'
+            ).map((option) => (
+              <div key={option.id} className="flex flex-col space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor={option.id} className="flex items-center">
+                    {option.name}
+                    {option.requiresAccess !== 'standard' && (
+                      <Badge variant="outline" className="ml-2 text-xs">
+                        {option.requiresAccess}
+                      </Badge>
+                    )}
+                  </Label>
+                  <Switch 
+                    id={option.id} 
+                    checked={option.enabled} 
+                    onCheckedChange={() => toggleInstitutionalOption(option.id)}
+                    disabled={
+                      (option.requiresAccess === 'pro' && !(user?.role === 'admin' || user?.role === 'investor')) ||
+                      (option.requiresAccess === 'enterprise' && user?.role !== 'admin')
+                    }
+                  />
+                </div>
+                <p className="text-xs text-axium-gray-500">{option.description}</p>
+              </div>
+            ))}
+          </DropdownMenuGroup>
+          
+          <DropdownMenuSeparator className="my-3" />
+          
+          <DropdownMenuLabel className="flex items-center">
+            <AreaChart className="h-4 w-4 mr-2 text-axium-gray-500" />
+            Advanced Order Types
+          </DropdownMenuLabel>
+          <DropdownMenuGroup className="space-y-3 mt-2">
+            {institutionalOptions.filter(opt => 
+              opt.id === 'darkpool' || opt.id === 'twap'
+            ).map((option) => (
+              <div key={option.id} className="flex flex-col space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor={option.id} className="flex items-center">
+                    {option.name}
+                    {option.requiresAccess !== 'standard' && (
+                      <Badge variant="outline" className="ml-2 text-xs">
+                        {option.requiresAccess}
+                      </Badge>
+                    )}
+                  </Label>
+                  <Switch 
+                    id={option.id} 
+                    checked={option.enabled} 
+                    onCheckedChange={() => toggleInstitutionalOption(option.id)}
+                    disabled={
+                      (option.requiresAccess === 'pro' && !(user?.role === 'admin' || user?.role === 'investor')) ||
+                      (option.requiresAccess === 'enterprise' && user?.role !== 'admin')
+                    }
+                  />
+                </div>
+                <p className="text-xs text-axium-gray-500">{option.description}</p>
+              </div>
+            ))}
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      
       {/* Institutional features */}
       {user?.role === 'admin' || user?.role === 'investor' ? (
         <DropdownMenu>
@@ -290,6 +470,10 @@ export const AdvancedTradingSettings = ({
             <DropdownMenuItem>
               <BarChart3 className="h-4 w-4 mr-2 text-axium-gray-500" />
               Market Making Dashboard
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <BarChart4 className="h-4 w-4 mr-2 text-axium-gray-500" />
+              Volume Rebate Tiers
             </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
