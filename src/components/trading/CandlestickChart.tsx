@@ -246,8 +246,6 @@ export const CandlestickChart = ({
           payload: entry
         }))}
       </ComposedChart>
-    </Respon
-
-siveContainer>
+    </ResponsiveContainer>
   );
 };
