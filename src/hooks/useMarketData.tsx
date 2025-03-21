@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';
 import { IPO, Order } from '@/utils/mockApi';
 
-interface PriceUpdate {
+export interface PriceUpdate {
   ipoId: string;
   symbol: string;
   oldPrice: number;
@@ -11,7 +11,7 @@ interface PriceUpdate {
   timestamp: string;
 }
 
-interface OrderBookUpdate {
+export interface OrderBookUpdate {
   ipoId: string;
   symbol: string;
   bids: Order[];
@@ -19,7 +19,7 @@ interface OrderBookUpdate {
   timestamp: string;
 }
 
-interface TradeUpdate {
+export interface TradeUpdate {
   id: string;
   buyerId: string;
   sellerId: string;

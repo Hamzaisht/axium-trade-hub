@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrading } from "@/contexts/TradingContext";
 import { useIPO } from "@/contexts/IPOContext";
-import { useMarketData } from "@/hooks/useMarketData";
+import { useMarketData, TradeUpdate } from "@/hooks/useMarketData";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ import AdvancedOrderTypes from "@/components/trading/AdvancedOrderTypes";
 import InstitutionalTrading from "@/components/trading/institutional/InstitutionalTrading";
 import LiveTrades from "@/components/trading/LiveTrades";
 import SentimentInsights from "@/components/trading/SentimentInsights";
-import ExternalMetricsCard from "@/components/trading/external-metrics/ExternalMetricsCard";
+import { ExternalMetricsCard } from "@/components/trading/external-metrics";
 import LiquidityPoolInfo from "@/components/trading/liquidity-pool/LiquidityPoolInfo";
 
 // Helper for date formatting
@@ -72,7 +72,8 @@ const Trading = () => {
   const generateMockCandlestickData = () => {
     const baseDate = new Date().getTime();
     const basePrice = selectedIPO?.currentPrice || 25;
-    const volatility = selectedIPO?.volatilityScore || 5;
+    // Use a default volatility value if volatilityScore doesn't exist
+    const volatility = 5; // Default volatility
     
     return Array.from({ length: 30 }, (_, i) => {
       const timestamp = baseDate - (29 - i) * 86400000 / 6; // Going backwards from today
@@ -102,6 +103,18 @@ const Trading = () => {
   };
 
   const candlestickData = generateMockCandlestickData();
+
+  // Calculate price change percentage for display
+  const calculatePriceChange = () => {
+    if (!selectedIPO) return 0;
+    // Using the initial price as a base for calculation
+    const initialPrice = selectedIPO.initialPrice || 0;
+    const currentPrice = selectedIPO.currentPrice || 0;
+    if (initialPrice === 0) return 0;
+    return ((currentPrice - initialPrice) / initialPrice) * 100;
+  };
+
+  const priceChangePercent = calculatePriceChange();
 
   if (iposLoading || tradingLoading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
@@ -163,8 +176,8 @@ const Trading = () => {
                 </div>
                 <div className="flex flex-col items-end">
                   <div className="text-3xl font-semibold">${selectedIPO.currentPrice.toFixed(2)}</div>
-                  <div className={`text-sm ${selectedIPO.priceChangePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {selectedIPO.priceChangePercent >= 0 ? '+' : ''}{selectedIPO.priceChangePercent.toFixed(2)}%
+                  <div className={`text-sm ${priceChangePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {priceChangePercent >= 0 ? '+' : ''}{priceChangePercent.toFixed(2)}%
                   </div>
                 </div>
               </div>
@@ -219,8 +232,7 @@ const Trading = () => {
                   />
                 ) : (
                   <PriceChart 
-                    token={selectedIPO.symbol} 
-                    priceData={candlestickData.map(d => ({ timestamp: d.timestamp, price: d.close }))} 
+                    chartData={candlestickData.map(d => ({ timestamp: d.timestamp, price: d.close }))} 
                   />
                 )}
               </div>
@@ -269,22 +281,24 @@ const Trading = () => {
               <GlassCard className="p-4">
                 <h3 className="text-lg font-semibold mb-2">Order Book</h3>
                 <OrderBook 
-                  asks={orderBook?.asks || []} 
-                  bids={orderBook?.bids || []} 
-                  token={selectedIPO.symbol}
+                  data={{ 
+                    asks: orderBook?.asks || [], 
+                    bids: orderBook?.bids || [] 
+                  }}
+                  symbol={selectedIPO.symbol}
                 />
               </GlassCard>
               
               <GlassCard className="p-4">
                 <h3 className="text-lg font-semibold mb-2">Recent Trades</h3>
-                <LiveTrades trades={recentTrades} />
+                <LiveTrades ipoId={selectedIPO.id} symbol={selectedIPO.symbol} />
               </GlassCard>
             </div>
             
             {/* External data and sentiment */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SentimentInsights creatorId={selectedIPO.creatorId} symbol={selectedIPO.symbol} />
-              <ExternalMetricsCard creatorId={selectedIPO.creatorId} />
+              <SentimentInsights creatorName={selectedIPO.creatorName} />
+              <ExternalMetricsCard className="h-full" />
             </div>
             
             {/* Institutional features (conditional) */}
@@ -293,7 +307,7 @@ const Trading = () => {
             )}
             
             {/* Liquidity pool info */}
-            <LiquidityPoolInfo ipoId={selectedIPO.id} symbol={selectedIPO.symbol} />
+            <LiquidityPoolInfo symbol={selectedIPO.symbol} />
           </div>
           
           {/* Right column - Trading form and order management */}
