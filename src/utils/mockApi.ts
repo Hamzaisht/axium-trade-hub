@@ -420,7 +420,7 @@ class AIValuationAPI {
     // Add mock historical payouts
     const historicalPayouts = Array(5).fill(null).map((_, i) => ({
       date: faker.date.past({ years: 1 }).toISOString(),
-      amount: parseFloat(faker.number.float({ min: 0.01, max: dividendInfo.nextEstimatedAmount, precision: 0.01 }).toFixed(2))
+      amount: parseFloat(faker.number.float({ min: 0.01, max: dividendInfo.nextEstimatedAmount, fractionDigits: 2 }).toFixed(2))
     }));
 
     return {
@@ -646,4 +646,3 @@ export const mockIPOAPI = new MockIPOAPI();
 export const mockTradingAPI = new MockTradingAPI();
 export const mockPortfolioAPI = new MockPortfolioAPI();
 export const mockAIValuationAPI = new AIValuationAPI();
-
