@@ -2,6 +2,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth, UserRole } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   requiredRole?: UserRole;
@@ -12,13 +13,12 @@ export const ProtectedRoute = ({ requiredRole = 'user' }: ProtectedRouteProps) =
   const location = useLocation();
 
   if (isLoading) {
-    // Show loading skeleton while checking auth status
+    // Show loading spinner while checking auth status
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="w-full max-w-md space-y-4">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-12 w-full" />
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-axium-blue mx-auto mb-4" />
+          <p className="text-axium-gray-600">Verifying authentication...</p>
         </div>
       </div>
     );

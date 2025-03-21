@@ -73,7 +73,7 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   
-                  {/* Protected routes */}
+                  {/* Protected routes - all dashboard, creators, portfolio routes */}
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/creators" element={<Creators />} />
