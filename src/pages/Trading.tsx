@@ -26,7 +26,7 @@ import AdvancedOrderTypes from "@/components/trading/AdvancedOrderTypes";
 import InstitutionalTrading from "@/components/trading/institutional/InstitutionalTrading";
 import LiveTrades from "@/components/trading/LiveTrades";
 import SentimentInsights from "@/components/trading/SentimentInsights";
-import { ExternalMetricsCard } from "@/components/trading/external-metrics";
+import { ExternalMetricsCard } from "@/components/trading/ExternalMetricsCard";
 import LiquidityPoolInfo from "@/components/trading/liquidity-pool/LiquidityPoolInfo";
 
 // Helper for date formatting
@@ -72,7 +72,7 @@ const Trading = () => {
   const generateMockCandlestickData = () => {
     const baseDate = new Date().getTime();
     const basePrice = selectedIPO?.currentPrice || 25;
-    // Use a default volatility value if volatilityScore doesn't exist
+    // Use a default volatility value
     const volatility = 5; // Default volatility
     
     return Array.from({ length: 30 }, (_, i) => {
@@ -232,7 +232,10 @@ const Trading = () => {
                   />
                 ) : (
                   <PriceChart 
-                    chartData={candlestickData.map(d => ({ timestamp: d.timestamp, price: d.close }))} 
+                    symbol={selectedIPO.symbol}
+                    name={selectedIPO.creatorName}
+                    currentPrice={selectedIPO.currentPrice}
+                    ipoId={selectedIPO.id}
                   />
                 )}
               </div>
@@ -281,11 +284,9 @@ const Trading = () => {
               <GlassCard className="p-4">
                 <h3 className="text-lg font-semibold mb-2">Order Book</h3>
                 <OrderBook 
-                  data={{ 
-                    asks: orderBook?.asks || [], 
-                    bids: orderBook?.bids || [] 
-                  }}
                   symbol={selectedIPO.symbol}
+                  currentPrice={selectedIPO.currentPrice}
+                  ipoId={selectedIPO.id}
                 />
               </GlassCard>
               
@@ -297,8 +298,8 @@ const Trading = () => {
             
             {/* External data and sentiment */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SentimentInsights creatorName={selectedIPO.creatorName} />
-              <ExternalMetricsCard className="h-full" />
+              <SentimentInsights creatorId={selectedIPO.id} className="h-full" />
+              <ExternalMetricsCard creatorId={selectedIPO.id} className="h-full" />
             </div>
             
             {/* Institutional features (conditional) */}

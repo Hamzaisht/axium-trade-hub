@@ -9,7 +9,7 @@ import MarketDepthChart from "@/components/trading/MarketDepthChart";
 import DividendAndVesting from "@/components/trading/DividendAndVesting";
 import LiveTrades from "@/components/trading/LiveTrades";
 import SentimentInsights from "@/components/trading/SentimentInsights";
-import ExternalMetricsCard from "@/components/trading/ExternalMetricsCard";
+import { ExternalMetricsCard } from "@/components/trading/ExternalMetricsCard";
 import SentimentScoreBadge from "@/components/trading/SentimentScoreBadge";
 import RiskAnomalyCenter from "@/components/risk/RiskAnomalyCenter";
 import AnomalyWarningBanner from "@/components/risk/AnomalyWarningBanner";
