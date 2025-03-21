@@ -56,15 +56,15 @@ export const OrderBook = ({
       if (orderBook.bids && orderBook.bids.length > 0) {
         setBuyOrders(orderBook.bids.map(bid => ({
           price: bid.price,
-          amount: bid.amount,
-          total: bid.price * bid.amount
+          amount: bid.quantity, // Changed from bid.amount to bid.quantity
+          total: bid.price * bid.quantity // Changed from bid.amount to bid.quantity
         })));
       }
       if (orderBook.asks && orderBook.asks.length > 0) {
         setSellOrders(orderBook.asks.map(ask => ({
           price: ask.price,
-          amount: ask.amount,
-          total: ask.price * ask.amount
+          amount: ask.quantity, // Changed from ask.amount to ask.quantity
+          total: ask.price * ask.quantity // Changed from ask.amount to ask.quantity
         })));
       }
     }
