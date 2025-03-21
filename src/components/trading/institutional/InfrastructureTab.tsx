@@ -28,7 +28,7 @@ export const InfrastructureTab = () => {
   
   return (
     <div className="space-y-6">
-      <Alert variant="warning" className="bg-amber-50 text-amber-800 border-amber-200">
+      <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
         <AlertTriangle className="h-4 w-4" />
         <AlertDescription>
           FIX protocol integration is in maintenance mode. Scheduled upgrades in progress.
@@ -201,3 +201,4 @@ export const InfrastructureTab = () => {
     </div>
   );
 };
+
