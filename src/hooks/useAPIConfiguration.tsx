@@ -1,6 +1,7 @@
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { APIKeysService, apiKeysService } from '@/services/api/APIKeysService';
 
 export type APIServiceStatus = 'live' | 'secure' | 'mock' | 'mixed';
 
@@ -24,6 +25,9 @@ interface APIConfigurationContextValue {
   tradingLatency: number;
   updateAPIConfig: (config: Partial<Record<APIEndpointType, Partial<APIEndpointConfig>>>) => void;
   toggleEndpointStatus: (endpoint: APIEndpointType) => void;
+  // Add the missing properties to fix the error
+  apiStatus: { real: number; mock: number; total: number };
+  availablePlatforms: string[];
 }
 
 const APIConfigurationContext = createContext<APIConfigurationContextValue | undefined>(undefined);
@@ -69,6 +73,24 @@ export const APIConfigurationProvider = ({ children }: { children: ReactNode }) 
   
   // Calculate trading latency (based on market data and order execution)
   const [tradingLatency, setTradingLatency] = useState<number>(300);
+  
+  // Initialize API status and available platforms using the APIKeysService
+  const [apiStatus, setApiStatus] = useState<{ real: number; mock: number; total: number }>(
+    { real: 0, mock: 0, total: 0 }
+  );
+  
+  const [availablePlatforms, setAvailablePlatforms] = useState<string[]>([]);
+  
+  // Initialize API status and available platforms on component mount
+  useEffect(() => {
+    // Get API key status from APIKeysService
+    const status = apiKeysService.getApiKeyStatus();
+    setApiStatus(status);
+    
+    // Get available platforms with real API keys
+    const platforms = apiKeysService.getAvailablePlatforms();
+    setAvailablePlatforms(platforms);
+  }, []);
   
   // Update API configuration when user role changes
   useEffect(() => {
@@ -143,7 +165,10 @@ export const APIConfigurationProvider = ({ children }: { children: ReactNode }) 
         endpoints,
         tradingLatency,
         updateAPIConfig,
-        toggleEndpointStatus
+        toggleEndpointStatus,
+        // Provide the new properties to the context
+        apiStatus,
+        availablePlatforms
       }}
     >
       {children}
