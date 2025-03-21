@@ -118,3 +118,5 @@ export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCar
     </GlassCard>
   );
 };
+
+export default ExternalMetricsCard;

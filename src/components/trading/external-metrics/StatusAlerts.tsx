@@ -1,5 +1,5 @@
 
-import { AlertCircle, Database } from 'lucide-react';
+import { AlertCircle, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { APIServiceStatus } from '@/hooks/useAPIConfiguration';
 
@@ -9,28 +9,34 @@ interface StatusAlertsProps {
 }
 
 export const StatusAlerts = ({ apiServiceStatus, availablePlatforms }: StatusAlertsProps) => {
-  return (
-    <>
-      {apiServiceStatus === 'mock' && (
-        <Alert variant="warning" className="mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Using mock data</AlertTitle>
-          <AlertDescription className="text-sm">
-            Add API keys as environment variables to connect to real APIs. Example: 
-            VITE_TWITTER_API_KEY, VITE_INSTAGRAM_API_KEY, VITE_SPOTIFY_API_KEY, etc.
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {apiServiceStatus === 'mixed' && (
-        <Alert className="mb-4 bg-blue-50 border-blue-200">
-          <Database className="h-4 w-4 text-blue-600" />
-          <AlertTitle className="text-blue-800">Using mixed data sources</AlertTitle>
-          <AlertDescription className="text-blue-700 text-sm">
-            Available APIs: {availablePlatforms.join(', ')}
-          </AlertDescription>
-        </Alert>
-      )}
-    </>
-  );
+  if (apiServiceStatus === 'live' || (apiServiceStatus === 'mixed' && availablePlatforms.length > 2)) {
+    return null;
+  }
+  
+  if (apiServiceStatus === 'mock') {
+    return (
+      <Alert variant="warning" className="mb-4">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Using Mock Data</AlertTitle>
+        <AlertDescription>
+          External API keys are not configured. Add API keys in environment variables to use real data sources.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  
+  if (apiServiceStatus === 'mixed' && availablePlatforms.length <= 2) {
+    return (
+      <Alert className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Limited Real Data</AlertTitle>
+        <AlertDescription>
+          Only {availablePlatforms.length} platform{availablePlatforms.length === 1 ? '' : 's'} configured with real API keys. 
+          Add more API keys for a more comprehensive analysis.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  
+  return null;
 };

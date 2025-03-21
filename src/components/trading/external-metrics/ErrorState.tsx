@@ -8,16 +8,18 @@ interface ErrorStateProps {
 
 export const ErrorState = ({ onRetry }: ErrorStateProps) => {
   return (
-    <div className="py-6 text-center text-axium-gray-500">
-      <AlertCircle className="h-12 w-12 text-axium-error mx-auto mb-2" />
-      <p className="mb-2">Failed to load external metrics</p>
+    <div className="text-center py-6">
+      <AlertCircle className="h-8 w-8 text-axium-error mx-auto mb-2" />
+      <h4 className="text-axium-error font-medium mb-1">Failed to load external data</h4>
+      <p className="text-sm text-axium-gray-600 mb-4">
+        There was an error loading external creator metrics
+      </p>
       <Button 
         variant="outline" 
         size="sm" 
-        onClick={onRetry} 
-        className="mt-2"
+        onClick={onRetry}
       >
-        Try Again
+        Retry
       </Button>
     </div>
   );

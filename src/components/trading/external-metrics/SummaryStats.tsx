@@ -1,8 +1,13 @@
 
-import { Users, BarChart2, Radio, ShoppingBag } from 'lucide-react';
-import { formatNumber, formatPercentage } from './utils';
+import { 
+  TrendingUp, 
+  Users, 
+  Activity, 
+  Play, 
+  DollarSign
+} from 'lucide-react';
 
-interface AggregatedMetrics {
+interface AggregatedMetricsProps {
   totalFollowers: number;
   avgEngagement: number;
   totalStreams: number;
@@ -14,51 +19,78 @@ interface AggregatedMetrics {
 }
 
 interface SummaryStatsProps {
-  aggregatedMetrics: AggregatedMetrics | null;
+  aggregatedMetrics: AggregatedMetricsProps | null;
 }
 
 export const SummaryStats = ({ aggregatedMetrics }: SummaryStatsProps) => {
+  if (!aggregatedMetrics) return null;
+  
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    } else {
+      return num.toFixed(0);
+    }
+  };
+  
+  const formatPercent = (num: number): string => {
+    return num.toFixed(2) + '%';
+  };
+  
+  const formatCurrency = (num: number): string => {
+    if (num >= 1000000) {
+      return '$' + (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return '$' + (num / 1000).toFixed(1) + 'K';
+    } else {
+      return '$' + num.toFixed(0);
+    }
+  };
+  
+  const stats = [
+    {
+      label: 'Followers',
+      value: formatNumber(aggregatedMetrics.totalFollowers),
+      icon: <Users className="h-4 w-4 text-blue-500" />
+    },
+    {
+      label: 'Avg. Engagement',
+      value: formatPercent(aggregatedMetrics.avgEngagement),
+      icon: <Activity className="h-4 w-4 text-green-500" />
+    },
+    {
+      label: 'Growth',
+      value: formatPercent(aggregatedMetrics.averageGrowth),
+      icon: <TrendingUp className="h-4 w-4 text-purple-500" />
+    },
+    {
+      label: 'Total Streams',
+      value: formatNumber(aggregatedMetrics.totalStreams),
+      icon: <Play className="h-4 w-4 text-red-500" />
+    },
+    {
+      label: 'Brand Value',
+      value: formatCurrency(aggregatedMetrics.totalBrandValue),
+      icon: <DollarSign className="h-4 w-4 text-yellow-500" />
+    }
+  ];
+  
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      <div className="bg-white/50 p-3 rounded-lg">
-        <div className="flex items-center mb-1">
-          <Users className="h-4 w-4 text-axium-blue mr-1" />
-          <span className="text-xs text-axium-gray-600">Followers</span>
+    <div className="grid grid-cols-3 gap-2 text-sm">
+      {stats.map((stat, index) => (
+        <div
+          key={index}
+          className="flex flex-col items-center justify-center p-2 bg-axium-gray-50 rounded-md"
+        >
+          <div className="flex items-center mb-1">
+            {stat.icon}
+            <span className="ml-1 text-axium-gray-600 text-xs">{stat.label}</span>
+          </div>
+          <span className="font-semibold">{stat.value}</span>
         </div>
-        <p className="text-xl font-semibold">
-          {formatNumber(aggregatedMetrics?.totalFollowers || 0)}
-        </p>
-      </div>
-      
-      <div className="bg-white/50 p-3 rounded-lg">
-        <div className="flex items-center mb-1">
-          <BarChart2 className="h-4 w-4 text-axium-blue mr-1" />
-          <span className="text-xs text-axium-gray-600">Engagement</span>
-        </div>
-        <p className="text-xl font-semibold">
-          {formatPercentage(aggregatedMetrics?.avgEngagement || 0)}
-        </p>
-      </div>
-      
-      <div className="bg-white/50 p-3 rounded-lg">
-        <div className="flex items-center mb-1">
-          <Radio className="h-4 w-4 text-axium-blue mr-1" />
-          <span className="text-xs text-axium-gray-600">Streams</span>
-        </div>
-        <p className="text-xl font-semibold">
-          {formatNumber(aggregatedMetrics?.totalStreams || 0)}
-        </p>
-      </div>
-      
-      <div className="bg-white/50 p-3 rounded-lg">
-        <div className="flex items-center mb-1">
-          <ShoppingBag className="h-4 w-4 text-axium-blue mr-1" />
-          <span className="text-xs text-axium-gray-600">Brand Deals</span>
-        </div>
-        <p className="text-xl font-semibold">
-          {aggregatedMetrics?.activeBrandDeals || 0}
-        </p>
-      </div>
+      ))}
     </div>
   );
 };
