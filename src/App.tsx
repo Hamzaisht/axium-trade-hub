@@ -71,13 +71,35 @@ function App() {
                   {/* Public routes */}
                   <Route path="/" element={<Index />} />
                   <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
                   
-                  {/* Protected routes - all dashboard, creators, portfolio routes */}
+                  {/* Remove the standalone Register route since it's now integrated in Login page */}
+                  
+                  {/* Protected routes with role-based access */}
+                  {/* Base protection - requires authentication */}
                   <Route element={<ProtectedRoute />}>
+                    {/* Dashboard accessible to all authenticated users */}
                     <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/creators" element={<Creators />} />
+                    
+                    {/* Portfolio route - mostly for investors */}
                     <Route path="/portfolio" element={<Portfolio />} />
+                    
+                    {/* Creators section - for both creators and investors */}
+                    <Route path="/creators" element={<Creators />} />
+                  </Route>
+                  
+                  {/* Admin-only routes */}
+                  <Route element={<ProtectedRoute requiredRole="admin" />}>
+                    {/* Add admin routes here when needed */}
+                  </Route>
+                  
+                  {/* Creator-specific routes */}
+                  <Route element={<ProtectedRoute allowInvestor={false} />}>
+                    {/* Add creator-only routes here when needed */}
+                  </Route>
+                  
+                  {/* Investor-specific routes */}
+                  <Route element={<ProtectedRoute allowCreator={false} />}>
+                    {/* Add investor-only routes here when needed */}
                   </Route>
                   
                   {/* 404 route */}
