@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';
 import { IPO, Order } from '@/utils/mockApi';
@@ -46,13 +45,13 @@ export const useMarketData = (ipoId?: string) => {
       setIsConnected(data.status === 'connected');
     };
 
-    // Handle price updates
+    // Handle price updates every 2-5 seconds
     const priceUpdateHandler = (data: PriceUpdate) => {
       if (ipoId && data.ipoId !== ipoId) return;
       
       setPriceUpdates(prev => {
         const newUpdates = [data, ...prev];
-        return newUpdates.slice(0, 50); // Keep last 50 updates
+        return newUpdates.slice(0, 100); // Keep last 100 updates for chart data
       });
       
       setLatestPrices(prev => ({

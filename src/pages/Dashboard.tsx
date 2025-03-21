@@ -31,7 +31,6 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTab, setSelectedTab] = useState<string>("trading");
   
-  // Fetch IPOs with error handling
   const { data: ipos = [], isLoading, error } = useQuery({
     queryKey: ['ipos'],
     queryFn: async () => {
@@ -48,7 +47,6 @@ const Dashboard = () => {
   
   const [selectedCreator, setSelectedCreator] = useState<any>(null);
   
-  // Set the first creator as default when data loads
   useEffect(() => {
     if (ipos.length > 0 && !selectedCreator) {
       setSelectedCreator(ipos[0]);
@@ -67,19 +65,16 @@ const Dashboard = () => {
     (ipo.symbol && ipo.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // Get anomaly data for the selected creator
   const { data: anomalyData } = useAnomalyDetection({
     ipoId: selectedCreator?.id,
     enabled: !!selectedCreator?.id
   });
 
-  // Set up anomaly alerts
   useAnomalyAlerts({
     anomalyData,
     enabled: true
   });
 
-  // Error fallback
   if (error) {
     return (
       <div className="min-h-screen bg-axium-gray-100/30">
@@ -163,7 +158,7 @@ const Dashboard = () => {
                         price: creator.currentPrice,
                         change: ((creator.currentPrice - creator.initialPrice) / creator.initialPrice) * 100,
                         marketCap: creator.currentPrice * (creator.totalSupply - creator.availableSupply),
-                        followers: "28.5M", // This would come from real data
+                        followers: "28.5M",
                         engagement: creator.engagementScore,
                         aiScore: creator.aiScore
                       }} 
@@ -263,24 +258,35 @@ const Dashboard = () => {
                 </TabsList>
                 
                 <TabsContent value="trading" className="mt-6 space-y-6">
-                  <PriceChart 
-                    symbol={selectedCreator?.symbol}
-                    name={selectedCreator?.creatorName}
-                    currentPrice={selectedCreator?.currentPrice}
-                    ipoId={selectedCreator?.id}
-                  />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <OrderBook 
+                  <div className="grid grid-cols-1 gap-6">
+                    <PriceChart 
                       symbol={selectedCreator?.symbol}
+                      name={selectedCreator?.creatorName}
                       currentPrice={selectedCreator?.currentPrice}
+                      ipoId={selectedCreator?.id}
                     />
                     
-                    <MarketDepthChart 
-                      ipoId={selectedCreator?.id}
-                      symbol={selectedCreator?.symbol}
-                      currentPrice={selectedCreator?.currentPrice}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <OrderBook 
+                        symbol={selectedCreator?.symbol}
+                        currentPrice={selectedCreator?.currentPrice}
+                        ipoId={selectedCreator?.id}
+                      />
+                      
+                      <div className="space-y-6">
+                        <MarketDepthChart 
+                          ipoId={selectedCreator?.id}
+                          symbol={selectedCreator?.symbol}
+                          currentPrice={selectedCreator?.currentPrice}
+                        />
+                        
+                        <LiveTrades 
+                          ipoId={selectedCreator?.id} 
+                          symbol={selectedCreator?.symbol}
+                          limit={10}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </TabsContent>
                 
@@ -357,4 +363,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
