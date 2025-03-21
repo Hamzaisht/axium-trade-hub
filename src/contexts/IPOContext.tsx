@@ -1,9 +1,10 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { mockIPOAPI, mockAIValuationAPI, IPO } from '@/utils/mockApi';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
 import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';
-import { AIModelType, PredictionTimeframe } from '@/utils/mockAIModels';
+import { AIModelType } from '@/utils/mockAIModels';
 
 interface IPOContextType {
   ipos: IPO[];
@@ -168,7 +169,7 @@ export const IPOProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       return await mockAIValuationAPI.predictPriceMovement(
         ipoId, 
-        PredictionTimeframe['24h'], 
+        "24h", // Use a string literal instead of enum value
         AIModelType.STANDARD
       );
     } catch (error) {

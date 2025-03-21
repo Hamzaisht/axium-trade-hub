@@ -192,7 +192,7 @@ export class MockIPOAPI {
     const trades = Array(limit).fill(null).map(() => ({
       id: faker.string.uuid(),
       ipoId: ipoId,
-      price: parseFloat(faker.number.float({ min: ipo.currentPrice * 0.9, max: ipo.currentPrice * 1.1, precision: 0.01 }).toFixed(2)),
+      price: parseFloat(faker.number.float({ min: ipo.currentPrice * 0.9, max: ipo.currentPrice * 1.1, fractionDigits: 2 }).toFixed(2)),
       quantity: faker.number.int({ min: 10, max: 500 }),
       timestamp: faker.date.recent().toISOString(),
       buyerId: faker.string.uuid(),
@@ -280,7 +280,7 @@ export class MockPortfolioAPI {
       const averagePurchasePrice = parseFloat(faker.number.float({ 
         min: randomIPO.currentPrice * 0.7, 
         max: randomIPO.currentPrice * 1.3, 
-        precision: 0.01 
+        fractionDigits: 2
       }).toFixed(2));
       
       return {
@@ -296,7 +296,7 @@ export class MockPortfolioAPI {
       return sum + (holding.currentPrice * holding.quantity);
     }, 0);
     
-    const cash = parseFloat(faker.number.float({ min: 1000, max: 100000, precision: 0.01 }).toFixed(2));
+    const cash = parseFloat(faker.number.float({ min: 1000, max: 100000, fractionDigits: 2 }).toFixed(2));
     
     // Generate history data for the portfolio value
     const history = Array(30).fill(null).map((_, i) => {
@@ -308,7 +308,7 @@ export class MockPortfolioAPI {
         value: parseFloat(faker.number.float({ 
           min: totalValue * 0.8, 
           max: totalValue * 1.2, 
-          precision: 0.01 
+          fractionDigits: 2
         }).toFixed(2))
       };
     });
@@ -646,3 +646,4 @@ export const mockIPOAPI = new MockIPOAPI();
 export const mockTradingAPI = new MockTradingAPI();
 export const mockPortfolioAPI = new MockPortfolioAPI();
 export const mockAIValuationAPI = new AIValuationAPI();
+
