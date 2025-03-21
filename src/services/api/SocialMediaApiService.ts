@@ -1,4 +1,3 @@
-
 import { BaseApiService } from './BaseApiService';
 import { toast } from 'sonner';
 import { APIKeysService, apiKeysService } from './APIKeysService';
@@ -10,7 +9,7 @@ export interface SocialMediaMetrics {
   growth: number;
   posts: number;
   recentEngagementRate: number;
-  isRealData?: boolean;
+  isRealData: boolean;
 }
 
 export class SocialMediaApiService extends BaseApiService {

@@ -110,10 +110,21 @@ class ApiConfigService {
     // Get brand deal metrics
     const brandDealMetrics = await this.brandDealsApi.getCreatorDeals(creatorId);
     
+    // Ensure isRealData property is present and convert types
+    const normalizedSocialMetrics = socialMetrics.map(metric => ({
+      ...metric,
+      isRealData: metric.isRealData ?? false
+    })) as SocialPlatformMetrics[];
+    
+    const normalizedStreamingMetrics = streamingMetrics.map(metric => ({
+      ...metric,
+      isRealData: metric.isRealData ?? false
+    })) as StreamingPlatformMetrics[];
+    
     return {
       creatorId,
-      social: socialMetrics,
-      streaming: streamingMetrics,
+      social: normalizedSocialMetrics,
+      streaming: normalizedStreamingMetrics,
       brandDeals: brandDealMetrics,
       lastUpdated: new Date().toISOString()
     };

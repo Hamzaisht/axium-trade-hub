@@ -1,4 +1,3 @@
-
 import { BaseApiService } from './BaseApiService';
 import { APIKeysService, apiKeysService } from './APIKeysService';
 
@@ -9,7 +8,7 @@ export interface StreamingMetrics {
   growth: number;
   avgStreamTime: number;
   popularity: number;
-  isRealData?: boolean;
+  isRealData: boolean;
 }
 
 export class StreamingApiService extends BaseApiService {
