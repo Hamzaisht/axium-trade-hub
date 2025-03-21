@@ -1,33 +1,42 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrading } from "@/contexts/TradingContext";
 import { useIPO } from "@/contexts/IPOContext";
-import { useMarketData, TradeUpdate } from "@/hooks/useMarketData";
+import { useMarketData } from "@/hooks/useMarketData";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { 
-  ArrowLeft, 
-  BarChart4,
-  LineChart,
   BookOpen,
   History,
   Settings,
-  TrendingUp
+  TrendingUp,
+  TrendingDown
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import TradeForm from "@/components/trading/TradeForm";
-import OrderBook from "@/components/dashboard/OrderBook";
+import VirtualizedOrderBook from "@/components/dashboard/VirtualizedOrderBook";
 import PriceChart from "@/components/dashboard/PriceChart";
 import { CandlestickChart } from "@/components/trading/CandlestickChart";
 import AdvancedOrderTypes from "@/components/trading/AdvancedOrderTypes";
 import InstitutionalTrading from "@/components/trading/institutional/InstitutionalTrading";
-import LiveTrades from "@/components/trading/LiveTrades";
+import VirtualizedTradeHistory from "@/components/trading/VirtualizedTradeHistory";
 import SentimentInsights from "@/components/trading/SentimentInsights";
-import { ExternalMetricsCard } from "@/components/trading/ExternalMetricsCard";
-import LiquidityPoolInfo from "@/components/trading/liquidity-pool/LiquidityPoolInfo";
+import { ExternalMetricsCard } from "@/components/trading/external-metrics";
+import LiquidityPoolInfo from "@/components/trading/liquidity-pool";
+import { showNotification } from "@/components/notifications/ToastContainer";
+import { 
+  TradingHeader, 
+  AssetSelector,
+  PriceHeader,
+  ChartControls,
+  ChartIndicators
+} from "@/components/trading-dashboard";
+import {
+  ChartSkeleton,
+  TradeFormSkeleton
+} from "@/components/ui/skeleton-components";
 
 // Helper for date formatting
 const formatDate = (timestamp: number): string => {
@@ -41,7 +50,6 @@ const formatDate = (timestamp: number): string => {
 };
 
 const Trading = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { isLoading: tradingLoading } = useTrading();
   const { ipos, isLoading: iposLoading } = useIPO();
@@ -56,7 +64,7 @@ const Trading = () => {
     vwap: false
   });
   
-  const { isConnected, priceUpdates, latestPrices, orderBook, recentTrades } = useMarketData(
+  const { isConnected, priceUpdates, latestPrices, orderBook, recentTrades, isLoading: marketDataLoading } = useMarketData(
     selectedIPO?.id
   );
 
@@ -65,7 +73,16 @@ const Trading = () => {
     const ipo = ipos.find(i => i.id === ipoId);
     if (ipo) {
       setSelectedIPO(ipo);
+      showNotification.info(`Switched to ${ipo.symbol} - ${ipo.creatorName}`);
     }
+  };
+
+  // Toggle chart indicator
+  const handleToggleIndicator = (indicator: keyof typeof showIndicators) => {
+    setShowIndicators(prev => ({
+      ...prev,
+      [indicator]: !prev[indicator]
+    }));
   };
 
   // Create mock candlestick data
@@ -116,7 +133,9 @@ const Trading = () => {
 
   const priceChangePercent = calculatePriceChange();
 
-  if (iposLoading || tradingLoading) {
+  const isLoading = iposLoading || tradingLoading;
+
+  if (isLoading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
@@ -128,99 +147,43 @@ const Trading = () => {
     <div className="bg-axium-gray-100/30 min-h-screen">
       <div className="container max-w-7xl mx-auto px-4 py-6">
         {/* Header with navigation */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              className="mr-2" 
-              onClick={() => navigate('/dashboard')}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-2xl font-bold">Trading Dashboard</h1>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <div className={`h-2 w-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <span className="text-sm text-axium-gray-600">
-              {isConnected ? 'Connected' : 'Disconnected'}
-            </span>
-          </div>
-        </div>
+        <TradingHeader 
+          title="Trading Dashboard"
+          isConnected={isConnected}
+        />
         
         {/* Main content layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column - Chart and trading controls */}
           <div className="lg:col-span-2 space-y-6">
             {/* Asset selector */}
-            <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
-              {ipos.map(ipo => (
-                <Button
-                  key={ipo.id}
-                  variant={selectedIPO?.id === ipo.id ? "default" : "outline"}
-                  className="whitespace-nowrap"
-                  onClick={() => handleIPOChange(ipo.id)}
-                >
-                  {ipo.symbol} - {ipo.creatorName}
-                </Button>
-              ))}
-            </div>
+            <AssetSelector 
+              ipos={ipos}
+              selectedIPO={selectedIPO}
+              onSelectIPO={handleIPOChange}
+            />
             
             {/* Price header */}
-            <GlassCard className="p-4">
-              <div className="flex flex-col md:flex-row md:items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold">{selectedIPO.symbol}</h2>
-                  <p className="text-axium-gray-600">{selectedIPO.creatorName}</p>
-                </div>
-                <div className="flex flex-col items-end">
-                  <div className="text-3xl font-semibold">${selectedIPO.currentPrice.toFixed(2)}</div>
-                  <div className={`text-sm ${priceChangePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {priceChangePercent >= 0 ? '+' : ''}{priceChangePercent.toFixed(2)}%
-                  </div>
-                </div>
-              </div>
-            </GlassCard>
+            <PriceHeader 
+              symbol={selectedIPO.symbol}
+              name={selectedIPO.creatorName}
+              currentPrice={selectedIPO.currentPrice}
+              priceChangePercent={priceChangePercent}
+            />
             
             {/* Chart with controls */}
             <GlassCard className="p-4">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex space-x-2">
-                  <Button 
-                    variant={chartType === "candlestick" ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => setChartType("candlestick")}
-                  >
-                    <BarChart4 className="h-4 w-4 mr-2" />
-                    Candlestick
-                  </Button>
-                  <Button 
-                    variant={chartType === "line" ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => setChartType("line")}
-                  >
-                    <LineChart className="h-4 w-4 mr-2" />
-                    Line
-                  </Button>
-                </div>
-                
-                <div className="flex space-x-1 overflow-x-auto">
-                  {["15m", "1H", "1D", "1W", "1M", "YTD", "All"].map(tf => (
-                    <Button 
-                      key={tf}
-                      variant={timeframe === tf ? "default" : "outline"} 
-                      size="sm"
-                      onClick={() => setTimeframe(tf)}
-                    >
-                      {tf}
-                    </Button>
-                  ))}
-                </div>
-              </div>
+              <ChartControls 
+                chartType={chartType}
+                timeframe={timeframe}
+                onChartTypeChange={type => setChartType(type)}
+                onTimeframeChange={tf => setTimeframe(tf)}
+              />
               
               <div className="h-[400px]">
-                {chartType === "candlestick" ? (
+                {marketDataLoading ? (
+                  <ChartSkeleton height="100%" />
+                ) : chartType === "candlestick" ? (
                   <CandlestickChart 
                     data={candlestickData}
                     showVolumeBar={showIndicators.volume}
@@ -240,50 +203,17 @@ const Trading = () => {
                 )}
               </div>
               
-              <div className="flex flex-wrap gap-2 mt-4">
-                <Button 
-                  variant={showIndicators.volume ? "default" : "outline"} 
-                  size="sm"
-                  onClick={() => setShowIndicators({...showIndicators, volume: !showIndicators.volume})}
-                >
-                  Volume
-                </Button>
-                <Button 
-                  variant={showIndicators.sma7 ? "default" : "outline"} 
-                  size="sm"
-                  onClick={() => setShowIndicators({...showIndicators, sma7: !showIndicators.sma7})}
-                >
-                  SMA (7)
-                </Button>
-                <Button 
-                  variant={showIndicators.sma30 ? "default" : "outline"} 
-                  size="sm"
-                  onClick={() => setShowIndicators({...showIndicators, sma30: !showIndicators.sma30})}
-                >
-                  SMA (30)
-                </Button>
-                <Button 
-                  variant={showIndicators.bollingerBands ? "default" : "outline"} 
-                  size="sm"
-                  onClick={() => setShowIndicators({...showIndicators, bollingerBands: !showIndicators.bollingerBands})}
-                >
-                  Bollinger Bands
-                </Button>
-                <Button 
-                  variant={showIndicators.vwap ? "default" : "outline"} 
-                  size="sm"
-                  onClick={() => setShowIndicators({...showIndicators, vwap: !showIndicators.vwap})}
-                >
-                  VWAP
-                </Button>
-              </div>
+              <ChartIndicators 
+                showIndicators={showIndicators} 
+                onToggleIndicator={handleToggleIndicator}
+              />
             </GlassCard>
             
             {/* Order book & trades */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <GlassCard className="p-4">
                 <h3 className="text-lg font-semibold mb-2">Order Book</h3>
-                <OrderBook 
+                <VirtualizedOrderBook 
                   symbol={selectedIPO.symbol}
                   currentPrice={selectedIPO.currentPrice}
                   ipoId={selectedIPO.id}
@@ -292,7 +222,10 @@ const Trading = () => {
               
               <GlassCard className="p-4">
                 <h3 className="text-lg font-semibold mb-2">Recent Trades</h3>
-                <LiveTrades ipoId={selectedIPO.id} symbol={selectedIPO.symbol} />
+                <VirtualizedTradeHistory 
+                  ipoId={selectedIPO.id} 
+                  symbol={selectedIPO.symbol} 
+                />
               </GlassCard>
             </div>
             
@@ -314,7 +247,11 @@ const Trading = () => {
           {/* Right column - Trading form and order management */}
           <div className="space-y-6">
             {/* Trading form */}
-            <TradeForm ipo={selectedIPO} />
+            {tradingLoading ? (
+              <TradeFormSkeleton />
+            ) : (
+              <TradeForm ipo={selectedIPO} />
+            )}
             
             {/* Advanced order types */}
             <Tabs defaultValue="standard" className="w-full">
@@ -330,6 +267,15 @@ const Trading = () => {
                   symbol={selectedIPO.symbol} 
                   currentPrice={selectedIPO.currentPrice} 
                   className="mt-4"
+                  onOrderSubmit={orderData => {
+                    showNotification.orderPlaced(
+                      selectedIPO.symbol,
+                      orderData.side,
+                      orderData.quantity,
+                      orderData.limitPrice || selectedIPO.currentPrice,
+                      orderData.type
+                    );
+                  }}
                 />
               </TabsContent>
             </Tabs>
