@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   AlertTriangle, 
@@ -28,7 +27,7 @@ export const InfrastructureTab = () => {
   
   return (
     <div className="space-y-6">
-      <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
+      <Alert variant="warning">
         <AlertTriangle className="h-4 w-4" />
         <AlertDescription>
           FIX protocol integration is in maintenance mode. Scheduled upgrades in progress.
@@ -201,4 +200,3 @@ export const InfrastructureTab = () => {
     </div>
   );
 };
-
