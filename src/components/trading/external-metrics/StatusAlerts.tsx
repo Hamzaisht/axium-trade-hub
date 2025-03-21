@@ -12,10 +12,10 @@ export const StatusAlerts = ({ apiServiceStatus, availablePlatforms }: StatusAle
   return (
     <>
       {apiServiceStatus === 'mock' && (
-        <Alert className="mb-4 bg-amber-50 border-amber-200">
-          <AlertCircle className="h-4 w-4 text-amber-600" />
-          <AlertTitle className="text-amber-800">Using mock data</AlertTitle>
-          <AlertDescription className="text-amber-700 text-sm">
+        <Alert variant="warning" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Using mock data</AlertTitle>
+          <AlertDescription className="text-sm">
             Add API keys as environment variables to connect to real APIs. Example: 
             VITE_TWITTER_API_KEY, VITE_INSTAGRAM_API_KEY, VITE_SPOTIFY_API_KEY, etc.
           </AlertDescription>

@@ -53,14 +53,11 @@ const AnomalyWarningBanner = ({ ipoId, className }: AnomalyWarningBannerProps) =
   
   return (
     <Alert 
-      variant="destructive" 
-      className={cn(
-        "border-yellow-400 bg-yellow-50 text-yellow-900",
-        className
-      )}
+      variant="warning" 
+      className={cn(className)}
     >
-      <AlertTriangle className="h-4 w-4 text-yellow-600" />
-      <AlertDescription className="text-yellow-800">
+      <AlertTriangle className="h-4 w-4" />
+      <AlertDescription>
         ⚠️ {getWarningMessage(mostSevere)}
       </AlertDescription>
     </Alert>

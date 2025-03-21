@@ -33,8 +33,8 @@ const Login = () => {
               Sign in to your account to access your dashboard, portfolio, and trading features.
             </p>
             
-            <Alert variant="default" className="max-w-md mb-6 border-blue-200 bg-blue-50">
-              <Info className="h-4 w-4 mr-2 text-blue-500" />
+            <Alert variant="warning" className="max-w-md mb-6">
+              <Info className="h-4 w-4 mr-2" />
               <AlertDescription>
                 Authentication now uses Supabase. Create an account to get started.
               </AlertDescription>
