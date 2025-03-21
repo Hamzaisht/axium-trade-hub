@@ -12,6 +12,7 @@ import { useLiquidationRules } from './useLiquidationRules';
 import { useAnomalyDetection, useAnomalyAlerts } from './useAnomalyDetection';
 import { useCreatorMarketScore } from './useCreatorMarketScore';
 import { useMarketData } from '@/hooks/useMarketData';
+import { useSentimentAnalysis } from './useSentimentAnalysis';
 
 interface UseAIValuationProps {
   ipoId?: string;
@@ -62,6 +63,12 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     enabled: !!ipoId
   });
   
+  // Add sentiment analysis
+  const sentimentAnalysisQuery = useSentimentAnalysis({
+    creatorId: ipoId,
+    enabled: !!ipoId
+  });
+  
   // Setup anomaly alerts
   useAnomalyAlerts({
     anomalyData: anomalyDetectionQuery.data,
@@ -78,7 +85,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
       vestingRulesQuery.isLoading ||
       liquidationRulesQuery.isLoading ||
       anomalyDetectionQuery.isLoading ||
-      creatorMarketScoreQuery.isLoading
+      creatorMarketScoreQuery.isLoading ||
+      sentimentAnalysisQuery.isLoading
     );
   }, [
     pricePredictionQuery.isLoading,
@@ -88,7 +96,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     vestingRulesQuery.isLoading,
     liquidationRulesQuery.isLoading,
     anomalyDetectionQuery.isLoading,
-    creatorMarketScoreQuery.isLoading
+    creatorMarketScoreQuery.isLoading,
+    sentimentAnalysisQuery.isLoading
   ]);
 
   // Handle any errors from the queries
@@ -101,7 +110,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
       vestingRulesQuery,
       liquidationRulesQuery,
       anomalyDetectionQuery,
-      creatorMarketScoreQuery
+      creatorMarketScoreQuery,
+      sentimentAnalysisQuery
     ];
 
     for (const query of queries) {
@@ -119,7 +129,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     vestingRulesQuery.error,
     liquidationRulesQuery.error,
     anomalyDetectionQuery.error,
-    creatorMarketScoreQuery.error
+    creatorMarketScoreQuery.error,
+    sentimentAnalysisQuery.error
   ]);
 
   return {
@@ -132,6 +143,7 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     liquidationRules: liquidationRulesQuery.data,
     anomalyData: anomalyDetectionQuery.data,
     creatorMarketScore: creatorMarketScoreQuery.creatorMarketScore,
+    sentimentData: sentimentAnalysisQuery.sentimentData,
     externalMetrics,
     aggregatedMetrics,
     
@@ -145,11 +157,12 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     isLiquidationRulesLoading: liquidationRulesQuery.isLoading,
     isAnomalyDetectionLoading: anomalyDetectionQuery.isLoading,
     isCreatorMarketScoreLoading: creatorMarketScoreQuery.isLoading,
+    isSentimentAnalysisLoading: sentimentAnalysisQuery.isLoading,
     
     // Errors
     hasErrors: pricePredictionQuery.error || marketDepthQuery.error || socialSentimentQuery.error ||
                dividendInfoQuery.error || vestingRulesQuery.error || liquidationRulesQuery.error ||
-               anomalyDetectionQuery.error || creatorMarketScoreQuery.isError,
+               anomalyDetectionQuery.error || creatorMarketScoreQuery.isError || sentimentAnalysisQuery.isError,
     
     // Controls
     selectedTimeframe,
@@ -167,6 +180,7 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
       liquidationRulesQuery.refetch();
       anomalyDetectionQuery.refetch();
       creatorMarketScoreQuery.refetch();
+      sentimentAnalysisQuery.refetch();
     },
     refetchPricePrediction: () => pricePredictionQuery.refetch(),
     refetchMarketDepth: () => marketDepthQuery.refetch(),
@@ -175,6 +189,7 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     refetchVestingRules: () => vestingRulesQuery.refetch(),
     refetchLiquidationRules: () => liquidationRulesQuery.refetch(),
     refetchAnomalyDetection: () => anomalyDetectionQuery.refetch(),
-    refetchCreatorMarketScore: () => creatorMarketScoreQuery.refetch()
+    refetchCreatorMarketScore: () => creatorMarketScoreQuery.refetch(),
+    refetchSentimentAnalysis: () => sentimentAnalysisQuery.refetch()
   };
 };

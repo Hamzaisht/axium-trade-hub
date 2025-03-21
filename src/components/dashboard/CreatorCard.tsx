@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown, Star, BarChart, AlertCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import SentimentScoreBadge from "@/components/trading/SentimentScoreBadge";
 
 interface CreatorCardProps {
   creator: {
@@ -21,9 +22,10 @@ interface CreatorCardProps {
   };
   onSelect?: (id: string) => void;
   selected?: boolean;
+  sentimentEnabled?: boolean;
 }
 
-export const CreatorCard = ({ creator, onSelect, selected }: CreatorCardProps) => {
+export const CreatorCard = ({ creator, onSelect, selected, sentimentEnabled = false }: CreatorCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   
   return (
@@ -85,22 +87,26 @@ export const CreatorCard = ({ creator, onSelect, selected }: CreatorCardProps) =
             </div>
           </div>
           
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center space-x-1.5 bg-axium-blue/10 px-2.5 py-1 rounded-full">
-                  <BarChart className="h-3.5 w-3.5 text-axium-blue" />
-                  <span className="text-xs font-medium text-axium-blue">AI Score: {creator.aiScore}</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-xs">
-                <p className="text-xs">
-                  AI Valuation Score based on social engagement, market trends, and growth potential.
-                  Higher scores (80+) indicate strong investment potential.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {sentimentEnabled ? (
+            <SentimentScoreBadge creatorId={creator.id} size="sm" />
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center space-x-1.5 bg-axium-blue/10 px-2.5 py-1 rounded-full">
+                    <BarChart className="h-3.5 w-3.5 text-axium-blue" />
+                    <span className="text-xs font-medium text-axium-blue">AI Score: {creator.aiScore}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <p className="text-xs">
+                    AI Valuation Score based on social engagement, market trends, and growth potential.
+                    Higher scores (80+) indicate strong investment potential.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
         
         <div className="grid grid-cols-2 gap-4 text-sm">

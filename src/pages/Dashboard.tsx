@@ -9,13 +9,16 @@ import AITrendPrediction from "@/components/trading/AITrendPrediction";
 import MarketDepthChart from "@/components/trading/MarketDepthChart";
 import DividendAndVesting from "@/components/trading/DividendAndVesting";
 import LiveTrades from "@/components/trading/LiveTrades";
+import SentimentInsights from "@/components/trading/SentimentInsights";
+import ExternalMetricsCard from "@/components/trading/ExternalMetricsCard";
+import SentimentScoreBadge from "@/components/trading/SentimentScoreBadge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, Bell, User, Filter, TrendingUp, 
   BarChart, Sparkles, CircleDollarSign, BrainCircuit,
-  AlertCircle 
+  AlertCircle, MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mockIPOAPI } from "@/utils/mockApi";
@@ -153,6 +156,7 @@ const Dashboard = () => {
                       }} 
                       onSelect={handleCreatorSelect}
                       selected={selectedCreator?.id === creator.id}
+                      sentimentEnabled={true}
                     />
                   ))
                 ) : (
@@ -202,7 +206,17 @@ const Dashboard = () => {
                     </div>
                     <h3 className="font-medium">AI Sentiment</h3>
                   </div>
-                  <p className="text-2xl font-semibold">Bullish</p>
+                  <div className="flex items-center">
+                    {selectedCreator ? (
+                      <SentimentScoreBadge 
+                        creatorId={selectedCreator?.id} 
+                        size="lg" 
+                        className="mt-0.5 mb-0.5"
+                      />
+                    ) : (
+                      <p className="text-2xl font-semibold">Bullish</p>
+                    )}
+                  </div>
                   <p className="text-axium-gray-600 text-sm">Overall Market</p>
                 </GlassCard>
               </div>
@@ -212,6 +226,10 @@ const Dashboard = () => {
                   <TabsTrigger value="trading" className="flex-1 data-[state=active]:bg-white">
                     <TrendingUp className="h-4 w-4 mr-2" />
                     Trading
+                  </TabsTrigger>
+                  <TabsTrigger value="sentiment" className="flex-1 data-[state=active]:bg-white">
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Sentiment
                   </TabsTrigger>
                   <TabsTrigger value="ai" className="flex-1 data-[state=active]:bg-white">
                     <BrainCircuit className="h-4 w-4 mr-2" />
@@ -242,6 +260,21 @@ const Dashboard = () => {
                       symbol={selectedCreator?.symbol}
                       currentPrice={selectedCreator?.currentPrice}
                     />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="sentiment" className="mt-6 space-y-6">
+                  <div className="grid grid-cols-1 gap-6">
+                    <SentimentInsights creatorId={selectedCreator?.id} />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <ExternalMetricsCard creatorId={selectedCreator?.id} />
+                      
+                      <LiveTrades 
+                        ipoId={selectedCreator?.id} 
+                        symbol={selectedCreator?.symbol}
+                      />
+                    </div>
                   </div>
                 </TabsContent>
                 
