@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -12,13 +11,16 @@ import LiveTrades from "@/components/trading/LiveTrades";
 import SentimentInsights from "@/components/trading/SentimentInsights";
 import ExternalMetricsCard from "@/components/trading/ExternalMetricsCard";
 import SentimentScoreBadge from "@/components/trading/SentimentScoreBadge";
+import RiskAnomalyCenter from "@/components/risk/RiskAnomalyCenter";
+import AnomalyWarningBanner from "@/components/risk/AnomalyWarningBanner";
+import { useAnomalyDetection, useAnomalyAlerts } from "@/hooks/ai/useAnomalyDetection";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, Bell, User, Filter, TrendingUp, 
   BarChart, Sparkles, CircleDollarSign, BrainCircuit,
-  AlertCircle, MessageSquare
+  AlertCircle, MessageSquare, AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mockIPOAPI } from "@/utils/mockApi";
@@ -64,6 +66,18 @@ const Dashboard = () => {
     ipo.creatorName.toLowerCase().includes(searchQuery.toLowerCase()) || 
     (ipo.symbol && ipo.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  // Get anomaly data for the selected creator
+  const { data: anomalyData } = useAnomalyDetection({
+    ipoId: selectedCreator?.id,
+    enabled: !!selectedCreator?.id
+  });
+
+  // Set up anomaly alerts
+  useAnomalyAlerts({
+    anomalyData,
+    enabled: true
+  });
 
   // Error fallback
   if (error) {
@@ -132,7 +146,6 @@ const Dashboard = () => {
               
               <div className="space-y-4">
                 {isLoading ? (
-                  // Loading skeleton
                   Array(5).fill(0).map((_, idx) => (
                     <div key={idx} className="animate-pulse">
                       <div className="h-20 bg-gray-200 rounded-lg"></div>
@@ -221,6 +234,10 @@ const Dashboard = () => {
                 </GlassCard>
               </div>
               
+              {selectedCreator && (
+                <AnomalyWarningBanner ipoId={selectedCreator.id} />
+              )}
+              
               <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
                 <TabsList className="w-full bg-axium-gray-100 p-1">
                   <TabsTrigger value="trading" className="flex-1 data-[state=active]:bg-white">
@@ -234,6 +251,10 @@ const Dashboard = () => {
                   <TabsTrigger value="ai" className="flex-1 data-[state=active]:bg-white">
                     <BrainCircuit className="h-4 w-4 mr-2" />
                     AI Insights
+                  </TabsTrigger>
+                  <TabsTrigger value="risk" className="flex-1 data-[state=active]:bg-white">
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    Risk Center
                   </TabsTrigger>
                   <TabsTrigger value="dividends" className="flex-1 data-[state=active]:bg-white">
                     <CircleDollarSign className="h-4 w-4 mr-2" />
@@ -301,6 +322,10 @@ const Dashboard = () => {
                   </div>
                 </TabsContent>
                 
+                <TabsContent value="risk" className="mt-6">
+                  <RiskAnomalyCenter />
+                </TabsContent>
+                
                 <TabsContent value="dividends" className="mt-6 space-y-6">
                   <DividendAndVesting 
                     ipoId={selectedCreator?.id}
@@ -332,3 +357,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
