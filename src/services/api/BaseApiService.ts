@@ -1,4 +1,6 @@
+
 import { toast } from 'sonner';
+import { apiKeysService } from './APIKeysService';
 
 export abstract class BaseApiService {
   protected apiKey: string;
@@ -6,6 +8,7 @@ export abstract class BaseApiService {
   protected proxyBaseUrl: string;
   protected cache: Map<string, { data: any; timestamp: number }> = new Map();
   protected CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+  protected retryDelay = 1000; // Default retry delay in ms
 
   constructor(apiKey: string, useProxyEndpoint = false) {
     this.apiKey = apiKey;
@@ -29,7 +32,10 @@ export abstract class BaseApiService {
   }
 
   // Helper for check if we have a real API key
-  protected isRealApiKey(): boolean {
+  protected isRealApiKey(platformKey?: string): boolean {
+    if (platformKey) {
+      return apiKeysService.hasRealApiKey(platformKey);
+    }
     return !!this.apiKey && !this.apiKey.startsWith('mock-');
   }
 
@@ -43,12 +49,13 @@ export abstract class BaseApiService {
     return 0.5 + Math.random() * 10;
   }
 
-  // API call with error handling and retry logic
+  // Enhanced API call with error handling, retry logic, and better API key handling
   protected async makeApiCall<T>(
     endpoint: string, 
     url: string,
     headers: Record<string, string> = {},
-    retries = 3
+    retries = 3,
+    platformKey?: string
   ): Promise<T> {
     // Check cache first
     const cacheKey = `${endpoint}`;
@@ -56,22 +63,30 @@ export abstract class BaseApiService {
     if (cachedData) return cachedData;
 
     try {
+      // Check if we should use mock data
+      const shouldUseMockData = 
+        !url || 
+        (platformKey && !this.isRealApiKey(platformKey)) || 
+        (!platformKey && !this.isRealApiKey());
+      
       // If we're in development or have missing API keys, use mock data
-      if (
-        import.meta.env.DEV || 
-        !this.isRealApiKey() || 
-        !url
-      ) {
-        console.log(`Using mock data for ${endpoint} (development mode or missing API key)`);
-        return this.generateMockData(endpoint) as T;
+      if (shouldUseMockData) {
+        console.log(`Using mock data for ${endpoint} (missing API key or development mode)`);
+        const mockData = this.generateMockData(endpoint);
+        this.setCachedData(cacheKey, mockData);
+        return mockData as T;
       }
+      
+      // Get the key to use (either platform-specific or the default)
+      const keyToUse = platformKey ? 
+        apiKeysService.getApiKey(platformKey) || this.apiKey : 
+        this.apiKey;
       
       // Use proxy endpoint if configured
       if (this.useProxyEndpoint) {
         console.log(`Making API call via proxy for ${endpoint}`);
         
         // Transform direct API URL to proxy endpoint format
-        // endpoint structure: service/resource/id
         const proxyUrl = `${this.proxyBaseUrl}/${endpoint}`;
         
         // The API key is NOT sent to the frontend, it will be added by the proxy server
@@ -111,7 +126,7 @@ export abstract class BaseApiService {
         
         // Add authorization if we have an API key
         const requestHeaders = {
-          'Authorization': `Bearer ${this.apiKey}`,
+          'Authorization': `Bearer ${keyToUse}`,
           ...headers
         };
         
@@ -136,8 +151,11 @@ export abstract class BaseApiService {
       
       // Retry logic
       if (retries > 0) {
-        console.log(`Retrying ${endpoint} (${retries} attempts left)...`);
-        return this.makeApiCall<T>(endpoint, url, headers, retries - 1);
+        console.log(`Retrying ${endpoint} (${retries} attempts left) after ${this.retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, this.retryDelay));
+        // Increase delay for next retry (exponential backoff)
+        this.retryDelay = Math.min(this.retryDelay * 2, 10000); // Cap at 10 seconds
+        return this.makeApiCall<T>(endpoint, url, headers, retries - 1, platformKey);
       }
       
       // After retries are exhausted, throw the error
@@ -145,7 +163,9 @@ export abstract class BaseApiService {
       
       // Fall back to mock data on API failure
       console.log(`Falling back to mock data for ${endpoint}`);
-      return this.generateMockData(endpoint) as T;
+      const mockData = this.generateMockData(endpoint);
+      this.setCachedData(cacheKey, mockData);
+      return mockData as T;
     }
   }
 

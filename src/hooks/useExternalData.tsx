@@ -15,7 +15,12 @@ export const useExternalData = ({ creatorId, enabled = true }: UseExternalDataPr
     queryKey: ['creator-metrics', creatorId],
     queryFn: async () => {
       if (!creatorId) return null;
-      return await apiConfigService.getCreatorMetrics(creatorId);
+      try {
+        return await apiConfigService.getCreatorMetrics(creatorId);
+      } catch (error) {
+        console.error('Error fetching creator metrics:', error);
+        throw new Error('Failed to fetch creator metrics');
+      }
     },
     enabled: !!creatorId && enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -26,8 +31,30 @@ export const useExternalData = ({ creatorId, enabled = true }: UseExternalDataPr
     }
   });
 
+  // Calculate data source stats
+  const getDataSourceStats = (data: CreatorMetrics | null | undefined) => {
+    if (!data) return { total: 0, real: 0, mock: 0 };
+    
+    const socialPlatforms = data.social.length;
+    const streamingPlatforms = data.streaming.length;
+    const totalPlatforms = socialPlatforms + streamingPlatforms;
+    
+    const realSocialPlatforms = data.social.filter(p => p.isRealData).length;
+    const realStreamingPlatforms = data.streaming.filter(p => p.isRealData).length;
+    const totalRealPlatforms = realSocialPlatforms + realStreamingPlatforms;
+    
+    return {
+      total: totalPlatforms,
+      real: totalRealPlatforms,
+      mock: totalPlatforms - totalRealPlatforms
+    };
+  };
+
   // Calculate aggregated metrics for easier consumption
   const aggregatedMetrics = creatorMetricsQuery.data ? calculateAggregatedMetrics(creatorMetricsQuery.data) : null;
+  
+  // Get stats about data sources
+  const dataSourceStats = getDataSourceStats(creatorMetricsQuery.data);
 
   return {
     // Raw data
@@ -42,7 +69,10 @@ export const useExternalData = ({ creatorId, enabled = true }: UseExternalDataPr
     error: creatorMetricsQuery.error,
     
     // Refresh function
-    refetch: creatorMetricsQuery.refetch
+    refetch: creatorMetricsQuery.refetch,
+    
+    // Data source statistics
+    dataSourceStats
   };
 };
 

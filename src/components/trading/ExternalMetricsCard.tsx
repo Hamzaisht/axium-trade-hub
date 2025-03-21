@@ -1,13 +1,18 @@
+
 import { useEffect, useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useExternalData } from '@/hooks/useExternalData';
-import { useAPIConfiguration } from '@/hooks/useAPIConfiguration';
-import { Users, BarChart2, Radio, ShoppingBag, TrendingUp, RefreshCw, AlertCircle, Shield } from 'lucide-react';
+import { useAPIConfiguration, APIServiceStatus } from '@/hooks/useAPIConfiguration';
+import { 
+  Users, BarChart2, Radio, ShoppingBag, TrendingUp, RefreshCw, 
+  AlertCircle, Shield, Database, CheckCircle2
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface ExternalMetricsCardProps {
   creatorId?: string;
@@ -21,10 +26,11 @@ export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCar
     aggregatedMetrics,
     isLoading, 
     isError, 
-    refetch 
+    refetch,
+    dataSourceStats 
   } = useExternalData({ creatorId });
   
-  const { apiServiceStatus } = useAPIConfiguration();
+  const { apiServiceStatus, apiStatus, availablePlatforms } = useAPIConfiguration();
   
   // Handle refreshing data
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -66,14 +72,56 @@ export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCar
     return new Date(dateString).toLocaleString();
   };
   
+  // Get badge for API service status
+  const getApiStatusBadge = (status: APIServiceStatus) => {
+    switch (status) {
+      case 'mock':
+        return (
+          <div className="ml-2 flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+            <AlertCircle className="h-3 w-3 mr-1" />
+            Mock Data
+          </div>
+        );
+      case 'live':
+        return (
+          <div className="ml-2 flex items-center text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+            <span className="h-2 w-2 bg-green-500 rounded-full mr-1"></span>
+            Live APIs
+          </div>
+        );
+      case 'secure':
+        return (
+          <div className="ml-2 flex items-center text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+            <Shield className="h-3 w-3 mr-1" />
+            Secure APIs
+          </div>
+        );
+      case 'mixed':
+        return (
+          <div className="ml-2 flex items-center text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
+            <Database className="h-3 w-3 mr-1" />
+            Mixed APIs
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+  
   useEffect(() => {
+    // Show appropriate notifications based on API status
     if (apiServiceStatus === 'mock') {
       toast.info(
         "Using mock data. Set API keys in environment variables to use real data.", 
         { id: "api-mock-notice", duration: 5000 }
       );
+    } else if (apiServiceStatus === 'mixed') {
+      toast.info(
+        `Using ${apiStatus.real} real APIs and ${apiStatus.mock} mock APIs.`,
+        { id: "api-mixed-notice", duration: 5000 }
+      );
     }
-  }, [apiServiceStatus]);
+  }, [apiServiceStatus, apiStatus]);
   
   if (!creatorId) {
     return null;
@@ -84,24 +132,7 @@ export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCar
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center">
           <h3 className="text-lg font-semibold">External Data</h3>
-          {apiServiceStatus === 'mock' && (
-            <div className="ml-2 flex items-center text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
-              <AlertCircle className="h-3 w-3 mr-1" />
-              Mock Data
-            </div>
-          )}
-          {apiServiceStatus === 'live' && (
-            <div className="ml-2 flex items-center text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-              <span className="h-2 w-2 bg-green-500 rounded-full mr-1"></span>
-              Live APIs
-            </div>
-          )}
-          {apiServiceStatus === 'secure' && (
-            <div className="ml-2 flex items-center text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-              <Shield className="h-3 w-3 mr-1" />
-              Secure APIs
-            </div>
-          )}
+          {getApiStatusBadge(apiServiceStatus)}
         </div>
         <Button
           variant="outline"
@@ -117,9 +148,31 @@ export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCar
         </Button>
       </div>
       
+      {apiServiceStatus === 'mock' && (
+        <Alert className="mb-4 bg-amber-50 border-amber-200">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertTitle className="text-amber-800">Using mock data</AlertTitle>
+          <AlertDescription className="text-amber-700 text-sm">
+            Add API keys as environment variables to connect to real APIs. Example: 
+            VITE_TWITTER_API_KEY, VITE_INSTAGRAM_API_KEY, VITE_SPOTIFY_API_KEY, etc.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {apiServiceStatus === 'mixed' && (
+        <Alert className="mb-4 bg-blue-50 border-blue-200">
+          <Database className="h-4 w-4 text-blue-600" />
+          <AlertTitle className="text-blue-800">Using mixed data sources</AlertTitle>
+          <AlertDescription className="text-blue-700 text-sm">
+            Available APIs: {availablePlatforms.join(', ')}
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {isError ? (
         <div className="py-6 text-center text-axium-gray-500">
-          <p>Failed to load external metrics</p>
+          <AlertCircle className="h-12 w-12 text-axium-error mx-auto mb-2" />
+          <p className="mb-2">Failed to load external metrics</p>
           <Button 
             variant="outline" 
             size="sm" 
@@ -137,10 +190,21 @@ export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCar
         </div>
       ) : !metrics ? (
         <div className="py-6 text-center text-axium-gray-500">
+          <Database className="h-12 w-12 text-axium-gray-400 mx-auto mb-2" />
           <p>No external data available</p>
         </div>
       ) : (
         <div className="space-y-4">
+          {/* Data source stats */}
+          {dataSourceStats.real > 0 && (
+            <div className="flex items-center justify-between px-2 py-1 bg-blue-50 rounded text-sm">
+              <span className="text-blue-700">
+                Using {dataSourceStats.real} real data source{dataSourceStats.real !== 1 ? 's' : ''}
+              </span>
+              <CheckCircle2 className="h-4 w-4 text-blue-600" />
+            </div>
+          )}
+          
           {/* Summary Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="bg-white/50 p-3 rounded-lg">
@@ -199,7 +263,14 @@ export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCar
                   {metrics.social.map((platform, index) => (
                     <div key={`${platform.platform}-${index}`} className="bg-white/50 p-3 rounded-lg">
                       <div className="flex justify-between items-center mb-2">
-                        <div className="font-medium">{platform.platform}</div>
+                        <div className="font-medium flex items-center">
+                          {platform.platform}
+                          {platform.isRealData && (
+                            <span className="ml-2 text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full">
+                              Real
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center">
                           <TrendingUp className={cn(
                             "h-4 w-4 mr-1",
@@ -243,7 +314,14 @@ export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCar
                   {metrics.streaming.map((platform, index) => (
                     <div key={`${platform.platform}-${index}`} className="bg-white/50 p-3 rounded-lg">
                       <div className="flex justify-between items-center mb-2">
-                        <div className="font-medium">{platform.platform}</div>
+                        <div className="font-medium flex items-center">
+                          {platform.platform}
+                          {platform.isRealData && (
+                            <span className="ml-2 text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full">
+                              Real
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center">
                           <TrendingUp className={cn(
                             "h-4 w-4 mr-1",
