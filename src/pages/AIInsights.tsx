@@ -1,655 +1,678 @@
-import { useState, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useIPO } from '@/contexts/IPOContext';
-import { useAIValuationEngine } from '@/hooks/ai/useAIValuationEngine';
-import { useSocialSentiment } from '@/hooks/ai/useSocialSentiment';
-import { useCreatorMarketScore } from '@/hooks/ai/useCreatorMarketScore';
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import {
-  ArrowUpRight,
-  ArrowDownRight,
-  RefreshCw,
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { 
+  ArrowUp, 
+  ArrowDown, 
+  AlertTriangle, 
+  TrendingUp, 
+  BarChart4, 
+  LineChart, 
+  BrainCircuit, 
   Info,
-  AlertTriangle,
-  Loader2,
-  FileType,
-  Users,
-  TrendingUp,
-  Radio,
-  Zap,
   Twitter,
   Instagram,
   Youtube,
-  DollarSign,
-  Layers,
-  TrendingDown,
-  Heart,
-  Check,
-  X,
-  Brain,
-  BarChart4,
-  LineChart,
-  PieChart
+  Lock,
+  ExternalLink,
+  Shield
 } from 'lucide-react';
+import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { cn } from '@/lib/utils';
+import { useSocialSentiment } from '@/hooks/ai/useSocialSentiment';
+import { usePricePrediction } from '@/hooks/ai/usePricePrediction';
+import { useAIValuationEngine } from '@/hooks/ai/useAIValuationEngine';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Card } from '@/components/ui/card';
-import Navbar from '@/components/layout/Navbar';
-import ValuationBreakdownChart from '@/components/ai-insights/ValuationBreakdownChart';
-import HistoricalPerformanceChart from '@/components/ai-insights/HistoricalPerformanceChart';
-import MarketMoversTable from '@/components/ai-insights/MarketMoversTable'; 
-import MetricsPanel from '@/components/ai-insights/MetricsPanel';
+import { AIModelType } from '@/utils/mockAIModels';
 
-const AIInsights = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { ipos } = useIPO();
-  const [selectedTimeframe, setSelectedTimeframe] = useState('24h');
-  
-  const formatIpoDate = (ipo: any) => {
-    return ipo.launchDate || ipo.createdAt || new Date().toISOString();
+// Import placeholder components that will be implemented later
+// These components would be created separately with proper TypeScript definitions
+const ValuationBreakdownChart = ({ data }: any) => (
+  <div className="h-64 w-full bg-axium-gray-100/50 dark:bg-axium-gray-800/30 rounded-lg flex items-center justify-center">
+    {data ? (
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={Object.entries(data).map(([key, value]) => ({ name: key, value }))}
+            cx="50%"
+            cy="50%"
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="value"
+            label={({ name, percent }: any) => `${name}: ${(percent * 100).toFixed(0)}%`}
+          >
+            <Cell key="social" fill="#10B981" />
+            <Cell key="brand" fill="#3B82F6" />
+            <Cell key="content" fill="#6366F1" />
+            <Cell key="sentiment" fill="#8B5CF6" />
+            <Cell key="market" fill="#EC4899" />
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
+    ) : (
+      <p className="text-axium-gray-500">Valuation breakdown visualization</p>
+    )}
+  </div>
+);
+
+const HistoricalPerformanceChart = ({ data }: any) => (
+  <div className="h-64 w-full bg-axium-gray-100/50 dark:bg-axium-gray-800/30 rounded-lg flex items-center justify-center">
+    <p className="text-axium-gray-500">Historical performance visualization</p>
+  </div>
+);
+
+const SentimentAnalysisChart = ({ data }: any) => (
+  <div className="h-64 w-full bg-axium-gray-100/50 dark:bg-axium-gray-800/30 rounded-lg flex items-center justify-center">
+    <p className="text-axium-gray-500">Sentiment analysis visualization</p>
+  </div>
+);
+
+const MarketMoversTable = ({ data }: any) => (
+  <div className="w-full bg-axium-gray-100/50 dark:bg-axium-gray-800/30 rounded-lg p-4">
+    <p className="text-axium-gray-500">Market movers table</p>
+  </div>
+);
+
+const TechnicalIndicatorsPanel = ({ data }: any) => (
+  <div className="w-full bg-axium-gray-100/50 dark:bg-axium-gray-800/30 rounded-lg p-4">
+    <p className="text-axium-gray-500">Technical indicators panel</p>
+  </div>
+);
+
+const MetricsPanel = ({ title, metrics, isLoading }: any) => (
+  <div className="bg-axium-gray-100/50 dark:bg-axium-gray-800/30 rounded-lg p-4">
+    <h3 className="text-base font-medium mb-3">{title}</h3>
+    {isLoading ? (
+      <div className="space-y-2">
+        <Skeleton className="h-6 w-3/4" />
+        <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="h-6 w-2/3" />
+      </div>
+    ) : (
+      <div className="space-y-2">
+        {metrics.map((metric: any, index: number) => (
+          <div key={index} className="flex items-center justify-between">
+            <div className="text-sm text-axium-gray-600">{metric.name}</div>
+            <div className="text-sm font-medium">{metric.value}</div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const RiskIndicator = ({ level, score, isLoading }: any) => {
+  const getColorClass = () => {
+    if (level === 'low') return "text-green-500";
+    if (level === 'medium') return "text-amber-500";
+    return "text-red-500";
   };
 
-  const selectedIPO = ipos.find(ipo => ipo.id === id) || ipos[0];
-  
-  const {
-    valuation,
-    isLoading,
-    error,
-    refetch,
-    toggleRealTime,
-    isRealTimeEnabled,
-    rawMetrics
-  } = useAIValuationEngine({ ipoId: selectedIPO?.id });
-  
-  const { data: sentimentData, isLoading: isSentimentLoading } = useSocialSentiment({ ipoId: selectedIPO?.id });
-  
-  const { data: creatorScore, isLoading: isScoreLoading } = useCreatorMarketScore(selectedIPO?.id || '');
-  
-  const handleCreatorChange = (creatorId: string) => {
-    navigate(`/ai-insights/${creatorId}`);
+  const getMessage = () => {
+    if (level === 'low') return "Low Risk";
+    if (level === 'medium') return "Medium Risk";
+    return "High Risk";
   };
-  
-  const generateHistoricalData = () => {
-    const now = new Date();
-    const data = [];
-    
-    for (let i = 30; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(now.getDate() - i);
-      
-      const basePrice = selectedIPO?.currentPrice || 20;
-      const rangePercent = 0.15;
-      
-      const volatilityFactor = Math.sin((i / 30) * Math.PI) * 0.6 + 0.4;
-      const randomFactor = (Math.random() * 2 - 1) * rangePercent * volatilityFactor;
-      
-      const trendDirection = i > 15 ? -1 : 1;
-      const trendFactor = (Math.abs(i - 15) / 15) * 0.1 * trendDirection;
-      
-      const priceFactor = 1 + randomFactor + trendFactor;
-      const price = basePrice * priceFactor;
-      
-      data.push({
-        date: date.toISOString(),
-        price: price
-      });
-    }
-    
-    return data;
-  };
-  
-  const historicalData = generateHistoricalData();
-  
-  if (isLoading || isSentimentLoading || isScoreLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-axium-gray-100/50 to-axium-gray-200/50 dark:from-axium-gray-900/50 dark:to-axium-gray-800/50">
-        <Navbar />
-        <div className="container max-w-7xl mx-auto px-4 py-8">
-          <div className="flex justify-center items-center min-h-[60vh]">
-            <div className="text-center">
-              <Loader2 className="h-12 w-12 animate-spin mx-auto text-axium-blue mb-4" />
-              <h2 className="text-2xl font-semibold mb-2">Loading AI Insights</h2>
-              <p className="text-axium-gray-600 dark:text-axium-gray-400 max-w-md">
-                Our AI models are analyzing the latest data to provide you with valuable insights...
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  if (!valuation || !selectedIPO) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-axium-gray-100/50 to-axium-gray-200/50 dark:from-axium-gray-900/50 dark:to-axium-gray-800/50">
-        <Navbar />
-        <div className="container max-w-7xl mx-auto px-4 py-8">
-          <div className="flex justify-center items-center min-h-[60vh]">
-            <div className="text-center">
-              <AlertTriangle className="h-12 w-12 mx-auto text-amber-500 mb-4" />
-              <h2 className="text-2xl font-semibold mb-2">Unable to Load AI Insights</h2>
-              <p className="text-axium-gray-600 dark:text-axium-gray-400 max-w-md mb-6">
-                {error instanceof Error ? error.message : "There was an error loading the AI insights. Please try again later."}
-              </p>
-              <Button onClick={() => refetch()}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  const mockValuation = {
-    currentPrice: selectedIPO.currentPrice || 25.0,
-    previousPrice: selectedIPO.currentPrice ? (selectedIPO.currentPrice * 0.95) : 23.75,
-    predictedPrice: valuation.currentValue || 27.5,
-    priceChange: 1.25,
-    priceChangePercent: 5.0,
-    valuationBreakdown: [
-      { name: 'Social Reach', value: Math.round(valuation.breakdown?.socialInfluence || 25) },
-      { name: 'Engagement', value: Math.round(valuation.breakdown?.streamingInfluence || 20) },
-      { name: 'Growth Rate', value: Math.round(valuation.breakdown?.marketDepthInfluence || 15) },
-      { name: 'Revenue Potential', value: Math.round(valuation.breakdown?.brandDealsInfluence || 15) },
-      { name: 'Content Quality', value: Math.round(valuation.breakdown?.newsInfluence || 10) },
-      { name: 'Market Sentiment', value: Math.round(valuation.breakdown?.sentimentInfluence || 15) },
-    ],
-    newsEvents: [
-      {
-        title: 'Viral content spike',
-        impact: 3.2,
-        description: 'Recent video gained over 5M views in 24 hours, driving significant engagement',
-        source: 'Platform Analytics',
-        date: '2 days ago'
-      },
-      {
-        title: 'New brand partnership',
-        impact: 2.8,
-        description: 'Announced exclusive sponsorship with major sports brand',
-        source: 'Press Release',
-        date: '5 days ago'
-      },
-      {
-        title: 'Platform algorithm change',
-        impact: -1.5,
-        description: 'Recent changes may temporarily reduce reach for similar content',
-        source: 'Platform Update',
-        date: '1 week ago'
-      }
-    ],
-    marketMovers: [
-      { id: '1', name: 'Creator A', change: 8.5, price: 32.45 },
-      { id: '2', name: 'Creator B', change: 5.2, price: 18.70 },
-      { id: '3', name: 'Creator C', change: -3.8, price: 41.20 },
-      { id: '4', name: 'Creator D', change: -5.1, price: 12.35 },
-      { id: '5', name: 'Creator E', change: 2.3, price: 28.90 }
-    ]
-  };
-  
-  const isPositiveChange = mockValuation.priceChangePercent >= 0;
-  const formattedPriceChange = `${isPositiveChange ? '+' : ''}${mockValuation.priceChangePercent.toFixed(2)}%`;
-  
-  const formatMarketScore = (score: number) => {
-    if (score >= 90) return { text: 'Exceptional', color: 'text-green-500' };
-    if (score >= 80) return { text: 'Excellent', color: 'text-green-500' };
-    if (score >= 70) return { text: 'Very Good', color: 'text-green-400' };
-    if (score >= 60) return { text: 'Good', color: 'text-blue-500' };
-    if (score >= 50) return { text: 'Average', color: 'text-blue-400' };
-    if (score >= 40) return { text: 'Below Average', color: 'text-amber-500' };
-    if (score >= 30) return { text: 'Concerning', color: 'text-orange-500' };
-    return { text: 'Poor', color: 'text-red-500' };
-  };
-  
-  const marketScoreDisplay = formatMarketScore(creatorScore?.overall || 0);
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-axium-gray-100/50 to-axium-gray-200/50 dark:from-axium-gray-900/50 dark:to-axium-gray-800/50">
-      <Navbar />
-      
-      <div className="container max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center">
-              <Brain className="h-7 w-7 mr-2 text-axium-blue" />
-              AI Insights
-            </h1>
-            <p className="text-axium-gray-600 dark:text-axium-gray-400 mt-1">
-              Advanced analysis and valuations powered by Axium's neural network
-            </p>
+    <div className="flex items-center space-x-2">
+      {isLoading ? (
+        <Skeleton className="h-6 w-24" />
+      ) : (
+        <>
+          <div className={cn("font-medium", getColorClass())}>
+            {getMessage()} • {score}
           </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={isRealTimeEnabled}
-                onCheckedChange={toggleRealTime}
-                id="real-time-mode"
-              />
-              <label
-                htmlFor="real-time-mode"
-                className="text-sm font-medium cursor-pointer"
-              >
-                Real-time updates
-              </label>
-            </div>
-            
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh Data
+          <AlertTriangle className={cn("h-4 w-4", getColorClass())} />
+        </>
+      )}
+    </div>
+  );
+};
+
+const AIInsights = () => {
+  const { creatorId } = useParams<{ creatorId: string }>();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [modelType, setModelType] = useState<AIModelType>(AIModelType.HYBRID);
+  
+  // Replace with actual creator data from context or API
+  const creatorName = "Alex Johnson";
+  const creatorSymbol = "AJX";
+  const currentPrice = 35.78;
+  
+  // Fetch sentiment data
+  const { 
+    data: sentimentData,
+    isLoading: isSentimentLoading 
+  } = useSocialSentiment({ 
+    ipoId: creatorId 
+  });
+  
+  // Fetch price prediction
+  const {
+    data: pricePrediction,
+    isLoading: isPredictionLoading
+  } = usePricePrediction({
+    ipoId: creatorId || '',
+    selectedTimeframe: '7d',
+    selectedModel: modelType
+  });
+  
+  // Fetch AI valuation
+  const {
+    data: aiValuation,
+    isLoading: isValuationLoading,
+    refetch: refetchValuation
+  } = useAIValuationEngine({
+    ipoId: creatorId
+  });
+  
+  // Mock data for valuation breakdown
+  const valuationBreakdown = {
+    socialInfluence: 35,
+    brandDealsInfluence: 25,
+    contentEngagement: 20,
+    marketSentiment: 15,
+    externalFactors: 5
+  };
+  
+  // Format percentage for display
+  const formatPercentage = (value: number) => {
+    const sign = value >= 0 ? '+' : '';
+    return `${sign}${value.toFixed(2)}%`;
+  };
+  
+  // Get color class based on value
+  const getValueColorClass = (value: number) => {
+    if (value > 0) return "text-green-500";
+    if (value < 0) return "text-red-500";
+    return "text-axium-gray-600";
+  };
+  
+  // Get icon based on value
+  const getValueIcon = (value: number) => {
+    if (value > 0) return <ArrowUp className="h-4 w-4 text-green-500" />;
+    if (value < 0) return <ArrowDown className="h-4 w-4 text-red-500" />;
+    return <BarChart4 className="h-4 w-4 text-axium-gray-500" />;
+  };
+  
+  if (!creatorId) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <GlassCard className="p-6">
+          <div className="flex flex-col items-center justify-center py-12">
+            <BrainCircuit className="h-16 w-16 text-axium-gray-400 mb-4" />
+            <h2 className="text-2xl font-semibold mb-2">No Creator Selected</h2>
+            <p className="text-axium-gray-500 mb-6 text-center max-w-md">
+              Please select a creator to view AI-powered insights and analysis for their performance.
+            </p>
+            <Button onClick={() => navigate('/creators')}>
+              Browse Creators
             </Button>
           </div>
+        </GlassCard>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center">
+            <BrainCircuit className="h-6 w-6 mr-2 text-purple-500" />
+            AI Insights
+          </h1>
+          <p className="text-axium-gray-500">
+            Advanced AI-powered analytics and predictions for {creatorName || "selected creator"}
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <Shield className="h-4 w-4" />
+                  <span className="hidden sm:inline">BETA</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs text-xs">
+                  AI Insights is in beta. All predictions are experimental and should not be used as financial advice.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Button onClick={() => refetchValuation()}>
+            Refresh Analysis
+          </Button>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <GlassCard className="p-4">
+          <div className="text-sm text-axium-gray-500 mb-1">Creator</div>
+          <div className="text-xl font-semibold">{creatorName || "Unknown"}</div>
+          <div className="text-sm text-axium-gray-500">{creatorSymbol || "---"}</div>
+        </GlassCard>
+        
+        <GlassCard className="p-4">
+          <div className="text-sm text-axium-gray-500 mb-1">AI Valuation</div>
+          {isValuationLoading ? (
+            <Skeleton className="h-8 w-28" />
+          ) : (
+            <div className="text-xl font-semibold">
+              ${aiValuation?.currentValue.toFixed(2) || "29.45"}
+              <span className="ml-2 text-sm font-normal text-green-500">
+                {formatPercentage((currentPrice ? (((aiValuation?.currentValue || 29.45) - currentPrice) / currentPrice) * 100 : 8.53))}
+              </span>
+            </div>
+          )}
+          <div className="text-sm text-axium-gray-500">vs current price ${currentPrice}</div>
+        </GlassCard>
+        
+        <GlassCard className="p-4">
+          <div className="text-sm text-axium-gray-500 mb-1">Prediction Confidence</div>
+          {isValuationLoading ? (
+            <Skeleton className="h-8 w-28" />
+          ) : (
+            <div className="text-xl font-semibold">{aiValuation?.confidence || 82}%</div>
+          )}
+          <div className="flex justify-between">
+            <div className="text-sm text-axium-gray-500">Based on {aiValuation?.factors?.length || 5} factors</div>
+            <RiskIndicator level="low" score={15} isLoading={isValuationLoading} />
+          </div>
+        </GlassCard>
+      </div>
+      
+      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <div className="flex justify-between items-center">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="social">Social Analysis</TabsTrigger>
+            <TabsTrigger value="prediction">Price Prediction</TabsTrigger>
+            <TabsTrigger value="technical">Technical Analysis</TabsTrigger>
+          </TabsList>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-          <GlassCard className="p-5 lg:col-span-3">
-            <div className="flex flex-col md:flex-row justify-between mb-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold">{selectedIPO.creatorName}</h2>
-                  <Badge variant="outline" className="uppercase text-xs font-semibold">
-                    {selectedIPO.category}
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <GlassCard className="p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Valuation Breakdown</h2>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="h-4 w-4 text-axium-gray-400" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs text-xs">
+                        Breakdown of factors influencing the AI valuation of this creator
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              
+              {isValuationLoading ? (
+                <Skeleton className="h-64 w-full" />
+              ) : (
+                <ValuationBreakdownChart data={valuationBreakdown} />
+              )}
+              
+              <div className="mt-4 space-y-2">
+                <div className="text-sm font-medium">Key Factors</div>
+                {isValuationLoading ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-5 w-full" />
+                    <Skeleton className="h-5 w-3/4" />
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {(aiValuation?.factors || [
+                      { factor: "Social Media Engagement", impact: 4.2, description: "Strong growth in follower count and engagement metrics" },
+                      { factor: "Content Quality", impact: 3.8, description: "High production value and audience retention" },
+                      { factor: "Brand Partnerships", impact: 3.5, description: "Increased number of high-value sponsorships" }
+                    ]).slice(0, 3).map((factor, index) => (
+                      <div key={index} className="bg-axium-gray-100/50 dark:bg-axium-gray-800/30 p-2 rounded-md">
+                        <div className="flex justify-between">
+                          <div className="font-medium text-sm">{factor.factor}</div>
+                          <div className={cn("text-sm", getValueColorClass(factor.impact))}>
+                            {factor.impact > 0 ? '+' : ''}{factor.impact.toFixed(1)}
+                          </div>
+                        </div>
+                        <div className="text-xs text-axium-gray-500">{factor.description}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </GlassCard>
+            
+            <div className="space-y-6">
+              <GlassCard className="p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">7-Day Forecast</h2>
+                  <Badge variant="outline" className="bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 border-purple-500/30">
+                    AI Generated
                   </Badge>
                 </div>
-                <p className="text-axium-gray-600 dark:text-axium-gray-400 text-sm">
-                  IPO Date: {new Date(formatIpoDate(selectedIPO)).toLocaleDateString()}
-                </p>
-              </div>
-              
-              <div className="mt-3 md:mt-0 flex flex-col items-start md:items-end">
-                <div className="flex items-center">
-                  <span className="text-2xl font-bold mr-2">${mockValuation.currentPrice.toFixed(2)}</span>
-                  <Badge 
-                    className={`flex items-center ${isPositiveChange ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-red-500/10 text-red-600 dark:text-red-400'}`}
-                  >
-                    {isPositiveChange ? 
-                      <ArrowUpRight className="h-3.5 w-3.5 mr-1" /> : 
-                      <ArrowDownRight className="h-3.5 w-3.5 mr-1" />
-                    }
-                    {formattedPriceChange}
-                  </Badge>
-                </div>
-                <p className="text-axium-gray-600 dark:text-axium-gray-400 text-sm">
-                  AI Valuation: ${mockValuation.predictedPrice.toFixed(2)}
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-axium-gray-100/50 dark:bg-axium-gray-800/50 p-4 rounded-lg mb-5">
-              <div className="flex items-center">
-                <div className="hidden sm:block mr-4">
-                  <div className="h-16 w-16 rounded-full bg-axium-gray-200/80 dark:bg-axium-gray-700/80 flex items-center justify-center border-4 border-white dark:border-axium-gray-800 shadow-md">
-                    <span className="text-lg font-bold">
-                      {Math.round(creatorScore?.overall || 0)}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center mb-1">
-                    <h3 className="font-bold text-lg mr-2">Creator Market Score</h3>
-                    <Badge variant="outline" className={`${marketScoreDisplay.color}`}>
-                      {marketScoreDisplay.text}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
-                    Composite score based on market potential, social reach, engagement metrics and sentiment analysis
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-3 justify-center sm:justify-end">
-                {sentimentData?.platforms && Object.entries(sentimentData.platforms).slice(0, 3).map(([platform, data]: [string, any]) => (
-                  <div key={platform} className="bg-white dark:bg-axium-gray-900/90 p-2 rounded-lg shadow-sm flex items-center gap-2">
-                    {platform === 'twitter' ? (
-                      <Twitter className="h-4 w-4 text-blue-400" />
-                    ) : platform === 'instagram' ? (
-                      <Instagram className="h-4 w-4 text-pink-500" />
-                    ) : (
-                      <Youtube className="h-4 w-4 text-red-500" />
-                    )}
-                    <div>
-                      <div className="text-xs uppercase font-semibold">
-                        {platform}
-                      </div>
-                      <div className="flex items-center">
-                        {data.sentiment > 65 ? (
-                          <Heart className="h-3 w-3 text-green-500 mr-1" />
-                        ) : data.sentiment > 45 ? (
-                          <Check className="h-3 w-3 text-blue-500 mr-1" />
-                        ) : (
-                          <X className="h-3 w-3 text-red-500 mr-1" />
-                        )}
-                        <span className="text-xs">
-                          {Math.round(data.sentiment)}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <Tabs defaultValue="performance" className="w-full">
-              <TabsList className="grid grid-cols-3 mb-4">
-                <TabsTrigger value="performance" className="text-sm">Performance</TabsTrigger>
-                <TabsTrigger value="factors" className="text-sm">Valuation Factors</TabsTrigger>
-                <TabsTrigger value="news" className="text-sm">News & Events</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="performance">
-                <div className="mb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-semibold">Historical Performance</h3>
-                    <div className="flex space-x-1">
-                      <Button variant="outline" size="sm" className={selectedTimeframe === '24h' ? 'bg-axium-blue text-white' : ''} onClick={() => setSelectedTimeframe('24h')}>24h</Button>
-                      <Button variant="outline" size="sm" className={selectedTimeframe === '7d' ? 'bg-axium-blue text-white' : ''} onClick={() => setSelectedTimeframe('7d')}>7d</Button>
-                      <Button variant="outline" size="sm" className={selectedTimeframe === '30d' ? 'bg-axium-blue text-white' : ''} onClick={() => setSelectedTimeframe('30d')}>30d</Button>
-                    </div>
-                  </div>
-                  <HistoricalPerformanceChart 
-                    data={historicalData}
-                    timeframe={selectedTimeframe}
-                  />
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="factors">
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-3">Valuation Breakdown</h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div>
-                      <ValuationBreakdownChart 
-                        data={mockValuation.valuationBreakdown}
-                      />
-                    </div>
-                    <div className="space-y-4">
+                
+                {isPredictionLoading ? (
+                  <Skeleton className="h-40 w-full" />
+                ) : (
+                  <div className="bg-axium-gray-100/50 dark:bg-axium-gray-800/30 p-4 rounded-lg">
+                    <div className="flex items-center justify-between mb-6">
                       <div>
-                        <h4 className="text-sm font-medium mb-2">Factor Weights & Contributions</h4>
-                        {mockValuation.valuationBreakdown.map((factor) => (
-                          <div key={factor.name} className="mb-2">
-                            <div className="flex justify-between items-center mb-1">
-                              <div className="flex items-center">
-                                {factor.name === 'Social Reach' && <Users className="h-3.5 w-3.5 mr-1.5 text-blue-500" />}
-                                {factor.name === 'Engagement' && <Zap className="h-3.5 w-3.5 mr-1.5 text-amber-500" />}
-                                {factor.name === 'Growth Rate' && <TrendingUp className="h-3.5 w-3.5 mr-1.5 text-green-500" />}
-                                {factor.name === 'Revenue Potential' && <DollarSign className="h-3.5 w-3.5 mr-1.5 text-emerald-500" />}
-                                {factor.name === 'Content Quality' && <Layers className="h-3.5 w-3.5 mr-1.5 text-indigo-500" />}
-                                {factor.name === 'Market Sentiment' && <Heart className="h-3.5 w-3.5 mr-1.5 text-red-500" />}
-                                <span className="text-sm">{factor.name}</span>
-                              </div>
-                              <div className="text-sm font-medium">{factor.value}%</div>
-                            </div>
-                            <Progress value={factor.value} max={100} className="h-1.5" />
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {sentimentData?.trust && (
-                        <div className="bg-axium-gray-100/70 dark:bg-axium-gray-800/70 p-4 rounded-lg">
-                          <h4 className="text-sm font-medium mb-2 flex items-center">
-                            <Info className="h-3.5 w-3.5 mr-1.5 text-axium-blue" />
-                            AI Confidence & Trust Score
-                          </h4>
-                          <div className="flex items-center mb-1">
-                            <div className="text-lg font-bold mr-2">{sentimentData.trust}/100</div>
-                            <Badge variant={sentimentData.trust > 70 ? 'outline' : 'secondary'}>
-                              {sentimentData.trust > 70 ? 'High Trust' : 'Moderate Trust'}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-axium-gray-600 dark:text-axium-gray-400">
-                            Our AI model's confidence in this valuation based on data quality, quantity, consistency, and external validation.
-                          </p>
+                        <div className="text-sm text-axium-gray-500 mb-1">Price Movement (7d)</div>
+                        <div className="text-2xl font-bold flex items-center">
+                          {getValueIcon(pricePrediction?.prediction?.percentage || 3.25)}
+                          <span className={cn("ml-2", getValueColorClass(pricePrediction?.prediction?.percentage || 3.25))}>
+                            {formatPercentage(pricePrediction?.prediction?.percentage || 3.25)}
+                          </span>
                         </div>
-                      )}
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-axium-gray-500 mb-1">Target Price</div>
+                        <div className="text-2xl font-bold">${pricePrediction?.targetPrice?.toFixed(2) || "37.05"}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="text-axium-gray-500">
+                        Confidence: <span className="font-medium">{pricePrediction?.confidence || 76}%</span>
+                      </div>
+                      <div className="text-axium-gray-500">
+                        Model: <span className="font-medium">Balanced</span>
+                      </div>
                     </div>
                   </div>
+                )}
+                
+                <div className="mt-4 space-y-2">
+                  <div className="text-sm font-medium">Influencing Factors</div>
+                  {isPredictionLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full" />
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {(pricePrediction?.factors || [
+                        "Strong engagement metrics growth trend",
+                        "Recent positive sentiment shift in social media",
+                        "New content format gaining traction"
+                      ]).slice(0, 2).map((factor, index) => (
+                        <div key={index} className="text-sm flex items-start">
+                          <TrendingUp className="h-4 w-4 text-axium-gray-400 mr-1.5 mt-0.5 flex-shrink-0" />
+                          <span className="text-axium-gray-600">{factor}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </TabsContent>
+              </GlassCard>
               
-              <TabsContent value="news">
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-3">What's Moving the Market</h3>
+              <GlassCard className="p-4">
+                <h2 className="text-lg font-semibold mb-4">Social Media Sentiment</h2>
+                
+                {isSentimentLoading ? (
                   <div className="space-y-3">
-                    {mockValuation.newsEvents.length > 0 ? mockValuation.newsEvents.map((event, idx) => (
-                      <div key={idx} className="flex bg-axium-gray-100/70 dark:bg-axium-gray-800/70 p-3 rounded-lg">
-                        <div className={`flex flex-shrink-0 items-center justify-center h-10 w-10 rounded-full mr-3 ${
-                          event.impact > 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
-                        }`}>
-                          {event.impact > 0 ? (
-                            <TrendingUp className={`h-5 w-5 text-green-500`} />
-                          ) : (
-                            <TrendingDown className={`h-5 w-5 text-red-500`} />
-                          )}
-                        </div>
-                        <div>
-                          <div className="flex items-center">
-                            <h4 className="font-medium text-sm">{event.title}</h4>
-                            <Badge className="ml-2" variant={event.impact > 0 ? 'default' : 'destructive'}>
-                              {event.impact > 0 ? '+' : ''}{event.impact.toFixed(1)}%
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-axium-gray-600 dark:text-axium-gray-400 mt-1">
-                            {event.description}
-                          </p>
-                          <div className="flex items-center mt-1.5">
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                              {event.source}
-                            </Badge>
-                            <span className="text-[10px] text-axium-gray-500 dark:text-axium-gray-500 ml-2">
-                              {event.date}
-                            </span>
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="bg-axium-gray-100/50 dark:bg-axium-gray-800/30 p-3 rounded-lg">
+                      <div className="flex items-center">
+                        <Twitter className="h-5 w-5 text-blue-400 mr-3" />
+                        <div className="flex-grow">
+                          <div className="text-sm font-medium">Twitter</div>
+                          <div className="h-2 bg-axium-gray-200 dark:bg-axium-gray-700 rounded-full mt-1.5">
+                            <div 
+                              className="h-2 bg-blue-400 rounded-full" 
+                              style={{ width: `${sentimentData?.platforms?.twitter?.sentiment || 75}%` }}
+                            ></div>
                           </div>
                         </div>
+                        <div className="text-sm font-medium ml-3">
+                          {sentimentData?.platforms?.twitter?.sentiment?.toFixed(0) || 75}%
+                        </div>
                       </div>
-                    )) : (
-                      <div className="text-center py-8 text-axium-gray-500">
-                        <FileType className="h-12 w-12 mx-auto mb-3 opacity-40" />
-                        <p>No significant news events detected in the current time period</p>
+                    </div>
+                    
+                    <div className="bg-axium-gray-100/50 dark:bg-axium-gray-800/30 p-3 rounded-lg">
+                      <div className="flex items-center">
+                        <Instagram className="h-5 w-5 text-pink-500 mr-3" />
+                        <div className="flex-grow">
+                          <div className="text-sm font-medium">Instagram</div>
+                          <div className="h-2 bg-axium-gray-200 dark:bg-axium-gray-700 rounded-full mt-1.5">
+                            <div 
+                              className="h-2 bg-pink-500 rounded-full" 
+                              style={{ width: `${sentimentData?.platforms?.instagram?.sentiment || 82}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div className="text-sm font-medium ml-3">
+                          {sentimentData?.platforms?.instagram?.sentiment?.toFixed(0) || 82}%
+                        </div>
                       </div>
-                    )}
+                    </div>
+                    
+                    <div className="bg-axium-gray-100/50 dark:bg-axium-gray-800/30 p-3 rounded-lg">
+                      <div className="flex items-center">
+                        <Youtube className="h-5 w-5 text-red-500 mr-3" />
+                        <div className="flex-grow">
+                          <div className="text-sm font-medium">YouTube</div>
+                          <div className="h-2 bg-axium-gray-200 dark:bg-axium-gray-700 rounded-full mt-1.5">
+                            <div 
+                              className="h-2 bg-red-500 rounded-full" 
+                              style={{ width: `${sentimentData?.platforms?.youtube?.sentiment || 68}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div className="text-sm font-medium ml-3">
+                          {sentimentData?.platforms?.youtube?.sentiment?.toFixed(0) || 68}%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="mt-4">
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm font-medium">Overall Trust Score</div>
+                    <div className="flex items-center">
+                      <div className={cn(
+                        "text-sm font-medium",
+                        sentimentData?.trust && sentimentData.trust > 70 ? "text-green-500" : 
+                        sentimentData?.trust && sentimentData.trust > 40 ? "text-amber-500" : 
+                        "text-red-500"
+                      )}>
+                        {sentimentData?.trust || 75}/100
+                      </div>
+                      <Shield className={cn(
+                        "ml-1 h-4 w-4",
+                        sentimentData?.trust && sentimentData.trust > 70 ? "text-green-500" : 
+                        sentimentData?.trust && sentimentData.trust > 40 ? "text-amber-500" : 
+                        "text-red-500"
+                      )} />
+                    </div>
+                  </div>
+                  
+                  <div className="h-2 bg-axium-gray-200 dark:bg-axium-gray-700 rounded-full mt-1.5 overflow-hidden">
+                    <div 
+                      className={cn(
+                        "h-full rounded-full",
+                        sentimentData?.trust && sentimentData.trust > 70 ? "bg-green-500" : 
+                        sentimentData?.trust && sentimentData.trust > 40 ? "bg-amber-500" : 
+                        "bg-red-500"
+                      )}
+                      style={{ width: `${sentimentData?.trust || 75}%` }}
+                    ></div>
                   </div>
                 </div>
-              </TabsContent>
-            </Tabs>
-          </GlassCard>
+              </GlassCard>
+            </div>
+          </div>
           
-          <div className="lg:col-span-1 space-y-6">
-            <MetricsPanel metrics={rawMetrics} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <GlassCard className="md:col-span-2 p-4">
+              <h2 className="text-lg font-semibold mb-4">Historical Performance</h2>
+              <HistoricalPerformanceChart data={null} />
+            </GlassCard>
             
-            <GlassCard className="p-5">
-              <h3 className="text-lg font-semibold mb-3 flex items-center">
-                <BarChart4 className="h-5 w-5 mr-2 text-axium-blue" />
-                Market Movers
-              </h3>
-              <MarketMoversTable 
-                marketMovers={mockValuation.marketMovers} 
-                onSelectCreator={handleCreatorChange}
+            <GlassCard className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Key Metrics</h2>
+              <MetricsPanel 
+                title="Engagement"
+                metrics={[
+                  { name: "Active Users", value: "1.2M" },
+                  { name: "Growth Rate", value: "+8.3%" },
+                  { name: "Retention", value: "76%" }
+                ]}
+                isLoading={false}
+              />
+              
+              <Separator className="my-4" />
+              
+              <MetricsPanel 
+                title="Content"
+                metrics={[
+                  { name: "Output Frequency", value: "3.5/week" },
+                  { name: "Avg. Watch Time", value: "8:32" },
+                  { name: "Completion Rate", value: "72%" }
+                ]}
+                isLoading={false}
               />
             </GlassCard>
           </div>
-        </div>
+        </TabsContent>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <GlassCard className="p-5">
-            <h3 className="text-lg font-semibold mb-3 flex items-center">
-              <Brain className="h-5 w-5 mr-2 text-axium-blue" />
-              AI Prediction
-            </h3>
+        <TabsContent value="social">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <GlassCard className="lg:col-span-2 p-4">
+              <h2 className="text-lg font-semibold mb-4">Sentiment Analysis</h2>
+              <SentimentAnalysisChart data={null} />
+            </GlassCard>
             
-            <div className="mb-4">
-              <div className="flex justify-between text-sm mb-1">
-                <span>Undervalued</span>
-                <span>Overvalued</span>
-              </div>
-              <div className="h-2 bg-axium-gray-200 dark:bg-axium-gray-700 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full ${
-                    mockValuation.predictedPrice > mockValuation.currentPrice ? 'bg-green-500' : 'bg-red-500'
-                  }`}
-                  style={{ 
-                    width: `${Math.min(
-                      100, 
-                      Math.abs((mockValuation.predictedPrice - mockValuation.currentPrice) / mockValuation.currentPrice * 100) * 5
-                    )}%`,
-                    marginLeft: mockValuation.predictedPrice > mockValuation.currentPrice ? '0' : 'auto'
-                  }}
-                ></div>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between bg-axium-gray-100/70 dark:bg-axium-gray-800/70 p-3 rounded-lg mb-4">
-              <div className="flex items-center">
-                {mockValuation.predictedPrice > mockValuation.currentPrice ? (
-                  <TrendingUp className="h-8 w-8 text-green-500 mr-3" />
+            <GlassCard className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Top Keywords</h2>
+              <div className="flex flex-wrap gap-2">
+                {isSentimentLoading ? (
+                  <div className="space-y-2 w-full">
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-8 w-3/4" />
+                    <Skeleton className="h-8 w-1/2" />
+                  </div>
                 ) : (
-                  <TrendingDown className="h-8 w-8 text-red-500 mr-3" />
+                  (sentimentData?.keywords || [
+                    'engaging', 'authentic', 'trending', 'quality', 'innovative', 
+                    'entertaining', 'consistent', 'professional'
+                  ]).map((keyword, index) => (
+                    <Badge key={index} variant="secondary" className="text-sm py-1.5">
+                      {keyword}
+                    </Badge>
+                  ))
                 )}
-                <div>
-                  <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
-                    AI Prediction
-                  </div>
-                  <div className="text-xl font-bold">
-                    ${mockValuation.predictedPrice.toFixed(2)}
-                  </div>
-                </div>
               </div>
-              <div>
-                <Badge className={`${
-                  mockValuation.predictedPrice > mockValuation.currentPrice ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
-                }`}>
-                  {mockValuation.predictedPrice > mockValuation.currentPrice ? '+' : ''}
-                  {((mockValuation.predictedPrice - mockValuation.currentPrice) / mockValuation.currentPrice * 100).toFixed(1)}%
-                </Badge>
-              </div>
-            </div>
+            </GlassCard>
             
-            <p className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
-              Our AI model predicts this creator is <span className={`font-semibold ${
-                mockValuation.predictedPrice > mockValuation.currentPrice ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-              }`}>
-                {mockValuation.predictedPrice > mockValuation.currentPrice ? 'undervalued' : 'overvalued'}
-              </span> based on current market conditions, social metrics, and projected earnings.
-            </p>
-          </GlassCard>
-          
-          <GlassCard className="p-5">
-            <h3 className="text-lg font-semibold mb-3 flex items-center">
-              <LineChart className="h-5 w-5 mr-2 text-axium-blue" />
-              Growth Metrics
-            </h3>
+            <GlassCard className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Platform Analysis</h2>
+              {/* Platform specific analysis content */}
+            </GlassCard>
             
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Follower Growth (30d)</span>
-                  <span className="font-medium">+{(Math.random() * 10 + 5).toFixed(1)}%</span>
-                </div>
-                <Progress value={63} max={100} className="h-2" />
-              </div>
-              
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Engagement Rate</span>
-                  <span className="font-medium">{(Math.random() * 5 + 2).toFixed(1)}%</span>
-                </div>
-                <Progress value={42} max={100} className="h-2" />
-              </div>
-              
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Content Production</span>
-                  <span className="font-medium">+{(Math.random() * 15 + 5).toFixed(1)}%</span>
-                </div>
-                <Progress value={78} max={100} className="h-2" />
-              </div>
-              
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Brand Deal Activity</span>
-                  <span className="font-medium">+{(Math.random() * 20 + 10).toFixed(1)}%</span>
-                </div>
-                <Progress value={85} max={100} className="h-2" />
-              </div>
-            </div>
+            <GlassCard className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Audience Demographics</h2>
+              {/* Audience demographics content */}
+            </GlassCard>
             
-            <div className="mt-4 pt-4 border-t border-axium-gray-200 dark:border-axium-gray-700">
-              <div className="text-sm font-medium mb-1">Growth Potential</div>
-              <div className="flex items-center">
-                <div className="flex-1 h-2 bg-axium-gray-200 dark:bg-axium-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-                    style={{ width: `${Math.round(creatorScore?.components?.growth || 0) * 10}%` }}
-                  ></div>
-                </div>
-                <span className="ml-3 font-bold">{Math.round(creatorScore?.components?.growth || 0)}/10</span>
-              </div>
-            </div>
-          </GlassCard>
-          
-          <GlassCard className="p-5">
-            <h3 className="text-lg font-semibold mb-3 flex items-center">
-              <PieChart className="h-5 w-5 mr-2 text-axium-blue" />
-              Risk Assessment
-            </h3>
+            <GlassCard className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Engagement Trends</h2>
+              {/* Engagement trends content */}
+            </GlassCard>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="prediction">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <GlassCard className="lg:col-span-2 p-4">
+              <h2 className="text-lg font-semibold mb-4">Price Projection Models</h2>
+              {/* Price projection models content */}
+            </GlassCard>
             
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-axium-gray-100/70 dark:bg-axium-gray-800/70 p-3 rounded-lg">
-                  <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400 mb-1">Market Volatility</div>
-                  <div className="flex items-center">
-                    <div className="h-2.5 w-2.5 rounded-full bg-amber-500 mr-2"></div>
-                    <span className="font-medium">Medium</span>
-                  </div>
-                </div>
-                
-                <div className="bg-axium-gray-100/70 dark:bg-axium-gray-800/70 p-3 rounded-lg">
-                  <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400 mb-1">Platform Risk</div>
-                  <div className="flex items-center">
-                    <div className="h-2.5 w-2.5 rounded-full bg-green-500 mr-2"></div>
-                    <span className="font-medium">Low</span>
-                  </div>
-                </div>
-                
-                <div className="bg-axium-gray-100/70 dark:bg-axium-gray-800/70 p-3 rounded-lg">
-                  <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400 mb-1">Audience Loyalty</div>
-                  <div className="flex items-center">
-                    <div className="h-2.5 w-2.5 rounded-full bg-green-500 mr-2"></div>
-                    <span className="font-medium">High</span>
-                  </div>
-                </div>
-                
-                <div className="bg-axium-gray-100/70 dark:bg-axium-gray-800/70 p-3 rounded-lg">
-                  <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400 mb-1">Revenue Stability</div>
-                  <div className="flex items-center">
-                    <div className="h-2.5 w-2.5 rounded-full bg-amber-500 mr-2"></div>
-                    <span className="font-medium">Medium</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <div className="text-sm font-medium">Overall Risk Rating</div>
-                  <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800">
-                    Moderate
-                  </Badge>
-                </div>
-                <p className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
-                  This creator presents a moderate risk investment with strong audience loyalty but some platform dependency risks.
-                </p>
-              </div>
-            </div>
-          </GlassCard>
-        </div>
+            <GlassCard className="p-4">
+              <h2 className="text-lg font-semibold mb-4">AI Model Selection</h2>
+              {/* AI model selection content */}
+            </GlassCard>
+            
+            <GlassCard className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Volatility Analysis</h2>
+              {/* Volatility analysis content */}
+            </GlassCard>
+            
+            <GlassCard className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Risk Assessment</h2>
+              {/* Risk assessment content */}
+            </GlassCard>
+            
+            <GlassCard className="lg:col-span-2 p-4">
+              <h2 className="text-lg font-semibold mb-4">Market Events Impact</h2>
+              {/* Market events impact content */}
+            </GlassCard>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="technical">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <GlassCard className="lg:col-span-2 p-4">
+              <h2 className="text-lg font-semibold mb-4">Technical Indicators</h2>
+              <TechnicalIndicatorsPanel data={null} />
+            </GlassCard>
+            
+            <GlassCard className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Market Movers</h2>
+              <MarketMoversTable data={null} />
+            </GlassCard>
+            
+            <GlassCard className="p-4">
+              <h2 className="text-lg font-semibold mb-4">Support & Resistance</h2>
+              {/* Support & resistance content */}
+            </GlassCard>
+            
+            <GlassCard className="lg:col-span-2 p-4">
+              <h2 className="text-lg font-semibold mb-4">Volume Analysis</h2>
+              {/* Volume analysis content */}
+            </GlassCard>
+          </div>
+        </TabsContent>
+      </Tabs>
+      
+      <div className="mt-6 text-center text-xs text-axium-gray-500">
+        <p>
+          AI-powered analysis is provided for informational purposes only and should not be considered financial advice.
+          <br />
+          Past performance is not indicative of future results. All predictions are speculative.
+        </p>
       </div>
     </div>
   );
 };
 
 export default AIInsights;
+export { ValuationBreakdownChart, HistoricalPerformanceChart, MetricsPanel, MarketMoversTable };

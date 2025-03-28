@@ -33,7 +33,7 @@ export interface UseCreatorMarketScoreProps {
   creatorId?: string;
 }
 
-export const useCreatorMarketScore = (creatorId: string) => {
+export const useCreatorMarketScore = ({ creatorId }: UseCreatorMarketScoreProps) => {
   const { data: sentimentData, isLoading: sentimentLoading } = useSentimentAnalysis({ creatorId });
   
   return useQuery({
@@ -56,22 +56,55 @@ export const useCreatorMarketScore = (creatorId: string) => {
             100, 
             Math.max(
               0, 
-              marketScoreData.overall * 0.7 + sentimentImpact * 30
+              marketScoreData.totalScore * 0.7 + sentimentImpact * 30
             )
           );
           
           // Return enhanced market score with sentiment influence
           return {
-            ...marketScoreData,
             overall: Math.round(adjustedScore),
+            components: {
+              sentiment: sentimentData.overallSentiment || 50,
+              social: 75,  // Mock values
+              brand: 82,
+              content: 68,
+              stability: 77,
+              growth: 85
+            },
+            recommendation: "Strong Hold",
+            riskLevel: "low" as const,
+            potentialUpside: 18.5,
             insights: [
-              ...marketScoreData.insights,
+              "Strong social media engagement trends",
+              "Growing audience demographics",
+              "Recent content performing above average",
               `Score adjusted by ${sentimentImpact > 0.5 ? 'positive' : 'negative'} sentiment analysis.`
-            ]
+            ],
+            lastUpdated: new Date().toISOString()
           };
         }
         
-        return marketScoreData;
+        // Default return if no sentiment data available
+        return {
+          overall: marketScoreData.totalScore,
+          components: {
+            sentiment: 65,  // Mock values
+            social: 75,
+            brand: 80,
+            content: 70,
+            stability: 75,
+            growth: 82
+          },
+          recommendation: "Buy",
+          riskLevel: "low" as const,
+          potentialUpside: 15.5,
+          insights: [
+            "Strong social media presence",
+            "Consistent content schedule",
+            "Positive audience growth trends"
+          ],
+          lastUpdated: new Date().toISOString()
+        };
       } catch (error) {
         console.error('Error fetching creator market score:', error);
         throw error;

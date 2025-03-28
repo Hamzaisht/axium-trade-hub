@@ -1,4 +1,3 @@
-
 /**
  * Mock AI Models
  * Simulates AI-driven analysis for creator valuations, market trends, and price predictions
@@ -22,7 +21,10 @@ export enum AIModelType {
 export type SentimentTrend = "positive" | "neutral" | "negative" | "very_positive" | "very_negative";
 
 // Price movement predictions
-export type PriceMovement = "up" | "strong_up" | "down" | "strong_down" | "stable" | "volatile";
+export type PriceMovement = {
+  direction: 'up' | 'down' | 'neutral';
+  percentage: number;
+};
 
 // Timeframes for predictions
 export type PredictionTimeframe = "24h" | "7d" | "30d" | "90d" | "short_term"; // Add short_term to match existing code
@@ -252,23 +254,19 @@ export const predictPriceMovement = (
   
   // Determine prediction category based on score
   let prediction: PriceMovement;
-  if (predictionScore > 0.8) prediction = "strong_up";
-  else if (predictionScore > 0.3) prediction = "up";
-  else if (predictionScore < -0.8) prediction = "strong_down";
-  else if (predictionScore < -0.3) prediction = "down";
-  else if (Math.abs(predictionScore) < 0.15) prediction = "stable";
-  else prediction = "volatile";
+  if (predictionScore > 0.8) prediction = { direction: "up", percentage: 0.15 + (Math.random() * 0.25) };
+  else if (predictionScore > 0.3) prediction = { direction: "up", percentage: 0.05 + (Math.random() * 0.1) };
+  else if (predictionScore < -0.8) prediction = { direction: "down", percentage: -0.15 - (Math.random() * 0.2) };
+  else if (predictionScore < -0.3) prediction = { direction: "down", percentage: -0.03 - (Math.random() * 0.07) };
+  else if (Math.abs(predictionScore) < 0.15) prediction = { direction: "neutral", percentage: -0.02 + (Math.random() * 0.04) };
+  else prediction = { direction: "neutral", percentage: -0.07 + (Math.random() * 0.14) };
   
   // Calculate target price based on prediction with improved precision
   let priceChangePercent = 0;
-  switch (prediction) {
-    case "strong_up": priceChangePercent = 0.15 + (Math.random() * 0.25); break;
+  switch (prediction.direction) {
     case "up": priceChangePercent = 0.05 + (Math.random() * 0.1); break;
-    case "strong_down": priceChangePercent = -0.15 - (Math.random() * 0.2); break;
     case "down": priceChangePercent = -0.03 - (Math.random() * 0.07); break;
-    case "stable": priceChangePercent = -0.02 + (Math.random() * 0.04); break;
-    case "volatile": priceChangePercent = -0.07 + (Math.random() * 0.14); break;
-    default: priceChangePercent = 0;
+    case "neutral": priceChangePercent = -0.02 + (Math.random() * 0.04); break;
   }
   
   // Apply timeframe multiplier to price change percent

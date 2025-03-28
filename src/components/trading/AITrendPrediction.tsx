@@ -17,7 +17,7 @@ interface AITrendPredictionProps {
 
 const AITrendPrediction = ({ ipoId, className }: AITrendPredictionProps) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState<PredictionTimeframe>('24h');
-  const [selectedModel, setSelectedModel] = useState<AIModelType>('balanced');
+  const [selectedModel, setSelectedModel] = useState<AIModelType>(AIModelType.HYBRID);
   
   const { 
     data: predictionData,
@@ -44,10 +44,10 @@ const AITrendPrediction = ({ ipoId, className }: AITrendPredictionProps) => {
   
   const getModelName = (modelType: AIModelType) => {
     switch (modelType) {
-      case 'conservative': return 'Conservative';
-      case 'balanced': return 'Balanced';
-      case 'aggressive': return 'Aggressive';
-      case 'experimental': return 'Experimental';
+      case AIModelType.REVENUE_WEIGHTED: return 'Conservative';
+      case AIModelType.HYBRID: return 'Balanced';
+      case AIModelType.SOCIAL_WEIGHTED: return 'Aggressive';
+      case AIModelType.GROWTH: return 'Experimental';
       default: return 'Balanced';
     }
   };
@@ -56,8 +56,8 @@ const AITrendPrediction = ({ ipoId, className }: AITrendPredictionProps) => {
     setSelectedTimeframe(value as PredictionTimeframe);
   };
   
-  const handleModelChange = (value: string) => {
-    setSelectedModel(value as AIModelType);
+  const handleModelChange = (value: AIModelType) => {
+    setSelectedModel(value);
   };
   
   return (
@@ -173,30 +173,30 @@ const AITrendPrediction = ({ ipoId, className }: AITrendPredictionProps) => {
               <label className="text-sm font-medium mb-2 block">Model Type</label>
               <div className="flex flex-wrap gap-2">
                 <Button 
-                  variant={selectedModel === 'conservative' ? "default" : "outline"} 
+                  variant={selectedModel === AIModelType.REVENUE_WEIGHTED ? "default" : "outline"} 
                   size="sm"
-                  onClick={() => handleModelChange('conservative')}
+                  onClick={() => handleModelChange(AIModelType.REVENUE_WEIGHTED)}
                 >
                   Conservative
                 </Button>
                 <Button 
-                  variant={selectedModel === 'balanced' ? "default" : "outline"} 
+                  variant={selectedModel === AIModelType.HYBRID ? "default" : "outline"} 
                   size="sm"
-                  onClick={() => handleModelChange('balanced')}
+                  onClick={() => handleModelChange(AIModelType.HYBRID)}
                 >
                   Balanced
                 </Button>
                 <Button 
-                  variant={selectedModel === 'aggressive' ? "default" : "outline"} 
+                  variant={selectedModel === AIModelType.SOCIAL_WEIGHTED ? "default" : "outline"} 
                   size="sm"
-                  onClick={() => handleModelChange('aggressive')}
+                  onClick={() => handleModelChange(AIModelType.SOCIAL_WEIGHTED)}
                 >
                   Aggressive
                 </Button>
                 <Button 
-                  variant={selectedModel === 'experimental' ? "default" : "outline"} 
+                  variant={selectedModel === AIModelType.GROWTH ? "default" : "outline"} 
                   size="sm"
-                  onClick={() => handleModelChange('experimental')}
+                  onClick={() => handleModelChange(AIModelType.GROWTH)}
                 >
                   Experimental
                 </Button>

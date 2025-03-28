@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import useSentimentAnalysis from "./ai/useSentimentAnalysis";
+import { useSentimentAnalysis } from "./ai/useSentimentAnalysis";
 import { useMarketDepth } from "./ai/useMarketDepth";
 import { useDividendInfo } from "./ai/useDividendInfo";
 import { useVestingRules } from "./ai/useVestingRules";

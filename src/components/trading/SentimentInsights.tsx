@@ -7,7 +7,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { MessageSquare, TrendingUp, BarChart4, AlertCircle, ArrowUp, ArrowDown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import useSentimentAnalysis from '@/hooks/ai/useSentimentAnalysis';
+import { useSentimentAnalysis } from '@/hooks/ai/useSentimentAnalysis';
 import { cn } from '@/lib/utils';
 
 interface SentimentInsightsProps {
@@ -16,7 +16,7 @@ interface SentimentInsightsProps {
 }
 
 export const SentimentInsights = ({ ipoId, className }: SentimentInsightsProps) => {
-  const { sentimentData, isLoading, error } = useSentimentAnalysis({ creatorId: ipoId });
+  const { data: sentimentData, isLoading, error } = useSentimentAnalysis({ creatorId: ipoId });
   const [timeFrame, setTimeFrame] = useState("7d");
 
   // Mock engagement data for charts
@@ -133,7 +133,12 @@ export const SentimentInsights = ({ ipoId, className }: SentimentInsightsProps) 
               <div className="mb-4">
                 <h4 className="text-base font-medium mb-2">Key Sentiment Drivers</h4>
                 <div className="flex flex-wrap gap-2">
-                  {sentimentData?.keywords.map((keyword, index) => (
+                  {sentimentData?.keywords?.map((keyword, index) => (
+                    <Badge key={index} variant="secondary">
+                      {keyword}
+                    </Badge>
+                  )) || 
+                  ["content quality", "engagement", "growth", "audience loyalty"].map((keyword, index) => (
                     <Badge key={index} variant="secondary">
                       {keyword}
                     </Badge>
