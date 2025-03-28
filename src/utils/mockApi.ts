@@ -461,8 +461,31 @@ class AIValuationAPI {
     const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
 
+    // Get the result from the utility function and ensure it returns the correct type
     const result = getSocialSentimentUtil(ipo);
-    return result;
+    
+    // Ensure all numeric values are properly typed as numbers
+    return {
+      overall: result.overall,
+      metrics: {
+        twitter: {
+          score: parseFloat(result.metrics.twitter.score.toString()), // Ensure it's a number
+          trend: result.metrics.twitter.trend,
+          volume: result.metrics.twitter.volume
+        },
+        instagram: {
+          score: parseFloat(result.metrics.instagram.score.toString()), // Ensure it's a number
+          trend: result.metrics.instagram.trend,
+          volume: result.metrics.instagram.volume
+        },
+        youtube: {
+          score: parseFloat(result.metrics.youtube.score.toString()), // Ensure it's a number
+          trend: result.metrics.youtube.trend,
+          volume: result.metrics.youtube.volume
+        }
+      },
+      keywords: result.keywords
+    };
   }
 
   async getMarketDepth(ipoId: string): Promise<MarketDepthModel> {
