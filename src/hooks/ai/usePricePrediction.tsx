@@ -3,8 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { mockAIValuationAPI } from '@/utils/mockApi';
 import { AIModelType, PredictionTimeframe } from '@/utils/mockAIModels';
 
-interface UsePricePredictionProps {
-  ipoId?: string;
+export interface UsePricePredictionProps {
+  ipoId: string;
   selectedTimeframe: PredictionTimeframe;
   selectedModel: AIModelType;
   externalMetricsLastUpdated?: string;
@@ -38,3 +38,5 @@ export const usePricePrediction = ({
     refetchOnWindowFocus: false
   });
 };
+
+export default usePricePrediction;

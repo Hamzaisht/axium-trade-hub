@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSocialSentiment } from './useSocialSentiment';
 
@@ -87,8 +88,12 @@ const fetchCreatorMarketScore = async (creatorId: string): Promise<CreatorMarket
   };
 };
 
+export interface UseSocialSentimentProps {
+  creatorId: string;
+}
+
 export const useCreatorMarketScore = (creatorId: string) => {
-  const { sentimentData, isLoading: isSentimentLoading } = useSocialSentiment(creatorId);
+  const { sentimentData, isLoading: isSentimentLoading } = useSocialSentiment({ creatorId });
   
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['creatorMarketScore', creatorId],
@@ -126,3 +131,5 @@ export const useCreatorMarketScore = (creatorId: string) => {
     refetch
   };
 };
+
+export default useCreatorMarketScore;

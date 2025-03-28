@@ -129,3 +129,6 @@ export const HistoricalPerformanceChart: React.FC<HistoricalPerformanceChartProp
     </div>
   );
 };
+
+// Add default export to fix the import issue
+export default HistoricalPerformanceChart;

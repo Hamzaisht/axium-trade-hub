@@ -4,6 +4,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { usePricePrediction } from '@/hooks/ai';
 import { TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { PredictionTimeframe, AIModelType } from '@/utils/mockAIModels';
 
 interface AITrendPredictionProps {
   ipoId: string;
@@ -11,7 +12,15 @@ interface AITrendPredictionProps {
 }
 
 export default function AITrendPrediction({ ipoId, className }: AITrendPredictionProps) {
-  const { prediction, confidence, timeframe, isLoading, error } = usePricePrediction(ipoId);
+  // Set default values for prediction parameters
+  const predictionParams = {
+    ipoId,
+    selectedTimeframe: '24h' as PredictionTimeframe,
+    selectedModel: 'axium-neural' as AIModelType,
+    enabled: true
+  };
+
+  const { data, isLoading, error } = usePricePrediction(predictionParams);
   
   if (isLoading) {
     return (
@@ -26,7 +35,7 @@ export default function AITrendPrediction({ ipoId, className }: AITrendPredictio
     );
   }
   
-  if (error || !prediction) {
+  if (error || !data) {
     return (
       <GlassCard className={`p-4 ${className || ''}`}>
         <div className="flex items-center mb-2">
@@ -40,7 +49,10 @@ export default function AITrendPrediction({ ipoId, className }: AITrendPredictio
     );
   }
   
-  const isPositive = prediction > 0;
+  const predictionValue = data.prediction.value;
+  const isPositive = predictionValue > 0;
+  const confidenceValue = data.confidence;
+  const timeframeText = predictionParams.selectedTimeframe;
   const indicatorClassName = isPositive ? "bg-green-500" : "bg-red-500";
   
   return (
@@ -50,13 +62,13 @@ export default function AITrendPrediction({ ipoId, className }: AITrendPredictio
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1">
           <span className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
-            {timeframe} Forecast
+            {timeframeText} Forecast
           </span>
           <span className="text-sm font-medium">
-            Confidence: {confidence}%
+            Confidence: {confidenceValue}%
           </span>
         </div>
-        <Progress value={confidence} max={100} indicatorClassName={indicatorClassName} />
+        <Progress value={confidenceValue} max={100} indicatorClassName={indicatorClassName} />
       </div>
       
       <div className={`flex items-center justify-between p-3 rounded-lg ${
@@ -70,7 +82,7 @@ export default function AITrendPrediction({ ipoId, className }: AITrendPredictio
           )}
           <div>
             <div className={`text-xl font-bold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {isPositive ? '+' : ''}{prediction.toFixed(2)}%
+              {isPositive ? '+' : ''}{predictionValue.toFixed(2)}%
             </div>
             <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
               Expected movement
