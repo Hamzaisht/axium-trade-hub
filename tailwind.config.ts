@@ -68,6 +68,8 @@ export default {
 					blue: '#0050FF',
 					'blue-light': '#3B82F6',
 					'blue-dark': '#1E3A8A',
+					'dark-bg': '#0B0F1A',  // Added primary dark background
+					'neon-blue': '#1EAEDB', // Added neon blue accent
 					gray: {
 						100: '#F8F9FA',
 						200: '#E9ECEF',
@@ -90,6 +92,14 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			boxShadow: {
+				'glass': '0 0 20px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.1)',
+				'glass-strong': '0 0 30px rgba(0, 0, 0, 0.1), 0 0 8px rgba(0, 0, 0, 0.1)',
+				'glass-blue': '0 0 20px rgba(0, 80, 255, 0.1), 0 0 4px rgba(0, 80, 255, 0.05)',
+				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
+				'button-hover': '0 4px 12px rgba(0, 0, 0, 0.1)',
+				'glow': '0 0 15px rgba(30, 174, 219, 0.5)', // Added neon blue glow
 			},
 			keyframes: {
 				'accordion-down': {
@@ -171,6 +181,17 @@ export default {
 					'100%': {
 						transform: 'translateX(-100%)'
 					}
+				},
+				'glow-pulse': {
+					'0%': { 
+						boxShadow: '0 0 5px rgba(30, 174, 219, 0.5)' 
+					},
+					'50%': { 
+						boxShadow: '0 0 20px rgba(30, 174, 219, 0.7)' 
+					},
+					'100%': { 
+						boxShadow: '0 0 5px rgba(30, 174, 219, 0.5)' 
+					}
 				}
 			},
 			animation: {
@@ -182,7 +203,8 @@ export default {
 				'slide-down': 'slide-down 0.3s ease-out',
 				'slide-left': 'slide-left 0.3s ease-out',
 				'slide-right': 'slide-right 0.3s ease-out',
-				'ticker': 'ticker 30s linear infinite'
+				'ticker': 'ticker 30s linear infinite',
+				'glow-pulse': 'glow-pulse 3s infinite'
 			},
 			backdropFilter: {
 				'none': 'none',
@@ -192,13 +214,6 @@ export default {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
 				'glass-gradient': 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-			},
-			boxShadow: {
-				'glass': '0 0 20px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.1)',
-				'glass-strong': '0 0 30px rgba(0, 0, 0, 0.1), 0 0 8px rgba(0, 0, 0, 0.1)',
-				'glass-blue': '0 0 20px rgba(0, 80, 255, 0.1), 0 0 4px rgba(0, 80, 255, 0.05)',
-				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
-				'button-hover': '0 4px 12px rgba(0, 0, 0, 0.1)',
 			},
 		}
 	},
