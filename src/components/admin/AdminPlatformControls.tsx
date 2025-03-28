@@ -58,13 +58,9 @@ export const AdminPlatformControls = () => {
     });
     
     toast({
-      title: platformStatus.emergencyLock 
-        ? "Platform emergency lockdown lifted" 
-        : "EMERGENCY LOCKDOWN ACTIVATED",
       description: platformStatus.emergencyLock
-        ? "All platform operations have been resumed."
-        : "All trading, withdrawals, and IPO launches have been suspended.",
-      duration: 5000
+        ? "Platform emergency lockdown lifted. All platform operations have been resumed."
+        : "EMERGENCY LOCKDOWN ACTIVATED. All trading, withdrawals, and IPO launches have been suspended."
     });
   };
 
@@ -447,3 +443,4 @@ export const AdminPlatformControls = () => {
     </div>
   );
 };
+
