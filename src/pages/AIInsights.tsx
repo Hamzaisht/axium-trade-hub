@@ -53,7 +53,7 @@ const AIInsights = () => {
   const [externalMetricsLastUpdated, setExternalMetricsLastUpdated] = useState<string | undefined>(undefined);
   
   const aiEngine = useAIValuationEngine({ ipoId: id });
-  const socialData = useSocialSentiment({ ipoId: id }).data;
+  const { data: socialData } = useSocialSentiment({ ipoId: id });
   const { data: pricePrediction, refetch: refetchPricePrediction } = usePricePrediction({
     ipoId: id || '',
     selectedTimeframe,
@@ -71,6 +71,10 @@ const AIInsights = () => {
     setSelectedTimeframe(timeframe);
     setExternalMetricsLastUpdated(new Date().toISOString());
     showNotification.info(`Set prediction timeframe to ${timeframe}`);
+  };
+  
+  const handleRefetch = () => {
+    aiEngine.refetch();
   };
   
   const marketDepthValue = (metricName: string) => {
@@ -112,7 +116,7 @@ const AIInsights = () => {
             AI Valuation
           </h3>
           <div className="flex items-center space-x-3">
-            <Button variant="outline" size="sm" onClick={aiEngine.refetch}>
+            <Button variant="outline" size="sm" onClick={handleRefetch}>
               Recalculate
             </Button>
             <SentimentScoreBadge score={aiEngine.valuation?.currentValue || 0} />
@@ -226,8 +230,8 @@ const AIInsights = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={AIModelType.STANDARD}>Standard</SelectItem>
-                <SelectItem value={AIModelType.ADVANCED}>Advanced</SelectItem>
-                <SelectItem value={AIModelType.NEURAL_NETWORK}>Neural Network</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+                <SelectItem value="neural_network">Neural Network</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" onClick={() => {
@@ -269,124 +273,123 @@ const AIInsights = () => {
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium">Confidence:</span>
               <Progress value={pricePrediction?.confidence || 0} className="h-2 w-48" />
-              <span className="text-axium-gray-500 text-sm">{pricePrediction?.confidence}%</span>
+              <span className="text-axium-gray-500 text-sm">{pricePrediction?.confidence || 0}%</span>
             </div>
             
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="prediction-factors">
-                <AccordionTrigger>Influencing Factors</AccordionTrigger>
-                <AccordionContent>
-                  <ul className="mt-4 space-y-3">
-                    {pricePrediction?.factors?.map((factor, index) => (
-                      <li key={index} className="flex items-center justify-between">
-                        <div>
-                          <h5 className="font-medium">{factor}</h5>
-                          <p className="text-axium-gray-500 text-sm">Details about {factor}</p>
-                        </div>
-                        <Badge variant="secondary">Impact</Badge>
-                      </li>
-                    ))}
-                  </ul>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </>
-        )}
-      </GlassCard>
-      
-      <GlassCard className="p-6 space-y-6">
-        <h3 className="text-lg font-medium flex items-center">
-          <MessageSquare className="h-5 w-5 mr-2 text-axium-blue" />
-          Social Sentiment Analysis
-        </h3>
-        
-        {aiEngine.isLoading ? (
-          <Skeleton className="h-8 w-32" />
-        ) : aiEngine.error ? (
-          <p className="text-red-500">Error: {aiEngine.error.message}</p>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
-              <SentimentBox 
-                platform="Twitter"
-                score={socialData && socialData.platforms ? socialData.platforms.twitter?.sentiment || 0 : 0}
-                engagement={socialData && socialData.platforms ? socialData.platforms.twitter?.engagement || 0 : 0}
-              />
-              <SentimentBox 
-                platform="Instagram"
-                score={socialData && socialData.platforms ? socialData.platforms.instagram?.sentiment || 0 : 0}
-                engagement={socialData && socialData.platforms ? socialData.platforms.instagram?.engagement || 0 : 0}
-              />
-              <SentimentBox 
-                platform="YouTube"
-                score={socialData && socialData.platforms ? socialData.platforms.youtube?.sentiment || 0 : 0}
-                engagement={socialData && socialData.platforms ? socialData.platforms.youtube?.engagement || 0 : 0}
-              />
+            <div className="bg-axium-gray-100/50 p-4 rounded-lg mt-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Target Price:</h4>
+                <span className="text-lg font-semibold">${pricePrediction?.targetPrice?.toFixed(2) || 'N/A'}</span>
+              </div>
+              <div className="mt-2 text-sm text-axium-gray-600">
+                The AI model predicts with {pricePrediction?.confidence}% confidence that the price could reach ${pricePrediction?.targetPrice?.toFixed(2)} within the selected timeframe.
+              </div>
             </div>
             
-            <div className="flex items-center justify-between">
-              <span className="text-base font-medium">Trust Score</span>
-              <Badge variant={
-                !socialData ? "outline" :
-                (socialData.trust && socialData.trust >= 80) ? "success" :
-                (socialData.trust && socialData.trust >= 60) ? "warning" :
-                "destructive"
-              }>
-                {socialData && socialData.trust ? socialData.trust : 'N/A'}/100
-              </Badge>
-            </div>
-            <Progress 
-              value={socialData && socialData.trust ? socialData.trust : 0} 
-              className="h-2 mt-1" 
-            />
-          </>
-        )}
-      </GlassCard>
-      
-      <GlassCard className="p-6 space-y-6">
-        <h3 className="text-lg font-medium flex items-center">
-          <BarChart4 className="h-5 w-5 mr-2 text-axium-blue" />
-          Market Depth Analysis
-        </h3>
-        
-        {aiEngine.isLoading ? (
-          <Skeleton className="h-8 w-32" />
-        ) : aiEngine.error ? (
-          <p className="text-red-500">Error: {aiEngine.error.message}</p>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              <GlassCard className="p-4">
-                <h4 className="text-sm font-medium">Order Book Depth</h4>
-                <div className="text-2xl font-semibold">{marketDepthValue('orderBookDepth').toFixed(2)}</div>
-                <p className="text-axium-gray-500 text-xs mt-1">
-                  Depth of buy and sell orders in the market.
-                </p>
-              </GlassCard>
-              <GlassCard className="p-4">
-                <h4 className="text-sm font-medium">Liquidity Score</h4>
-                <div className="text-2xl font-semibold">{marketDepthValue('liquidityScore').toFixed(2)}</div>
-                <p className="text-axium-gray-500 text-xs mt-1">
-                  Overall liquidity and ease of trading.
-                </p>
-              </GlassCard>
-              <GlassCard className="p-4">
-                <h4 className="text-sm font-medium">Volatility Risk</h4>
-                <div className="text-2xl font-semibold">{marketDepthValue('volatilityRisk').toFixed(2)}</div>
-                <p className="text-axium-gray-500 text-xs mt-1">
-                  Potential risk due to market volatility.
-                </p>
-              </GlassCard>
-            </div>
+            {pricePrediction?.factors && (
+              <div className="mt-4">
+                <h4 className="text-sm font-medium mb-2">Key Factors:</h4>
+                <ul className="grid grid-cols-2 gap-2">
+                  {pricePrediction.factors.map((factor, index) => (
+                    <li key={index} className="text-sm bg-axium-gray-100/50 p-2 rounded-lg">
+                      {factor}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             
-            <MarketDepthChart ipoId={id || ''} />
+            <div className="text-xs text-axium-gray-500 mt-4">
+              Using {pricePrediction?.modelUsed || selectedModel} model | Last updated: {pricePrediction?.timestamp ? new Date(pricePrediction.timestamp).toLocaleTimeString() : new Date().toLocaleTimeString()}
+            </div>
           </>
         )}
       </GlassCard>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ExternalMetricsCard creatorId={id || ''} />
-        <AnomalyDetectionCard ipoId={id || ''} />
+        <AnomalyDetectionCard ipoId={id} />
+        <ExternalMetricsCard creatorId={id} />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {socialData && (
+          <>
+            <GlassCard className="p-6 col-span-1">
+              <h3 className="text-lg font-medium flex items-center mb-4">
+                <MessageSquare className="h-5 w-5 mr-2 text-axium-blue" />
+                Social Sentiment
+              </h3>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {socialData?.platforms && (
+                  Object.entries(socialData.platforms).map(([platform, data], index) => (
+                    <SentimentBox 
+                      key={index}
+                      platform={platform.charAt(0).toUpperCase() + platform.slice(1)}
+                      score={data.sentiment}
+                      engagement={data.engagement}
+                    />
+                  ))
+                )}
+              </div>
+            </GlassCard>
+            
+            <GlassCard className="p-6 col-span-2">
+              <h3 className="text-lg font-medium flex items-center mb-4">
+                <BarChart4 className="h-5 w-5 mr-2 text-axium-blue" />
+                Market Trust Score
+              </h3>
+              
+              <div className="flex flex-col items-center justify-center p-6">
+                <div className="relative inline-flex items-center justify-center">
+                  <svg className="w-32 h-32">
+                    <circle
+                      className="text-axium-gray-200"
+                      strokeWidth="8"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="56"
+                      cx="64"
+                      cy="64"
+                    />
+                    <circle
+                      className={cn(
+                        "text-blue-500",
+                        socialData.trust >= 80 && "text-green-500",
+                        socialData.trust < 60 && "text-orange-500",
+                        socialData.trust < 40 && "text-red-500"
+                      )}
+                      strokeWidth="8"
+                      strokeDasharray={`${(socialData.trust / 100) * 2 * Math.PI * 56} ${2 * Math.PI * 56}`}
+                      strokeLinecap="round"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="56"
+                      cx="64"
+                      cy="64"
+                      transform="rotate(-90 64 64)"
+                    />
+                  </svg>
+                  <span className="absolute text-3xl font-bold">{socialData.trust}%</span>
+                </div>
+                
+                <div className="mt-6 text-center">
+                  <h4 className="text-lg font-medium">
+                    {socialData.trust >= 80 ? "Excellent" : 
+                     socialData.trust >= 60 ? "Good" : 
+                     socialData.trust >= 40 ? "Average" : "Poor"}
+                  </h4>
+                  <p className="text-axium-gray-600 mt-1">
+                    {socialData.trust >= 80 ? "Strong community trust and excellent brand reputation" : 
+                     socialData.trust >= 60 ? "Good market reputation with solid trust signals" : 
+                     socialData.trust >= 40 ? "Average trust metrics with some concerning signals" : 
+                     "Significant trust issues that need addressing"}
+                  </p>
+                </div>
+              </div>
+            </GlassCard>
+          </>
+        )}
       </div>
     </div>
   );

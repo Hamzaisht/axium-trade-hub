@@ -1,4 +1,3 @@
-
 import { useCallback, useState } from 'react';
 import { useAnomalyDetection } from './useAnomalyDetection';
 import { useCreatorMarketScore } from './useCreatorMarketScore';
@@ -182,7 +181,6 @@ export const useAIValuationEngine = ({
   
   const { data: sentimentData } = useSocialSentiment({ ipoId: ipoId || '' });
   const { data: marketDepthData } = useMarketDepth({ ipoId, enabled });
-  // Fix the type issue by passing an object instead of a string
   const { data: creatorScoreData } = useCreatorMarketScore({ creatorId: ipoId || '' });
   const { data: anomalyData } = useAnomalyDetection({ ipoId, enabled });
   

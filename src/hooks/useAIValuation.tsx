@@ -15,7 +15,7 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const sentimentAnalysis = useSentimentAnalysis({ creatorId: ipoId });
-  const sentimentData = sentimentAnalysis.sentimentData;
+  const sentimentData = sentimentAnalysis.data;
   const sentimentLoading = sentimentAnalysis.isLoading;
   const sentimentError = sentimentAnalysis.error;
   

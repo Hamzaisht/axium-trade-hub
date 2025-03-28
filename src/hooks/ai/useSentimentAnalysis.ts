@@ -23,20 +23,8 @@ export const useSentimentAnalysis = ({ creatorId }: UseSentimentAnalysisProps) =
       }
 
       try {
-        // Since getSentimentAnalysis doesn't exist in the mockAIValuationAPI, 
-        // we'll use getSocialSentiment and transform the data
-        const socialData = await mockAIValuationAPI.getSocialSentiment(creatorId);
-        
-        // Transform the social sentiment data into the CreatorSentimentData shape
-        return {
-          overallSentiment: Math.round((socialData.metrics.twitter.score + 
-                                       socialData.metrics.instagram.score + 
-                                       socialData.metrics.youtube.score) / 3 * 100),
-          positiveMentions: 12458, // Mock data
-          negativeMentions: 3241,  // Mock data
-          keywords: socialData.keywords,
-          lastUpdated: new Date().toISOString()
-        };
+        // Use the getSentimentAnalysis method from mockAIValuationAPI
+        return await mockAIValuationAPI.getSentimentAnalysis(creatorId);
       } catch (error) {
         console.error('Error fetching sentiment analysis:', error);
         throw error;
@@ -47,7 +35,6 @@ export const useSentimentAnalysis = ({ creatorId }: UseSentimentAnalysisProps) =
     refetchInterval: 1000 * 60 * 15, // 15 minutes
   });
   
-  // Add sentimentData property to match the expected interface
   return {
     ...result,
     sentimentData: result.data

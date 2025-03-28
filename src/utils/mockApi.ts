@@ -188,7 +188,7 @@ export const mockTrades: Trade[] = Array(100).fill(null).map(() => {
   };
 });
 
-// Mock API class
+// Mock API class implementations
 export class MockIPOAPI {
   async getAllIPOs(): Promise<IPO[]> {
     await delay(500);
@@ -200,24 +200,22 @@ export class MockIPOAPI {
     return mockIPOs.find(ipo => ipo.id === id);
   }
 
-  // Create a new IPO
   async createIPO(ipoData: Partial<IPO>): Promise<IPO> {
     await delay(500);
     
-    // Generate a new IPO object with provided data and default values for missing fields
     const newIPO: IPO = {
       id: faker.string.uuid(),
       creatorName: faker.person.fullName(),
       symbol: ipoData.symbol || faker.finance.currencyCode(),
       initialPrice: ipoData.initialPrice || 10,
-      currentPrice: ipoData.initialPrice || 10, // Start current price at initial price
+      currentPrice: ipoData.initialPrice || 10,
       totalSupply: ipoData.totalSupply || 1000000,
       availableSupply: ipoData.availableSupply || 250000,
       launchDate: new Date().toISOString(),
       revenueUSD: faker.number.int({ min: 100000, max: 5000000 }),
       engagementScore: faker.number.int({ min: 50, max: 95 }),
       aiScore: faker.number.int({ min: 60, max: 90 }),
-      averageDailyVolume: 0, // New IPO has no volume yet
+      averageDailyVolume: 0,
       description: ipoData.description || '',
       socialLinks: ipoData.socialLinks || {
         twitter: '',
@@ -244,21 +242,17 @@ export class MockIPOAPI {
       category: ['Gaming', 'Education', 'Entertainment', 'Fitness', 'Finance'][Math.floor(Math.random() * 5)]
     };
     
-    // Add to mock data
     mockIPOs.push(newIPO);
     
     return newIPO;
   }
 
-  // Simulate fetching recent trades for an IPO
   async getRecentTrades(ipoId: string, limit: number = 10): Promise<any[]> {
     await delay(200);
     
-    // Find the IPO
     const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
     
-    // Generate mock trades
     const trades = Array(limit).fill(null).map(() => ({
       id: faker.string.uuid(),
       ipoId: ipoId,
@@ -274,7 +268,6 @@ export class MockIPOAPI {
   }
 }
 
-// Mock Trading API class
 export class MockTradingAPI {
   async placeOrder(orderData: Partial<Order>): Promise<Order> {
     await delay(300);
@@ -296,7 +289,6 @@ export class MockTradingAPI {
 
   async getUserOrders(): Promise<Order[]> {
     await delay(400);
-    // This would normally filter by user ID, but for mock purposes we'll return random orders
     return mockOrders.slice(0, 10);
   }
 
@@ -317,7 +309,6 @@ export class MockTradingAPI {
 
   async getUserTrades(): Promise<Trade[]> {
     await delay(400);
-    // This would normally filter by user ID, but for mock purposes we'll return random trades
     return mockTrades.slice(0, 15);
   }
 
@@ -338,12 +329,10 @@ export class MockTradingAPI {
   }
 }
 
-// Mock Portfolio API class
 export class MockPortfolioAPI {
   async getPortfolio(userId: string): Promise<Portfolio> {
     await delay(500);
     
-    // Generate random holdings
     const holdings = Array(Math.floor(Math.random() * 10) + 1).fill(null).map(() => {
       const randomIPO = mockIPOs[Math.floor(Math.random() * mockIPOs.length)];
       const quantity = faker.number.int({ min: 10, max: 1000 });
@@ -364,7 +353,6 @@ export class MockPortfolioAPI {
       };
     });
     
-    // Calculate total value
     const totalValue = holdings.reduce((sum, holding) => {
       return sum + (holding.currentPrice * holding.quantity);
     }, 0);
@@ -372,7 +360,6 @@ export class MockPortfolioAPI {
     const cash = parseFloat(faker.number.float({ min: 1000, max: 100000, fractionDigits: 2 }).toFixed(2));
     const invested = parseFloat(faker.number.float({ min: totalValue * 0.7, max: totalValue * 0.9, fractionDigits: 2 }).toFixed(2));
     
-    // Generate history data for the portfolio value
     const history = Array(30).fill(null).map((_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - (30 - i));
@@ -387,7 +374,6 @@ export class MockPortfolioAPI {
       };
     });
     
-    // Make sure the last history entry matches the current total value
     history[history.length - 1].value = totalValue + cash;
     
     return {
@@ -437,10 +423,10 @@ class AIValuationAPI {
   ): Promise<{
     prediction: PriceMovement;
     confidence: number;
-    targetPrice: number;
-    factors: string[];
     timestamp: string;
     modelUsed: AIModelType;
+    targetPrice: number;
+    factors: string[];
   }> {
     await delay(500);
     const ipo = mockIPOs.find(item => item.id === ipoId);
@@ -456,7 +442,7 @@ class AIValuationAPI {
       },
       confidence: Math.floor(Math.random() * 30) + 65,
       timestamp: new Date().toISOString(),
-      modelUsed: AIModelType.STANDARD,
+      modelUsed: modelType,
       targetPrice: parseFloat((ipo.currentPrice * (1 + (Math.random() * 0.2 - 0.1))).toFixed(2)),
       factors: ['Market Trend', 'Social Sentiment', 'Recent Volume', 'Creator Activity']
     };
@@ -507,7 +493,6 @@ class AIValuationAPI {
 
     const dividendInfo = calculateDividendYieldUtil(ipo);
     
-    // Add mock historical payouts
     const historicalPayouts = Array(5).fill(null).map((_, i) => ({
       date: faker.date.past({ years: 1 }).toISOString(),
       amount: parseFloat(faker.number.float({ min: 0.01, max: dividendInfo.nextEstimatedAmount, fractionDigits: 2 }).toFixed(2))
@@ -553,7 +538,6 @@ class AIValuationAPI {
     return getLiquidationRulesUtil(ipo);
   }
 
-  // Method for getting valuation factors
   async getValuationFactors(ipoId: string): Promise<any> {
     await delay(400);
     const ipo = mockIPOs.find(item => item.id === ipoId);
@@ -578,26 +562,20 @@ class AIValuationAPI {
     };
   }
 
-  // Method for Creator Market Score
   async getCreatorMarketScore(ipoId: string, externalMetrics?: any, socialSentiment?: any, anomalyData?: any): Promise<any> {
-    // Find the IPO
     const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
     
-    // Generate random delay to simulate API latency
     await delay(300 + Math.random() * 500);
     
-    // Calculate revenue influence (50% weight)
     const revenueInfluenceFactor = Math.min(1, (ipo.revenueUSD || 50000) / 1000000);
     const revenueInfluenceRaw = revenueInfluenceFactor * 0.7 + Math.random() * 0.3;
     const revenueInfluenceScore = revenueInfluenceRaw * 100;
     
-    // Calculate social engagement influence (30% weight)
     const socialEngagementFactor = ipo.engagementScore / 100;
     const socialRaw = socialEngagementFactor * 0.8 + Math.random() * 0.2;
     const socialEngagementScore = socialRaw * 100;
     
-    // Calculate AI sentiment score (20% weight)
     const sentimentMultiplier = socialSentiment ? 
       (socialSentiment.overall.includes('positive') ? 1.2 : 
        socialSentiment.overall.includes('negative') ? 0.7 : 1) : 1;
@@ -605,10 +583,9 @@ class AIValuationAPI {
     const sentimentRaw = (ipo.aiScore / 100) * sentimentMultiplier;
     const aiSentimentScore = sentimentRaw * 100;
     
-    // Calculate total CMS based on weighted components
-    const weightedRevenueInfluence = revenueInfluenceRaw * 0.5;   // 50% weight
-    const weightedSocialEngagement = socialRaw * 0.3;             // 30% weight
-    const weightedAISentiment = sentimentRaw * 0.2;               // 20% weight
+    const weightedRevenueInfluence = revenueInfluenceRaw * 0.5;
+    const weightedSocialEngagement = socialRaw * 0.3;
+    const weightedAISentiment = sentimentRaw * 0.2;
     
     const totalScore = (
       weightedRevenueInfluence + 
@@ -616,21 +593,16 @@ class AIValuationAPI {
       weightedAISentiment
     ) * 100;
     
-    // Calculate recommended price based on CMS
-    // Higher CMS = higher price relative to initial price
     const baseMultiplier = 0.5 + totalScore / 100;
     const recommendedPrice = parseFloat((ipo.initialPrice * baseMultiplier).toFixed(2));
     
-    // Calculate price change from current price
     const priceChange = recommendedPrice - ipo.currentPrice;
     const priceChangePercent = (priceChange / ipo.currentPrice) * 100;
     
-    // Generate influencing factors for each component
     const generateFactors = (type: string, score: number) => {
       const factors = [];
       
       if (type === 'revenue') {
-        // Generate revenue factors
         factors.push({
           name: 'Annual Revenue',
           impact: ipo.revenueUSD ? Math.min(40, (ipo.revenueUSD / 1000000) * 15) : 5,
@@ -650,7 +622,6 @@ class AIValuationAPI {
         });
       } 
       else if (type === 'social') {
-        // Generate social engagement factors
         factors.push({
           name: 'Engagement Rate',
           impact: (ipo.engagementScore / 10) + (Math.random() * 10),
@@ -670,7 +641,6 @@ class AIValuationAPI {
         });
       }
       else if (type === 'sentiment') {
-        // Generate AI sentiment factors
         if (socialSentiment) {
           factors.push({
             name: 'Public Sentiment',
@@ -700,19 +670,19 @@ class AIValuationAPI {
       totalScore: parseFloat(totalScore.toFixed(2)),
       revenueInfluence: {
         score: parseFloat(revenueInfluenceScore.toFixed(2)),
-        weight: 0.5, // 50%
+        weight: 0.5,
         rawScore: parseFloat(revenueInfluenceRaw.toFixed(2)),
         factors: generateFactors('revenue', revenueInfluenceScore)
       },
       socialEngagementInfluence: {
         score: parseFloat(socialEngagementScore.toFixed(2)),
-        weight: 0.3, // 30%
+        weight: 0.3,
         rawScore: parseFloat(socialRaw.toFixed(2)),
         factors: generateFactors('social', socialEngagementScore)
       },
       aiSentimentScore: {
         score: parseFloat(aiSentimentScore.toFixed(2)),
-        weight: 0.2, // 20%
+        weight: 0.2,
         rawScore: parseFloat(sentimentRaw.toFixed(2)),
         factors: generateFactors('sentiment', aiSentimentScore)
       },
@@ -724,30 +694,32 @@ class AIValuationAPI {
       },
       anomalyDetection: {
         hasAnomalies: anomalyData?.detected || false,
-        anomalyImpact: 0  // This will be calculated in the hook if anomalies are detected
+        anomalyImpact: 0
       },
       lastUpdated: new Date().toISOString()
     };
   }
 
   async getSentimentAnalysis(ipoId: string): Promise<any> {
-    // Generate random delay to simulate API latency
     await delay(300 + Math.random() * 200);
     
-    // Use the existing getSocialSentiment method and transform its response
     const socialData = await this.getSocialSentiment(ipoId);
     
-    // Transform into the format expected by useSentimentAnalysis
     return {
-      overallSentiment: Math.round((socialData.metrics.twitter.score + 
-                               socialData.metrics.instagram.score + 
-                               socialData.metrics.youtube.score) / 3 * 100),
-      positiveMentions: 12458 + Math.floor(Math.random() * 1000), // Mock data with some variation
-      negativeMentions: 3241 + Math.floor(Math.random() * 500),  // Mock data with some variation
+      overallSentiment: Math.round((
+        (socialData.metrics.twitter.score + 
+        socialData.metrics.instagram.score + 
+        socialData.metrics.youtube.score) / 3) * 100),
+      positiveMentions: 12458 + Math.floor(Math.random() * 1000),
+      negativeMentions: 3241 + Math.floor(Math.random() * 500),
       keywords: socialData.keywords,
       lastUpdated: new Date().toISOString()
     };
   }
 }
 
-//
+// Create instances of the mock APIs
+export const mockIPOAPI = new MockIPOAPI();
+export const mockTradingAPI = new MockTradingAPI();
+export const mockPortfolioAPI = new MockPortfolioAPI();
+export const mockAIValuationAPI = new AIValuationAPI();

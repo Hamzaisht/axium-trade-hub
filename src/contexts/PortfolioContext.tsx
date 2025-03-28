@@ -1,8 +1,6 @@
-
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { mockPortfolioAPI, Portfolio } from '@/utils/mockApi';
-import { toast } from 'sonner';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { mockPortfolioAPI } from '@/utils/mockApi';
 import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';
 
 interface PortfolioContextType {
@@ -42,42 +40,34 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Connect to the mock WebSocket when the context is initialized
   useEffect(() => {
     mockWebSocket.connect();
     
-    // Handle connection status
     const connectionHandler = (data: { status: string }) => {
       setIsConnected(data.status === 'connected');
     };
 
-    // Handle price updates that affect the portfolio value
     const priceUpdateHandler = (data: { ipoId: string, newPrice: number }) => {
       if (!portfolio) return;
       
-      // Check if this IPO is in the user's portfolio
       const holdingIndex = portfolio.holdings.findIndex(h => h.ipoId === data.ipoId);
       
       if (holdingIndex >= 0) {
-        // Update the portfolio with the new price
         const updatedPortfolio = { ...portfolio };
         
-        // Update the current price of the holding
         const updatedHolding = { ...updatedPortfolio.holdings[holdingIndex], currentPrice: data.newPrice };
         updatedPortfolio.holdings[holdingIndex] = updatedHolding;
         
-        // Recalculate total value
         updatedPortfolio.totalValue = updatedPortfolio.cash + updatedPortfolio.holdings.reduce(
           (sum, holding) => sum + holding.quantity * (holding.currentPrice || holding.averagePurchasePrice), 0
         );
         
-        // Add a new history point if the value has changed significantly
         if (updatedPortfolio.history && updatedPortfolio.history.length > 0) {
           const lastHistory = updatedPortfolio.history[updatedPortfolio.history.length - 1];
           const valueDifference = Math.abs(lastHistory.value - updatedPortfolio.totalValue);
           const percentChange = valueDifference / lastHistory.value;
           
-          if (percentChange > 0.005) { // Only add history if value changed by more than 0.5%
+          if (percentChange > 0.005) {
             const newHistory = [...updatedPortfolio.history, {
               date: new Date().toISOString(),
               value: updatedPortfolio.totalValue
@@ -92,7 +82,6 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    // Handle trades that affect the portfolio
     const tradeHandler = (data: { 
       buyerId: string, 
       sellerId: string, 
@@ -103,22 +92,18 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
     }) => {
       if (!user || !portfolio) return;
       
-      // Check if this trade involves the current user
       const isUserInvolved = data.buyerId === user.id || data.sellerId === user.id;
       
       if (isUserInvolved) {
-        // Portfolio should be updated after trade, so refetch
         fetchPortfolio();
       }
     };
 
-    // Subscribe to WebSocket events
     mockWebSocket.on(WSEvents.CONNECTION, connectionHandler);
     mockWebSocket.on(WSEvents.PRICE_UPDATE, priceUpdateHandler);
     mockWebSocket.on(WSEvents.TRADE_EXECUTED, tradeHandler);
     mockWebSocket.on(WSEvents.PORTFOLIO_UPDATED, fetchPortfolio);
 
-    // Cleanup function
     return () => {
       mockWebSocket.off(WSEvents.CONNECTION, connectionHandler);
       mockWebSocket.off(WSEvents.PRICE_UPDATE, priceUpdateHandler);
@@ -127,7 +112,6 @@ export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [isAuthenticated, user, portfolio]);
 
-  // Fetch portfolio on mount if authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
       fetchPortfolio();

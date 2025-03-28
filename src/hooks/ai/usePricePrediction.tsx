@@ -44,12 +44,11 @@ export const usePricePrediction = ({
           selectedModel
         );
         
-        // Ensure the response includes timestamp and modelUsed
         return {
           prediction: result.prediction,
           confidence: result.confidence,
-          timestamp: result.timestamp || new Date().toISOString(),
-          modelUsed: result.modelUsed || selectedModel,
+          timestamp: result.timestamp,
+          modelUsed: result.modelUsed,
           targetPrice: result.targetPrice,
           factors: result.factors
         };
