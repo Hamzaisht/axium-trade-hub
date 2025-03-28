@@ -15,6 +15,16 @@ interface CreatorCardProps {
 export const CreatorCard = ({ creator, compact = false }: CreatorCardProps) => {
   const navigate = useNavigate();
   
+  // Calculate price change percentage
+  const calculatePriceChange = () => {
+    return ((creator.currentPrice - creator.initialPrice) / creator.initialPrice) * 100;
+  };
+  
+  const priceChangePercent = calculatePriceChange();
+  
+  // Calculate estimated total shares if not available
+  const totalSharesOrDefault = creator.totalSupply || 1000000;
+  
   const viewCreator = () => {
     navigate(`/creator/${creator.id}`);
   };
@@ -40,14 +50,14 @@ export const CreatorCard = ({ creator, compact = false }: CreatorCardProps) => {
         <div className="flex justify-between items-baseline mb-3">
           <span className="text-lg font-semibold">${creator.currentPrice.toFixed(2)}</span>
           <span 
-            className={`flex items-center text-xs ${creator.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}
+            className={`flex items-center text-xs ${priceChangePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}
           >
-            {creator.priceChange >= 0 ? (
+            {priceChangePercent >= 0 ? (
               <TrendingUp className="h-3 w-3 mr-1" />
             ) : (
               <TrendingDown className="h-3 w-3 mr-1" />
             )}
-            {Math.abs(creator.priceChange).toFixed(2)}%
+            {Math.abs(priceChangePercent).toFixed(2)}%
           </span>
         </div>
         
@@ -90,14 +100,14 @@ export const CreatorCard = ({ creator, compact = false }: CreatorCardProps) => {
         <div className="flex justify-between items-baseline mb-3">
           <span className="text-2xl font-semibold">${creator.currentPrice.toFixed(2)}</span>
           <span 
-            className={`flex items-center ${creator.priceChange >= 0 ? 'text-green-500' : 'text-red-500'}`}
+            className={`flex items-center ${priceChangePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}
           >
-            {creator.priceChange >= 0 ? (
+            {priceChangePercent >= 0 ? (
               <TrendingUp className="h-4 w-4 mr-1" />
             ) : (
               <TrendingDown className="h-4 w-4 mr-1" />
             )}
-            {Math.abs(creator.priceChange).toFixed(2)}%
+            {Math.abs(priceChangePercent).toFixed(2)}%
           </span>
         </div>
         
@@ -122,11 +132,11 @@ export const CreatorCard = ({ creator, compact = false }: CreatorCardProps) => {
         <div className="grid grid-cols-2 gap-3 text-xs mb-6">
           <div className="bg-axium-gray-100 rounded p-2">
             <span className="block text-axium-gray-600">Market Cap</span>
-            <span className="font-semibold">${(creator.currentPrice * creator.totalShares).toLocaleString()}</span>
+            <span className="font-semibold">${(creator.currentPrice * totalSharesOrDefault).toLocaleString()}</span>
           </div>
           <div className="bg-axium-gray-100 rounded p-2">
             <span className="block text-axium-gray-600">Total Shares</span>
-            <span className="font-semibold">{creator.totalShares.toLocaleString()}</span>
+            <span className="font-semibold">{totalSharesOrDefault.toLocaleString()}</span>
           </div>
         </div>
       </div>

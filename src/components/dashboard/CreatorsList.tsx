@@ -16,8 +16,13 @@ const CreatorsList = () => {
   useEffect(() => {
     if (!isLoading && ipos.length > 0) {
       // Get some diverse creators for the featured list
+      // Using initialPrice and currentPrice to calculate price change percentage
       const topPerformers = [...ipos]
-        .sort((a, b) => b.priceChange - a.priceChange)
+        .sort((a, b) => {
+          const priceChangeA = ((a.currentPrice - a.initialPrice) / a.initialPrice) * 100;
+          const priceChangeB = ((b.currentPrice - b.initialPrice) / b.initialPrice) * 100;
+          return priceChangeB - priceChangeA;
+        })
         .slice(0, 3);
       
       setFeaturedCreators(topPerformers);
