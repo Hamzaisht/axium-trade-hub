@@ -1,7 +1,43 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { sentimentAnalysisService, CreatorSentimentData } from '@/services/ai/SentimentAnalysisService';
 import { toast } from 'sonner';
+
+export interface CreatorSentimentData {
+  overallSentiment: number;
+  positiveMentions: number;
+  negativeMentions: number;
+  keywords: string[];
+  lastUpdated: string;
+}
+
+interface SentimentAnalysisService {
+  getCreatorSentiment: (creatorId: string) => Promise<CreatorSentimentData>;
+  refreshCreatorSentiment: (creatorId: string) => Promise<void>;
+}
+
+// Mock service implementation
+const sentimentAnalysisService: SentimentAnalysisService = {
+  getCreatorSentiment: async (creatorId: string): Promise<CreatorSentimentData> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    return {
+      overallSentiment: Math.floor(65 + Math.random() * 25), // 65-90
+      positiveMentions: Math.floor(8000 + Math.random() * 10000),
+      negativeMentions: Math.floor(1000 + Math.random() * 5000),
+      keywords: [
+        'trending', 'viral', 'growth', 'partnership', 'collaboration',
+        'innovative', 'authentic', 'engaging'
+      ],
+      lastUpdated: new Date().toISOString()
+    };
+  },
+  
+  refreshCreatorSentiment: async (creatorId: string): Promise<void> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+};
 
 interface UseSentimentAnalysisProps {
   creatorId?: string;

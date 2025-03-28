@@ -1,3 +1,4 @@
+
 /**
  * Mock API
  * Simulates API endpoints for fetching creator data, IPOs, and AI valuations.
@@ -14,12 +15,33 @@ export interface IPO {
   currentPrice: number;
   totalSupply: number;
   availableSupply: number;
+  totalShares: number;
+  priceChange: number;
+  sentimentScore?: number;
+  category?: string;
   launchDate?: string;
   revenueUSD?: number;
   engagementScore: number;
+  engagementRate?: number;
   aiScore: number;
   averageDailyVolume?: number;
+  volume24h?: number;
+  investorCount?: number;
+  followerCount?: number;
+  activeUserCount?: number;
   description?: string;
+  totalRevenue?: number;
+  yoyGrowth?: number;
+  audienceGrowth?: number;
+  contentGrowth?: number;
+  platformExpansion?: number;
+  projectedGrowth?: number;
+  revenueStreams?: {
+    subscriptions?: number;
+    advertising?: number;
+    merchandise?: number;
+    sponsorships?: number;
+  };
   socialLinks?: {
     twitter?: string;
     instagram?: string;
@@ -58,9 +80,13 @@ export interface Portfolio {
     quantity: number;
     averagePurchasePrice: number;
     currentPrice?: number;
+    creatorName?: string;
+    creatorSymbol?: string;
+    priceChange?: number;
   }[];
   totalValue: number;
   cash: number;
+  invested: number;
   history?: {
     date: string;
     value: number;
@@ -74,24 +100,51 @@ const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 export const mockIPOs: IPO[] = Array(20).fill(null).map((_, i) => {
   const creatorName = faker.person.firstName() + " " + faker.person.lastName();
   const initialPrice = parseFloat(faker.number.float({ min: 1, max: 50, fractionDigits: 2 }).toFixed(2));
+  const currentPrice = parseFloat(faker.number.float({ min: initialPrice * 0.5, max: initialPrice * 2, fractionDigits: 2 }).toFixed(2));
+  const priceChange = ((currentPrice - initialPrice) / initialPrice) * 100;
   const engagementScore = faker.number.int({ min: 20, max: 99 });
   const aiScore = faker.number.int({ min: 30, max: 95 });
   const revenueUSD = faker.number.int({ min: 100000, max: 10000000 });
+  const totalShares = faker.number.int({ min: 1000000, max: 10000000 });
+
+  const categories = ['entertainer', 'athlete', 'musician', 'content', 'influencer'];
+  const category = categories[Math.floor(Math.random() * categories.length)];
 
   return {
     id: faker.string.uuid(),
     creatorName: creatorName,
     symbol: creatorName.substring(0, 3).toUpperCase(),
     initialPrice: initialPrice,
-    currentPrice: parseFloat(faker.number.float({ min: initialPrice * 0.5, max: initialPrice * 2, fractionDigits: 2 }).toFixed(2)),
+    currentPrice: currentPrice,
+    priceChange: parseFloat(priceChange.toFixed(2)),
     totalSupply: faker.number.int({ min: 1000000, max: 10000000 }),
     availableSupply: faker.number.int({ min: 100000, max: 1000000 }),
+    totalShares: totalShares,
+    category: category,
+    sentimentScore: faker.number.int({ min: 50, max: 95 }),
     launchDate: faker.date.past({ years: 1 }).toISOString(),
     revenueUSD: revenueUSD,
     engagementScore: engagementScore,
+    engagementRate: parseFloat((Math.random() * 8 + 1).toFixed(1)),
     aiScore: aiScore,
     averageDailyVolume: faker.number.int({ min: 1000, max: 10000 }),
+    volume24h: faker.number.int({ min: 10000, max: 500000 }),
+    investorCount: faker.number.int({ min: 100, max: 2000 }),
+    followerCount: faker.number.int({ min: 500000, max: 5000000 }),
+    activeUserCount: faker.number.int({ min: 100000, max: 2000000 }),
     description: faker.lorem.paragraph(),
+    totalRevenue: faker.number.int({ min: 500000, max: 5000000 }),
+    yoyGrowth: parseFloat((Math.random() * 30 + 10).toFixed(1)),
+    audienceGrowth: parseFloat((Math.random() * 25 + 5).toFixed(1)),
+    contentGrowth: parseFloat((Math.random() * 40 + 10).toFixed(1)),
+    platformExpansion: parseFloat((Math.random() * 20 + 5).toFixed(1)),
+    projectedGrowth: parseFloat((Math.random() * 30 + 10).toFixed(1)),
+    revenueStreams: {
+      subscriptions: faker.number.int({ min: 50000, max: 1000000 }),
+      advertising: faker.number.int({ min: 50000, max: 1000000 }),
+      merchandise: faker.number.int({ min: 50000, max: 1000000 }),
+      sponsorships: faker.number.int({ min: 50000, max: 1000000 })
+    },
     socialLinks: {
       twitter: `@${creatorName.replace(' ', '').toLowerCase()}`,
       instagram: `${creatorName.replace(' ', '').toLowerCase()}`,
@@ -287,7 +340,10 @@ export class MockPortfolioAPI {
         ipoId: randomIPO.id,
         quantity,
         averagePurchasePrice,
-        currentPrice: randomIPO.currentPrice
+        currentPrice: randomIPO.currentPrice,
+        creatorName: randomIPO.creatorName,
+        creatorSymbol: randomIPO.symbol,
+        priceChange: randomIPO.priceChange
       };
     });
     
@@ -297,6 +353,7 @@ export class MockPortfolioAPI {
     }, 0);
     
     const cash = parseFloat(faker.number.float({ min: 1000, max: 100000, fractionDigits: 2 }).toFixed(2));
+    const invested = parseFloat(faker.number.float({ min: totalValue * 0.7, max: totalValue * 0.9, fractionDigits: 2 }).toFixed(2));
     
     // Generate history data for the portfolio value
     const history = Array(30).fill(null).map((_, i) => {
@@ -321,6 +378,7 @@ export class MockPortfolioAPI {
       holdings,
       totalValue,
       cash,
+      invested,
       history
     };
   }

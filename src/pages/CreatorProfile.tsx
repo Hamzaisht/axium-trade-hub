@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { IPO } from "@/utils/mockApi";
 import PriceChart from "@/components/dashboard/PriceChart";
-import { SentimentScoreBadge } from "@/components/trading/SentimentScoreBadge";
+import SentimentScoreBadge from "@/components/trading/SentimentScoreBadge";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown, Eye, Users, BarChart3 } from "lucide-react";
 import { toast } from "sonner";

@@ -10,7 +10,7 @@ interface SentimentScoreBadgeProps {
   size?: "sm" | "md" | "lg";
 }
 
-const SentimentScoreBadge = ({ creatorId, score = 0, size = "md" }: SentimentScoreBadgeProps) => {
+export const SentimentScoreBadge = ({ creatorId, score = 0, size = "md" }: SentimentScoreBadgeProps) => {
   // Simulated sentiment score (would come from API in real app)
   const sentimentScore = useMemo(() => {
     if (score) return score;

@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIPO } from "@/contexts/IPOContext";
 import Navbar from "@/components/layout/Navbar";
@@ -15,6 +16,7 @@ import { Activity, TrendingUp, Users } from "lucide-react";
 const Dashboard = () => {
   const { user } = useAuth();
   const { ipos, isLoading } = useIPO();
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Calculate market overview data
   const marketOverview = {
@@ -34,7 +36,7 @@ const Dashboard = () => {
     creatorName: ipo.creatorName,
     symbol: ipo.symbol,
     currentPrice: ipo.currentPrice,
-    priceChange: ((ipo.currentPrice - ipo.initialPrice) / ipo.initialPrice) * 100,
+    priceChange: ipo.priceChange,
   }));
 
   const topLosers = [...ipos].reverse().slice(0, 5).map(ipo => ({
@@ -42,7 +44,7 @@ const Dashboard = () => {
     creatorName: ipo.creatorName,
     symbol: ipo.symbol,
     currentPrice: ipo.currentPrice,
-    priceChange: -Math.abs(((ipo.currentPrice - ipo.initialPrice) / ipo.initialPrice) * 100),
+    priceChange: -Math.abs(ipo.priceChange),
   }));
 
   return (
@@ -56,7 +58,10 @@ const Dashboard = () => {
             <p className="text-axium-gray-600">Welcome back, {user?.name || "User"}!</p>
           </div>
           
-          <SearchBar />
+          <SearchBar 
+            value={searchTerm}
+            onChange={setSearchTerm}
+          />
         </div>
         
         {/* Metrics Row */}
@@ -65,25 +70,25 @@ const Dashboard = () => {
             title="Market Cap"
             value={`$${(marketOverview?.totalMarketCap || 0).toLocaleString()}`}
             change={marketOverview?.marketCapChange || 0}
-            icon={<Activity className="h-5 w-5" />}
+            icon={<Activity size={20} className="h-5 w-5" />}
           />
           <MetricCard
             title="Avg. Creator Price"
             value={`$${(marketOverview?.averagePrice || 0).toFixed(2)}`}
             change={marketOverview?.averagePriceChange || 0}
-            icon={<TrendingUp className="h-5 w-5" />}
+            icon={<TrendingUp size={20} className="h-5 w-5" />}
           />
           <MetricCard
             title="Active Creators"
-            value={marketOverview?.activeCreators || 0}
+            value={`${marketOverview?.activeCreators || 0}`}
             change={marketOverview?.activeCreatorsChange || 0}
-            icon={<Users className="h-5 w-5" />}
+            icon={<Users size={20} className="h-5 w-5" />}
           />
           <MetricCard
             title="24h Volume"
             value={`$${(marketOverview?.volume24h || 0).toLocaleString()}`}
             change={marketOverview?.volumeChange || 0}
-            icon={<Activity className="h-5 w-5" />}
+            icon={<Activity size={20} className="h-5 w-5" />}
           />
         </div>
         
@@ -98,7 +103,7 @@ const Dashboard = () => {
           <GlassCard>
             <div className="p-5">
               <h2 className="text-xl font-semibold mb-6 flex items-center">
-                <TrendingUp className="mr-2 text-green-500" /> Top Performers
+                <TrendingUp size={20} className="mr-2 text-green-500" /> Top Performers
               </h2>
               <div className="space-y-5">
                 {topPerformers.map((performer) => (
@@ -117,7 +122,7 @@ const Dashboard = () => {
                     <div className="text-right">
                       <p className="font-medium">${performer.currentPrice.toFixed(2)}</p>
                       <p className="text-green-500 text-sm flex items-center justify-end">
-                        <TrendingUp className="h-3 w-3 mr-1" />
+                        <TrendingUp size={12} className="h-3 w-3 mr-1" />
                         {performer.priceChange.toFixed(2)}%
                       </p>
                     </div>
@@ -130,7 +135,7 @@ const Dashboard = () => {
           <GlassCard>
             <div className="p-5">
               <h2 className="text-xl font-semibold mb-6 flex items-center">
-                <TrendingUp className="mr-2 text-red-500 transform rotate-180" /> Top Losers
+                <TrendingUp size={20} className="mr-2 text-red-500 transform rotate-180" /> Top Losers
               </h2>
               <div className="space-y-5">
                 {topLosers.map((loser) => (
@@ -149,7 +154,7 @@ const Dashboard = () => {
                     <div className="text-right">
                       <p className="font-medium">${loser.currentPrice.toFixed(2)}</p>
                       <p className="text-red-500 text-sm flex items-center justify-end">
-                        <TrendingUp className="h-3 w-3 mr-1 transform rotate-180" />
+                        <TrendingUp size={12} className="h-3 w-3 mr-1 transform rotate-180" />
                         {Math.abs(loser.priceChange).toFixed(2)}%
                       </p>
                     </div>
@@ -165,7 +170,9 @@ const Dashboard = () => {
         
         {/* Market Insights Tabs */}
         <div className="mt-8">
-          <DashboardTabs selectedTab="market" onTabChange={() => {}} />
+          <DashboardTabs selectedTab="market" onTabChange={() => {}}>
+            <div>Market insights content will go here</div>
+          </DashboardTabs>
         </div>
       </main>
       

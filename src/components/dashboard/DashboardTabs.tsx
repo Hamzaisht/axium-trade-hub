@@ -9,7 +9,7 @@ import {
   CircleDollarSign
 } from "lucide-react";
 
-interface DashboardTabsProps {
+export interface DashboardTabsProps {
   selectedTab: string;
   onTabChange: (tab: string) => void;
   children: ReactNode;
@@ -24,28 +24,30 @@ export const DashboardTabs = ({
     <Tabs value={selectedTab} onValueChange={onTabChange} className="w-full">
       <TabsList className="w-full bg-axium-gray-100 p-1">
         <TabsTrigger value="trading" className="flex-1 data-[state=active]:bg-white">
-          <TrendingUp className="h-4 w-4 mr-2" />
+          <TrendingUp size={16} className="h-4 w-4 mr-2" />
           Trading
         </TabsTrigger>
         <TabsTrigger value="sentiment" className="flex-1 data-[state=active]:bg-white">
-          <MessageSquare className="h-4 w-4 mr-2" />
+          <MessageSquare size={16} className="h-4 w-4 mr-2" />
           Sentiment
         </TabsTrigger>
         <TabsTrigger value="ai" className="flex-1 data-[state=active]:bg-white">
-          <BrainCircuit className="h-4 w-4 mr-2" />
+          <BrainCircuit size={16} className="h-4 w-4 mr-2" />
           AI Insights
         </TabsTrigger>
         <TabsTrigger value="risk" className="flex-1 data-[state=active]:bg-white">
-          <AlertTriangle className="h-4 w-4 mr-2" />
+          <AlertTriangle size={16} className="h-4 w-4 mr-2" />
           Risk Center
         </TabsTrigger>
         <TabsTrigger value="dividends" className="flex-1 data-[state=active]:bg-white">
-          <CircleDollarSign className="h-4 w-4 mr-2" />
+          <CircleDollarSign size={16} className="h-4 w-4 mr-2" />
           Smart Contract
         </TabsTrigger>
       </TabsList>
       
-      {children}
+      <TabsContent value={selectedTab}>{children}</TabsContent>
     </Tabs>
   );
 };
+
+export default DashboardTabs;

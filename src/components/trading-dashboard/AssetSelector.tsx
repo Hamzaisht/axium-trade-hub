@@ -46,14 +46,14 @@ export const AssetSelector = ({
                 <div 
                   className={cn(
                     "flex items-center text-xs mt-1",
-                    ipo.priceChange >= 0 ? "text-green-500" : "text-red-500"
+                    (ipo.priceChange >= 0) ? "text-green-500" : "text-red-500"
                   )}
                 >
                   <span>${ipo.currentPrice.toFixed(2)}</span>
-                  {ipo.priceChange >= 0 ? (
-                    <TrendingUp className="h-3 w-3 ml-1" />
+                  {(ipo.priceChange >= 0) ? (
+                    <TrendingUp size={12} className="h-3 w-3 ml-1" />
                   ) : (
-                    <TrendingDown className="h-3 w-3 ml-1" />
+                    <TrendingDown size={12} className="h-3 w-3 ml-1" />
                   )}
                 </div>
               </div>
