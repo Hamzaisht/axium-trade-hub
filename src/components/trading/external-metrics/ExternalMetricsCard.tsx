@@ -11,6 +11,7 @@ import { MetricsSummary } from './MetricsSummary';
 import { SocialTab } from './SocialTab';
 import { RevenueTab } from './RevenueTab';
 import { BrandDealsTab } from './BrandDealsTab';
+import { SocialPlatformMetrics, CreatorMetrics } from '@/types/api';
 
 interface ExternalMetricsCardProps {
   creatorId?: string;
@@ -92,11 +93,11 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
             </TabsList>
             
             <TabsContent value="social" className="pt-2">
-              <SocialTab social={metrics.social} />
+              <SocialTab social={metrics.social as SocialPlatformMetrics[]} />
             </TabsContent>
             
             <TabsContent value="revenue" className="pt-2">
-              <RevenueTab metrics={metrics} />
+              <RevenueTab metrics={metrics as CreatorMetrics} />
             </TabsContent>
             
             <TabsContent value="brands" className="pt-2">

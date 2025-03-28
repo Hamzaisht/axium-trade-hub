@@ -71,7 +71,7 @@ export interface MarketDepth {
   sellWallStrength: number;
   supportLevels: number[];
   resistanceLevels: number[];
-  currentSpread: { bid: number; ask: number };
+  currentSpread: { bid: number; ask: number } | null;
 }
 
 export interface CreatorMarketScore {

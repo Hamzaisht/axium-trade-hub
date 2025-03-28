@@ -231,13 +231,13 @@ export class MockAIValuationAPI {
     return predictPriceMovement(ipo, timeframe, modelType);
   }
 
-  // Social sentiment analysis
+  // Social sentiment analysis - fixed to pass ipoId
   async getSocialSentiment(ipoId: string) {
     await delay(300);
     const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
     
-    return getSocialSentimentUtil();
+    return getSocialSentimentUtil(ipoId);
   }
 
   // Market depth analysis
@@ -449,7 +449,7 @@ export class MockAIValuationAPI {
     return date.toISOString();
   }
 
-  // For testing the new sentiment analysis service
+  // For testing the new sentiment analysis service - fixed to not require arguments
   async getSentimentAnalysis() {
     await delay(500);
     return {

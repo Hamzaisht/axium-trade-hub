@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useAIValuation } from '@/hooks/useAIValuation';
@@ -202,11 +203,11 @@ export const MarketDepthChart = ({
               </Badge>
               <div className="text-xs text-axium-gray-600">
                 Bid: <span className="text-axium-success font-medium">
-                  ${typeof marketDepth.currentSpread === 'object' && marketDepth.currentSpread ? marketDepth.currentSpread.bid.toFixed(2) : '0.00'}
+                  ${marketDepth.currentSpread ? marketDepth.currentSpread.bid.toFixed(2) : '0.00'}
                 </span> 
                 <span className="mx-1">|</span> 
                 Ask: <span className="text-axium-error font-medium">
-                  ${typeof marketDepth.currentSpread === 'object' && marketDepth.currentSpread ? marketDepth.currentSpread.ask.toFixed(2) : '0.00'}
+                  ${marketDepth.currentSpread ? marketDepth.currentSpread.ask.toFixed(2) : '0.00'}
                 </span>
               </div>
             </div>

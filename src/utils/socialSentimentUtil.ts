@@ -1,61 +1,45 @@
 
-import { IPO } from './mockApi';
-import { faker } from '@faker-js/faker';
-
-// Define sentiment trend types
-export type SentimentTrend = 'positive' | 'negative' | 'neutral';
-
-// Utility to generate sentiment data
-export const getSocialSentiment = (ipo: IPO) => {
-  // Generate random sentiment scores
-  const twitterScore = faker.number.int({ min: 20, max: 100 });
-  const instagramScore = faker.number.int({ min: 20, max: 100 });
-  const youtubeScore = faker.number.int({ min: 20, max: 100 });
+// Adding or updating the getSocialSentiment function to accept an ipoId parameter
+export function getSocialSentiment(ipoId?: string) {
+  // Generate random sentiment data
+  const overall = Math.random() > 0.3 ? 
+    (Math.random() > 0.5 ? 'very_positive' : 'positive') : 
+    (Math.random() > 0.5 ? 'negative' : 'very_negative');
   
-  // Determine trends
-  const getTrend = (score: number): SentimentTrend => {
-    if (score > 70) return 'positive';
-    if (score < 50) return 'negative';
-    return 'neutral';
+  // Use ipoId if needed for any specific calculations
+  const useIpoSpecificData = ipoId && ipoId.includes('high');
+  
+  const metrics = {
+    twitter: {
+      trend: Math.random() > 0.5 ? 'positive' : 'negative',
+      score: Math.round(Math.random() * 100),
+      volume: Math.round(Math.random() * 10000) + 1000
+    },
+    instagram: {
+      trend: Math.random() > 0.6 ? 'positive' : 'negative',
+      score: Math.round(Math.random() * 100),
+      volume: Math.round(Math.random() * 8000) + 2000
+    },
+    youtube: {
+      trend: Math.random() > 0.4 ? 'positive' : 'negative',
+      score: Math.round(Math.random() * 100),
+      volume: Math.round(Math.random() * 5000) + 500
+    }
   };
   
-  // Calculate overall score as weighted average
-  const overall = Math.round((twitterScore * 0.4 + instagramScore * 0.3 + youtubeScore * 0.3));
-  
-  // Generate related keywords
-  const positiveKeywords = ['talented', 'inspiring', 'authentic', 'innovative', 'engaging'];
-  const negativeKeywords = ['overrated', 'controversial', 'disappointing', 'declining', 'inconsistent'];
-  const neutralKeywords = ['trending', 'active', 'diverse', 'traditional', 'mainstream'];
-  
-  let keywords;
-  if (overall > 70) {
-    keywords = faker.helpers.arrayElements(positiveKeywords, faker.number.int({ min: 2, max: 4 }));
-  } else if (overall < 50) {
-    keywords = faker.helpers.arrayElements(negativeKeywords, faker.number.int({ min: 2, max: 4 }));
-  } else {
-    keywords = faker.helpers.arrayElements([...positiveKeywords, ...negativeKeywords, ...neutralKeywords], 
-      faker.number.int({ min: 3, max: 5 }));
-  }
+  const keywords = [
+    'innovative',
+    'creative',
+    'authentic',
+    'engaging',
+    'trending',
+    'viral'
+  ];
   
   return {
-    overall: getTrend(overall),
-    metrics: {
-      twitter: {
-        score: twitterScore.toString(),
-        trend: getTrend(twitterScore),
-        volume: faker.number.int({ min: 1000, max: 100000 }).toString()
-      },
-      instagram: {
-        score: instagramScore.toString(),
-        trend: getTrend(instagramScore),
-        volume: faker.number.int({ min: 1000, max: 100000 }).toString()
-      },
-      youtube: {
-        score: youtubeScore.toString(),
-        trend: getTrend(youtubeScore),
-        volume: faker.number.int({ min: 500, max: 50000 }).toString()
-      }
-    },
-    keywords
+    overall,
+    metrics,
+    keywords: keywords.sort(() => Math.random() - 0.5).slice(0, 4),
+    lastUpdated: new Date().toISOString()
   };
-};
+}
