@@ -9,3 +9,5 @@ export * from './useVestingRules';
 export * from './useLiquidationRules';
 export * from './useAnomalyDetection';
 export * from './useCreatorMarketScore';
+export * from './useSentimentAnalysis';
+export * from './usePREngine';

@@ -23,6 +23,7 @@ import AdvancedOrderTypes from "@/components/trading/AdvancedOrderTypes";
 import InstitutionalTrading from "@/components/trading/institutional/InstitutionalTrading";
 import VirtualizedTradeHistory from "@/components/trading/VirtualizedTradeHistory";
 import SentimentInsights from "@/components/trading/SentimentInsights";
+import PRTrendline from "@/components/trading/PRTrendline";
 import { ExternalMetricsCard } from "@/components/trading/external-metrics";
 import LiquidityPoolInfo from "@/components/trading/liquidity-pool";
 import { showNotification } from "@/components/notifications/ToastContainer";
@@ -56,12 +57,15 @@ const Trading = () => {
   const [selectedIPO, setSelectedIPO] = useState(ipos[0] || null);
   const [timeframe, setTimeframe] = useState("1D");
   const [chartType, setChartType] = useState<"candlestick" | "line">("candlestick");
+  const [showPRTrendline, setShowPRTrendline] = useState(false);
+  const [majorPREvent, setMajorPREvent] = useState<any>(null);
   const [showIndicators, setShowIndicators] = useState({
     volume: true,
     sma7: false,
     sma30: false,
     bollingerBands: false,
-    vwap: false
+    vwap: false,
+    prTrendline: false
   });
   
   const { isConnected, priceUpdates, latestPrices, orderBook, recentTrades, isLoading: marketDataLoading } = useMarketData(
@@ -79,6 +83,10 @@ const Trading = () => {
 
   // Toggle chart indicator
   const handleToggleIndicator = (indicator: keyof typeof showIndicators) => {
+    if (indicator === 'prTrendline') {
+      setShowPRTrendline(!showPRTrendline);
+    }
+    
     setShowIndicators(prev => ({
       ...prev,
       [indicator]: !prev[indicator]
@@ -135,6 +143,19 @@ const Trading = () => {
 
   const isLoading = iposLoading || tradingLoading;
 
+  // Handle major PR events
+  const handleMajorPREvent = (event: any) => {
+    setMajorPREvent(event);
+    // Automatically show PR trendline when major event occurs
+    if (!showIndicators.prTrendline) {
+      setShowIndicators(prev => ({
+        ...prev,
+        prTrendline: true
+      }));
+      setShowPRTrendline(true);
+    }
+  };
+
   if (isLoading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
@@ -180,31 +201,76 @@ const Trading = () => {
                 onTimeframeChange={tf => setTimeframe(tf)}
               />
               
-              <div className="h-[400px]">
+              <div className="h-[400px] relative">
                 {marketDataLoading ? (
                   <ChartSkeleton height="100%" />
                 ) : chartType === "candlestick" ? (
-                  <CandlestickChart 
-                    data={candlestickData}
-                    showVolumeBar={showIndicators.volume}
-                    showSMA7={showIndicators.sma7}
-                    showSMA30={showIndicators.sma30}
-                    showBollingerBands={showIndicators.bollingerBands}
-                    showVWAP={showIndicators.vwap}
-                    dateFormatter={formatDate}
-                  />
+                  <>
+                    <CandlestickChart 
+                      data={candlestickData}
+                      showVolumeBar={showIndicators.volume}
+                      showSMA7={showIndicators.sma7}
+                      showSMA30={showIndicators.sma30}
+                      showBollingerBands={showIndicators.bollingerBands}
+                      showVWAP={showIndicators.vwap}
+                      dateFormatter={formatDate}
+                    />
+                    {showPRTrendline && (
+                      <div className="absolute inset-0 z-10 pointer-events-none">
+                        <PRTrendline
+                          creatorId={selectedIPO.id}
+                          showOverlay={true}
+                          onMajorEvent={handleMajorPREvent}
+                        />
+                      </div>
+                    )}
+                  </>
                 ) : (
-                  <PriceChart 
-                    symbol={selectedIPO.symbol}
-                    name={selectedIPO.creatorName}
-                    currentPrice={selectedIPO.currentPrice}
-                    ipoId={selectedIPO.id}
-                  />
+                  <>
+                    <PriceChart 
+                      symbol={selectedIPO.symbol}
+                      name={selectedIPO.creatorName}
+                      currentPrice={selectedIPO.currentPrice}
+                      ipoId={selectedIPO.id}
+                    />
+                    {showPRTrendline && (
+                      <div className="absolute inset-0 z-10 pointer-events-none">
+                        <PRTrendline
+                          creatorId={selectedIPO.id}
+                          showOverlay={true}
+                          onMajorEvent={handleMajorPREvent}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+                
+                {majorPREvent && (
+                  <div className="absolute top-2 left-2 right-2 z-20">
+                    <div className={`
+                      p-2 rounded-lg shadow-lg border animate-pulse
+                      ${majorPREvent.isPositive ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}
+                    `}>
+                      <div className="flex items-center gap-2">
+                        {majorPREvent.isPositive ? (
+                          <TrendingUp className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <TrendingDown className="h-4 w-4 text-red-600" />
+                        )}
+                        <span className="text-xs font-medium">
+                          {majorPREvent.headline}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
               
               <ChartIndicators 
-                showIndicators={showIndicators} 
+                showIndicators={{
+                  ...showIndicators,
+                  prTrendline: showPRTrendline
+                }}
                 onToggleIndicator={handleToggleIndicator}
               />
             </GlassCard>
@@ -231,7 +297,11 @@ const Trading = () => {
             
             {/* External data and sentiment */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <PRTrendline creatorId={selectedIPO.id} className="h-full" onMajorEvent={handleMajorPREvent} />
               <SentimentInsights creatorId={selectedIPO.id} className="h-full" />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
               <ExternalMetricsCard creatorId={selectedIPO.id} className="h-full" />
             </div>
             
