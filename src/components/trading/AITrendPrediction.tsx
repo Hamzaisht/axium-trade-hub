@@ -49,8 +49,12 @@ export default function AITrendPrediction({ ipoId, className }: AITrendPredictio
     );
   }
   
-  const predictionValue = data.prediction.value;
-  const isPositive = predictionValue > 0;
+  // Fixed: Access percentage value correctly based on prediction type
+  const predictionValuePercent = typeof data.prediction.percentage === 'number' 
+    ? data.prediction.percentage
+    : 0;
+  
+  const isPositive = data.prediction.direction === 'up';
   const confidenceValue = data.confidence;
   const timeframeText = predictionParams.selectedTimeframe;
   const indicatorClassName = isPositive ? "bg-green-500" : "bg-red-500";
@@ -82,7 +86,7 @@ export default function AITrendPrediction({ ipoId, className }: AITrendPredictio
           )}
           <div>
             <div className={`text-xl font-bold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {isPositive ? '+' : ''}{predictionValue.toFixed(2)}%
+              {isPositive ? '+' : ''}{predictionValuePercent.toFixed(2)}%
             </div>
             <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
               Expected movement

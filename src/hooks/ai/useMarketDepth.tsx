@@ -2,12 +2,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { mockAIValuationAPI } from '@/utils/mockApi';
 
-interface UseMarketDepthProps {
+export interface UseMarketDepthProps {
   ipoId?: string;
   enabled?: boolean;
 }
 
-export const useMarketDepth = ({ ipoId, enabled = true }: UseMarketDepthProps) => {
+export const useMarketDepth = ({ 
+  ipoId, 
+  enabled = true 
+}: UseMarketDepthProps) => {
   return useQuery({
     queryKey: ['market-depth', ipoId],
     queryFn: async () => {
@@ -21,6 +24,6 @@ export const useMarketDepth = ({ ipoId, enabled = true }: UseMarketDepthProps) =
     },
     enabled: !!ipoId && enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false
+    refetchInterval: 1000 * 60, // Refetch every minute
   });
 };

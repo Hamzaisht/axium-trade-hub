@@ -21,7 +21,7 @@ interface ContentMetrics {
   engagement: number;
 }
 
-interface CreatorMarketScore {
+export interface CreatorMarketScore {
   overall: number;
   components: {
     social: number;
@@ -88,12 +88,12 @@ const fetchCreatorMarketScore = async (creatorId: string): Promise<CreatorMarket
   };
 };
 
-export interface UseSocialSentimentProps {
+export interface UseCreatorMarketScoreProps {
   creatorId: string;
 }
 
 export const useCreatorMarketScore = (creatorId: string) => {
-  const { sentimentData, isLoading: isSentimentLoading } = useSocialSentiment({ creatorId });
+  const { data: sentimentData, isLoading: isSentimentLoading } = useSocialSentiment({ ipoId: creatorId });
   
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['creatorMarketScore', creatorId],
@@ -131,5 +131,3 @@ export const useCreatorMarketScore = (creatorId: string) => {
     refetch
   };
 };
-
-export default useCreatorMarketScore;

@@ -11,6 +11,16 @@ export interface UsePricePredictionProps {
   enabled?: boolean;
 }
 
+export interface PriceMovementResponse {
+  prediction: {
+    direction: 'up' | 'down' | 'neutral';
+    percentage: number;
+  };
+  confidence: number;
+  timestamp: string;
+  modelUsed: AIModelType;
+}
+
 export const usePricePrediction = ({ 
   ipoId, 
   selectedTimeframe, 
@@ -18,10 +28,11 @@ export const usePricePrediction = ({
   externalMetricsLastUpdated,
   enabled = true 
 }: UsePricePredictionProps) => {
-  return useQuery({
+  return useQuery<PriceMovementResponse, Error>({
     queryKey: ['price-prediction', ipoId, selectedTimeframe, selectedModel, externalMetricsLastUpdated],
     queryFn: async () => {
-      if (!ipoId) return null;
+      if (!ipoId) throw new Error("IPO ID is required");
+      
       try {
         return await mockAIValuationAPI.predictPriceMovement(
           ipoId, 
@@ -38,5 +49,3 @@ export const usePricePrediction = ({
     refetchOnWindowFocus: false
   });
 };
-
-export default usePricePrediction;
