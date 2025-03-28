@@ -18,6 +18,7 @@ import Portfolio from '@/pages/Portfolio';
 import Creators from '@/pages/Creators';
 import Trading from '@/pages/Trading';
 import CreatorProfile from '@/pages/CreatorProfile';
+import AIInsights from '@/pages/AIInsights';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import NotFound from '@/pages/NotFound';
@@ -91,6 +92,24 @@ function App() {
                           element={
                             <ProtectedRoute>
                               <Trading />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        
+                        <Route 
+                          path="/ai-insights" 
+                          element={
+                            <ProtectedRoute>
+                              <AIInsights />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        
+                        <Route 
+                          path="/ai-insights/:id" 
+                          element={
+                            <ProtectedRoute>
+                              <AIInsights />
                             </ProtectedRoute>
                           } 
                         />

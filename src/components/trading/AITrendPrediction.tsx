@@ -1,302 +1,128 @@
-import { useState, useEffect } from 'react';
+
+import React from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowUp, ArrowDown, Sparkles, AlertCircle, InfoIcon, BarChart4 } from 'lucide-react';
+import { Brain, AlertCircle, ArrowUpRight, ArrowDownRight, Info } from 'lucide-react';
+import { useAIValuationEngine } from '@/hooks/ai/useAIValuationEngine';
 import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer,
-  ReferenceLine
-} from 'recharts';
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 
 interface AITrendPredictionProps {
-  ipoId?: string;
+  ipoId: string;
   className?: string;
 }
 
-interface PredictionData {
-  trend: 'up' | 'down' | 'neutral';
-  confidence: number;
-  volume: 'high' | 'medium' | 'low';
-  timeframe: string;
-  prediction: number;
-  points: Array<{
-    time: string;
-    price: number;
-    isPrediction?: boolean;
-  }>;
-  explanation: string;
-}
-
-export const AITrendPrediction = ({ ipoId, className }: AITrendPredictionProps) => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [prediction, setPrediction] = useState<PredictionData | null>(null);
-  const [showExplanation, setShowExplanation] = useState(false);
+export const AITrendPrediction: React.FC<AITrendPredictionProps> = ({ ipoId, className }) => {
+  const { valuation, isLoading, refetch } = useAIValuationEngine({ ipoId });
   
-  useEffect(() => {
-    if (!ipoId) {
-      setLoading(false);
-      return;
-    }
-    
-    setLoading(true);
-    
-    // Simulate API call to get AI prediction
-    setTimeout(() => {
-      try {
-        // Mock AI prediction data
-        const mockPrediction: PredictionData = {
-          trend: Math.random() > 0.5 ? 'up' : 'down',
-          confidence: Math.floor(65 + Math.random() * 30), // Between 65-95%
-          volume: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)] as 'low' | 'medium' | 'high',
-          timeframe: '24h',
-          prediction: Math.floor(2500 + Math.random() * 1000) / 100, // Between $25-$35
-          points: generatePredictionPoints(),
-          explanation: "Based on recent social media sentiment analysis, market trends, and the creator's engagement metrics, the model predicts an upward movement. The creator has experienced a 15% increase in follower count in the last 30 days and launched a new content series that has been well-received."
-        };
-        
-        setPrediction(mockPrediction);
-        setLoading(false);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('An unknown error occurred'));
-        setLoading(false);
-      }
-    }, 1500);
-  }, [ipoId]);
-  
-  // Generate mock prediction data points
-  const generatePredictionPoints = () => {
-    const points = [];
-    const now = new Date();
-    const basePrice = 30 + Math.random() * 10;
-    const trend = Math.random() > 0.5 ? 1 : -1;
-    const volatility = 0.5 + Math.random() * 0.5;
-    
-    // Historical data (past 24 hours)
-    for (let i = 24; i >= 1; i--) {
-      const time = new Date(now.getTime() - (i * 60 * 60 * 1000));
-      const timeStr = `${time.getHours()}:00`;
-      const priceVariation = trend * (Math.random() * volatility) * (i / 24);
-      const price = basePrice + priceVariation;
-      
-      points.push({
-        time: timeStr,
-        price: parseFloat(price.toFixed(2))
-      });
-    }
-    
-    // Current price
-    const currentPrice = points[points.length - 1].price +
-      (trend * Math.random() * volatility);
-    
-    points.push({
-      time: `${now.getHours()}:00`,
-      price: parseFloat(currentPrice.toFixed(2))
-    });
-    
-    // Prediction points (next 24 hours)
-    const predictionTrend = Math.random() > 0.5 ? 1 : -1;
-    const predictionVolatility = 0.3 + Math.random() * 0.7;
-    
-    for (let i = 1; i <= 24; i++) {
-      const time = new Date(now.getTime() + (i * 60 * 60 * 1000));
-      const timeStr = `${time.getHours()}:00`;
-      const priceVariation = predictionTrend * (Math.random() * predictionVolatility) * (i / 12);
-      const price = currentPrice + priceVariation;
-      
-      points.push({
-        time: timeStr,
-        price: parseFloat(price.toFixed(2)),
-        isPrediction: true
-      });
-    }
-    
-    return points;
-  };
-  
-  if (loading) {
+  if (isLoading) {
     return (
-      <GlassCard className={className}>
-        <div className="p-4 space-y-4">
-          <div className="flex justify-between items-center">
-            <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-7 w-20" />
-          </div>
-          <div className="h-64">
-            <Skeleton className="h-full w-full" />
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-          </div>
+      <GlassCard className={`p-4 ${className || ''}`}>
+        <div className="flex items-center mb-3">
+          <Brain className="h-5 w-5 text-axium-blue mr-2" />
+          <h3 className="text-lg font-semibold">AI Price Prediction</h3>
+        </div>
+        <div className="animate-pulse space-y-3">
+          <div className="h-6 bg-axium-gray-200 rounded w-3/4"></div>
+          <div className="h-10 bg-axium-gray-200 rounded"></div>
+          <div className="h-4 bg-axium-gray-200 rounded w-1/2"></div>
         </div>
       </GlassCard>
     );
   }
   
-  if (error) {
+  if (!valuation) {
     return (
-      <GlassCard className={className}>
-        <div className="p-4">
-          <div className="flex items-center text-red-500 mb-2">
-            <AlertCircle className="h-5 w-5 mr-2" />
-            <h3 className="font-medium">AI Prediction Error</h3>
-          </div>
-          <p className="text-axium-gray-600">We couldn't load AI predictions: {error.message}</p>
-          <Button 
-            variant="outline"
-            className="mt-4"
-            onClick={() => window.location.reload()}
-          >
-            Try again
-          </Button>
+      <GlassCard className={`p-4 ${className || ''}`}>
+        <div className="flex items-center mb-3">
+          <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+          <h3 className="text-lg font-semibold">Prediction Unavailable</h3>
         </div>
+        <p className="text-axium-gray-600 text-sm mb-3">
+          We couldn't generate a price prediction for this asset.
+        </p>
+        <Button onClick={() => refetch()} variant="outline" size="sm">
+          Try Again
+        </Button>
       </GlassCard>
     );
   }
   
-  if (!prediction) {
-    return (
-      <GlassCard className={className}>
-        <div className="p-4">
-          <div className="flex items-center text-axium-gray-500 mb-2">
-            <InfoIcon className="h-5 w-5 mr-2" />
-            <h3 className="font-medium">No Prediction Available</h3>
-          </div>
-          <p className="text-axium-gray-600">Select a creator to view AI price predictions.</p>
-        </div>
-      </GlassCard>
-    );
-  }
+  const isPriceRising = valuation.priceChangePercent >= 0;
   
-  // Calculate the cutoff index between historical and prediction data
-  const currentIndex = prediction.points.findIndex(p => p.isPrediction) - 1;
-  const currentPrice = prediction.points[currentIndex]?.price || 0;
-  const predictionPrice = prediction.points[prediction.points.length - 1]?.price || 0;
-  const priceDifference = predictionPrice - currentPrice;
-  const percentChange = (priceDifference / currentPrice) * 100;
+  // Extract top market movers to explain prediction
+  const topMovers = valuation.marketMovers.slice(0, 2);
   
   return (
-    <GlassCard className={className}>
-      <div className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
-            <Sparkles className="h-5 w-5 text-axium-blue mr-2" />
-            <h3 className="font-medium">AI Price Prediction</h3>
-          </div>
-          
-          <Badge variant={prediction?.trend === 'up' ? 'default' : prediction?.trend === 'down' ? 'destructive' : 'outline'} 
-            className={prediction?.trend === 'up' ? 'bg-green-500 text-white hover:bg-green-600' : ''}>
-            {prediction?.trend === 'up' ? (
-              <ArrowUp className="h-3 w-3 mr-1" />
-            ) : prediction?.trend === 'down' ? (
-              <ArrowDown className="h-3 w-3 mr-1" />
-            ) : null}
-            {prediction?.timeframe} Forecast
-          </Badge>
+    <GlassCard className={`p-4 ${className || ''}`}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center">
+          <Brain className="h-5 w-5 text-axium-blue mr-2" />
+          <h3 className="text-lg font-semibold">AI Price Prediction</h3>
         </div>
-        
-        <div className="h-64 mb-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={prediction?.points}
-              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis 
-                dataKey="time" 
-                tickFormatter={(value) => value.split(':')[0]} 
-                interval={4}
-                style={{ fontSize: '10px' }}
-              />
-              <YAxis 
-                domain={['dataMin - 1', 'dataMax + 1']} 
-                tickFormatter={(value) => `$${value}`}
-                style={{ fontSize: '10px' }}
-              />
-              <Tooltip 
-                formatter={(value) => [`$${value}`, 'Price']}
-                labelFormatter={(label) => `Time: ${label}`}
-              />
-              <ReferenceLine 
-                x={prediction?.points[currentIndex]?.time} 
-                stroke="rgba(59, 130, 246, 0.5)" 
-                strokeDasharray="3 3"
-                label={{ value: 'Now', position: 'insideTopLeft', style: { fontSize: 10 } }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="price" 
-                stroke="#3b82f6" 
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 6 }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey={(data) => data.isPrediction ? data.price : null} 
-                stroke="#8b5cf6"
-                strokeWidth={2}
-                strokeDasharray="5 5"
-                dot={false}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        
-        <div className="flex justify-between items-center mb-2">
-          <div>
-            <h4 className="text-sm text-axium-gray-500">Predicted Price</h4>
-            <p className="text-xl font-semibold">${predictionPrice.toFixed(2)}</p>
-          </div>
-          <div className="text-right">
-            <h4 className="text-sm text-axium-gray-500">24h Change</h4>
-            <p className={`text-xl font-semibold ${percentChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%
-            </p>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <Info className="h-4 w-4 text-axium-gray-500" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-sm max-w-[200px]">
+                AI prediction based on social engagement, sentiment analysis, and market trends
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      
+      <div className="mb-2">
+        <div className="text-sm text-axium-gray-600">Predicted Price</div>
+        <div className="flex items-baseline">
+          <div className="text-2xl font-semibold">${valuation.currentPrice.toFixed(2)}</div>
+          <div className={`ml-2 text-sm flex items-center ${isPriceRising ? 'text-green-500' : 'text-red-500'}`}>
+            {isPriceRising ? (
+              <>
+                <ArrowUpRight className="h-4 w-4 mr-0.5" />
+                +{valuation.priceChangePercent.toFixed(2)}%
+              </>
+            ) : (
+              <>
+                <ArrowDownRight className="h-4 w-4 mr-0.5" />
+                {valuation.priceChangePercent.toFixed(2)}%
+              </>
+            )}
           </div>
         </div>
-        
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="bg-axium-gray-100/50 p-2 rounded">
-            <h4 className="text-xs text-axium-gray-500">Confidence</h4>
-            <p className="font-medium">{prediction?.confidence}%</p>
-          </div>
-          <div className="bg-axium-gray-100/50 p-2 rounded">
-            <h4 className="text-xs text-axium-gray-500">Trend</h4>
-            <p className="font-medium capitalize">{prediction?.trend}</p>
-          </div>
-          <div className="bg-axium-gray-100/50 p-2 rounded">
-            <h4 className="text-xs text-axium-gray-500">Volume</h4>
-            <p className="font-medium capitalize">{prediction?.volume}</p>
-          </div>
+      </div>
+      
+      <div className="mb-2">
+        <div className="text-xs text-axium-gray-600 flex justify-between mb-1">
+          <span>Confidence: {(valuation.confidence * 100).toFixed(0)}%</span>
+          <span>Volatility: {(valuation.volatility * 100).toFixed(1)}%</span>
         </div>
-        
-        {showExplanation && (
-          <div className="mt-4 p-3 bg-axium-blue/5 rounded-md text-sm text-axium-gray-700">
-            <h4 className="font-medium text-axium-blue mb-1 flex items-center">
-              <InfoIcon className="h-4 w-4 mr-1" /> Analysis Explanation
-            </h4>
-            <p>{prediction?.explanation}</p>
-          </div>
-        )}
-        
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full mt-2"
-          onClick={() => setShowExplanation(!showExplanation)}
-        >
-          {showExplanation ? 'Hide explanation' : 'Show explanation'}
-        </Button>
+        <div className="h-1.5 w-full bg-axium-gray-200 rounded-full">
+          <div 
+            className={`h-full rounded-full ${isPriceRising ? 'bg-green-500' : 'bg-red-500'}`}
+            style={{ width: `${valuation.confidence * 100}%` }}
+          />
+        </div>
+      </div>
+      
+      <div className="text-xs text-axium-gray-600 mt-3">
+        <div className="font-medium mb-1">Market Movers:</div>
+        <ul className="space-y-1">
+          {topMovers.map((mover, index) => (
+            <li key={index} className="flex items-start">
+              <span className={`inline-block h-2 w-2 rounded-full mt-1 mr-1.5 ${mover.impact >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
+              <span>{mover.description}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </GlassCard>
   );

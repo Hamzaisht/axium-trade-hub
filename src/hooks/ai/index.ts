@@ -1,11 +1,11 @@
 
 // Re-export AI-related hooks for easier imports
-export * from './useAIValuation';
-export * from './usePricePrediction';
-export * from './useMarketDepth';
-export * from './useSocialSentiment';
-export * from './useDividendInfo';
-export * from './useVestingRules';
-export * from './useLiquidationRules';
-export * from './useAnomalyDetection';
-export * from './useCreatorMarketScore';
+export { useAIValuationEngine } from './useAIValuationEngine';
+export { useSocialSentiment } from './useSocialSentiment';
+export { useMarketDepth } from './useMarketDepth';
+export { usePricePrediction } from './usePricePrediction';
+export { useDividendInfo } from './useDividendInfo';
+export { useVestingRules } from './useVestingRules';
+export { useLiquidationRules } from './useLiquidationRules';
+export { useAnomalyDetection } from './useAnomalyDetection';
+export { useCreatorMarketScore } from './useCreatorMarketScore';
