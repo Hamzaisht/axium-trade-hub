@@ -451,7 +451,7 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
                 
                 <div className="mt-2 pt-2 border-t border-axium-gray-200 text-xs text-axium-gray-600">
                   Last updated: {new Date().toLocaleTimeString()}
-                  {autoRefresh && " • Live updates enabled"}
+                  {autoRefresh && " �� Live updates enabled"}
                 </div>
               </>
             )}
@@ -582,8 +582,8 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
               <>
                 <div>Buy Wall Strength: {marketDepth.buyWallStrength}</div>
                 <div>Sell Wall Strength: {marketDepth.sellWallStrength}</div>
-                <div>Current Spread: {marketDepth && marketDepth.currentSpread && typeof marketDepth.currentSpread === 'object' ? 
-                  `${marketDepth.currentSpread.bid || 0} - ${marketDepth.currentSpread.ask || 0}` : 'N/A'}</div>
+                <div>Current Spread: {marketDepth?.currentSpread && typeof marketDepth.currentSpread === 'object' ? 
+                  `${marketDepth.currentSpread?.bid || 0} - ${marketDepth.currentSpread?.ask || 0}` : 'N/A'}</div>
               </>
             )}
           </GlassCard>

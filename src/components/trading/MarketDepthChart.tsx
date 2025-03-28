@@ -176,11 +176,11 @@ export const MarketDepthChart = ({
           <div className="mt-4 flex flex-wrap gap-3">
             <div className="flex-1 min-w-[120px]">
               <Badge className="bg-axium-success/10 text-axium-success hover:bg-axium-success/20 mb-2">
-                Buy Wall: {marketDepth.buyWallStrength * 10}/10
+                Buy Wall: {marketDepth?.buyWallStrength * 10}/10
               </Badge>
               <div className="text-xs text-axium-gray-600">
                 Support levels at: 
-                {marketDepth.supportLevels.map((level, i) => (
+                {marketDepth?.supportLevels.map((level, i) => (
                   <span key={i} className="ml-1 font-medium text-axium-success">${level}</span>
                 ))}
               </div>
@@ -188,11 +188,11 @@ export const MarketDepthChart = ({
             
             <div className="flex-1 min-w-[120px]">
               <Badge className="bg-axium-error/10 text-axium-error hover:bg-axium-error/20 mb-2">
-                Sell Wall: {marketDepth.sellWallStrength * 10}/10
+                Sell Wall: {marketDepth?.sellWallStrength * 10}/10
               </Badge>
               <div className="text-xs text-axium-gray-600">
                 Resistance levels at:
-                {marketDepth.resistanceLevels.map((level, i) => (
+                {marketDepth?.resistanceLevels.map((level, i) => (
                   <span key={i} className="ml-1 font-medium text-axium-error">${level}</span>
                 ))}
               </div>
@@ -204,11 +204,11 @@ export const MarketDepthChart = ({
               </Badge>
               <div className="text-xs text-axium-gray-600">
                 Bid: <span className="text-axium-success font-medium">
-                  ${marketDepth.currentSpread && typeof marketDepth.currentSpread === 'object' && marketDepth.currentSpread.bid ? marketDepth.currentSpread.bid.toFixed(2) : '0.00'}
+                  ${marketDepth?.currentSpread && typeof marketDepth.currentSpread === 'object' && marketDepth.currentSpread?.bid ? marketDepth.currentSpread.bid.toFixed(2) : '0.00'}
                 </span> 
                 <span className="mx-1">|</span> 
                 Ask: <span className="text-axium-error font-medium">
-                  ${marketDepth.currentSpread && typeof marketDepth.currentSpread === 'object' && marketDepth.currentSpread.ask ? marketDepth.currentSpread.ask.toFixed(2) : '0.00'}
+                  ${marketDepth?.currentSpread && typeof marketDepth.currentSpread === 'object' && marketDepth.currentSpread?.ask ? marketDepth.currentSpread.ask.toFixed(2) : '0.00'}
                 </span>
               </div>
             </div>
