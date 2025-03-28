@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { mockAIValuationAPI } from '@/utils/mockApi';
-import useSentimentAnalysis from './useSentimentAnalysis';
+import { useSentimentAnalysis } from './useSentimentAnalysis';
 
 export interface MarketScoreFactors {
   sentiment: number;
@@ -14,7 +14,14 @@ export interface MarketScoreFactors {
 
 export interface CreatorMarketScore {
   overall: number;
-  factors: MarketScoreFactors;
+  components: {
+    sentiment: number;
+    social: number;
+    brand: number;
+    content: number;
+    stability: number;
+    growth: number;
+  };
   recommendation: string;
   riskLevel: 'low' | 'medium' | 'high';
   potentialUpside: number;
@@ -26,8 +33,8 @@ export interface UseCreatorMarketScoreProps {
   creatorId?: string;
 }
 
-export const useCreatorMarketScore = ({ creatorId }: UseCreatorMarketScoreProps) => {
-  const sentimentAnalysis = useSentimentAnalysis({ creatorId });
+export const useCreatorMarketScore = (creatorId: string) => {
+  const { sentimentData, isLoading: sentimentLoading } = useSentimentAnalysis({ creatorId });
   
   return useQuery({
     queryKey: ['creator-market-score', creatorId],
@@ -41,8 +48,8 @@ export const useCreatorMarketScore = ({ creatorId }: UseCreatorMarketScoreProps)
         const marketScoreData = await mockAIValuationAPI.getCreatorMarketScore(creatorId);
         
         // Incorporate sentiment data if available
-        if (sentimentAnalysis.data) {
-          const sentimentImpact = (sentimentAnalysis.data.overallSentiment || 50) / 100;
+        if (sentimentData) {
+          const sentimentImpact = (sentimentData.overallSentiment || 50) / 100;
           
           // Adjust overall score with sentiment data (weighted 30%)
           const adjustedScore = Math.min(
@@ -70,10 +77,8 @@ export const useCreatorMarketScore = ({ creatorId }: UseCreatorMarketScoreProps)
         throw error;
       }
     },
-    enabled: !!creatorId && !sentimentAnalysis.isLoading,
+    enabled: !!creatorId && !sentimentLoading,
     staleTime: 1000 * 60 * 15, // 15 minutes
     refetchInterval: 1000 * 60 * 30, // 30 minutes
   });
 };
-
-export default useCreatorMarketScore;

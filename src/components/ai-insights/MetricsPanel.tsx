@@ -2,145 +2,182 @@
 import React from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Progress } from '@/components/ui/progress';
-import { Globe, Music, Briefcase, Heart, Users, DollarSign } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { ValuationBreakdown } from '@/hooks/ai/useAIValuationEngine';
+import { ChartBar, LineChart, TrendingUp, DollarSign, Heart, Radio } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
-interface MetricsPanelProps {
-  metrics: ValuationBreakdown;
-  className?: string;
+export interface MetricsPanelProps {
+  metrics: {
+    socialInfluence?: number;
+    streamingInfluence?: number;
+    brandDealsInfluence?: number;
+    sentimentInfluence?: number;
+    marketDepthInfluence?: number;
+    newsInfluence?: number;
+  };
 }
 
-export const MetricsPanel: React.FC<MetricsPanelProps> = ({
-  metrics,
-  className
-}) => {
-  // Normalize values to percentages for visualization
-  const maxValue = Math.max(
-    metrics.socialInfluence.value,
-    metrics.streamingInfluence.value,
-    metrics.brandDealsInfluence.value,
-    metrics.sentimentInfluence.value,
-    metrics.financialInfluence.value,
-    metrics.fanEngagementInfluence.value
-  );
-  
-  const normalizeValue = (value: number) => {
-    return (value / maxValue) * 100;
+export const MetricsPanel: React.FC<MetricsPanelProps> = ({ metrics }) => {
+  // Normalize metrics to ensure we don't have undefined values
+  const normalizedMetrics = {
+    socialInfluence: metrics?.socialInfluence || 0,
+    streamingInfluence: metrics?.streamingInfluence || 0,
+    brandDealsInfluence: metrics?.brandDealsInfluence || 0,
+    sentimentInfluence: metrics?.sentimentInfluence || 0,
+    marketDepthInfluence: metrics?.marketDepthInfluence || 0,
+    newsInfluence: metrics?.newsInfluence || 0,
   };
-  
+
+  // Helper function for rating labels
+  const getRatingLabel = (value: number) => {
+    if (value >= 75) return { text: 'Excellent', color: 'text-green-500' };
+    if (value >= 60) return { text: 'Good', color: 'text-blue-500' };
+    if (value >= 45) return { text: 'Average', color: 'text-amber-500' };
+    if (value >= 30) return { text: 'Below Average', color: 'text-orange-500' };
+    return { text: 'Poor', color: 'text-red-500' };
+  };
+
   return (
-    <GlassCard className={cn("p-6", className)}>
-      <h3 className="text-lg font-semibold mb-4">Value Components</h3>
-      <div className="space-y-6">
+    <GlassCard className="p-5">
+      <h3 className="text-lg font-semibold mb-3 flex items-center">
+        <ChartBar className="h-5 w-5 mr-2 text-axium-blue" />
+        AI Metrics
+      </h3>
+      
+      <div className="space-y-5">
+        {/* Social Media Metrics */}
         <div>
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4 text-blue-500" />
-              <span className="text-sm font-medium">Social Influence</span>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center">
+              <Radio className="h-4 w-4 mr-1.5 text-blue-500" />
+              <span className="text-sm font-medium">Social Media</span>
             </div>
-            <span className="text-sm">{metrics.socialInfluence.value.toFixed(1)}</span>
+            <div className="flex items-center">
+              <span className="text-sm font-bold mr-2">
+                {Math.round(normalizedMetrics.socialInfluence)}%
+              </span>
+              <Badge variant="outline" className={getRatingLabel(normalizedMetrics.socialInfluence).color}>
+                {getRatingLabel(normalizedMetrics.socialInfluence).text}
+              </Badge>
+            </div>
           </div>
-          <Progress 
-            value={normalizeValue(metrics.socialInfluence.value)} 
-            className="h-2 bg-axium-gray-200"
-            indicatorClassName="bg-blue-500"
-          />
-          <div className="text-xs text-axium-gray-500 mt-1">
-            Weight: {(metrics.socialInfluence.weight * 100).toFixed(0)}%
-          </div>
+          <Progress value={normalizedMetrics.socialInfluence} max={100} className="h-1.5" />
+          <p className="text-xs text-axium-gray-600 dark:text-axium-gray-400 mt-1">
+            Follower growth, engagement rates and audience reach metrics
+          </p>
         </div>
         
+        {/* Content Performance */}
         <div>
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center gap-2">
-              <Music className="h-4 w-4 text-purple-500" />
-              <span className="text-sm font-medium">Streaming Platforms</span>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center">
+              <LineChart className="h-4 w-4 mr-1.5 text-amber-500" />
+              <span className="text-sm font-medium">Content Performance</span>
             </div>
-            <span className="text-sm">{metrics.streamingInfluence.value.toFixed(1)}</span>
+            <div className="flex items-center">
+              <span className="text-sm font-bold mr-2">
+                {Math.round(normalizedMetrics.streamingInfluence)}%
+              </span>
+              <Badge variant="outline" className={getRatingLabel(normalizedMetrics.streamingInfluence).color}>
+                {getRatingLabel(normalizedMetrics.streamingInfluence).text}
+              </Badge>
+            </div>
           </div>
-          <Progress 
-            value={normalizeValue(metrics.streamingInfluence.value)} 
-            className="h-2 bg-axium-gray-200"
-            indicatorClassName="bg-purple-500"
-          />
-          <div className="text-xs text-axium-gray-500 mt-1">
-            Weight: {(metrics.streamingInfluence.weight * 100).toFixed(0)}%
-          </div>
+          <Progress value={normalizedMetrics.streamingInfluence} max={100} className="h-1.5" />
+          <p className="text-xs text-axium-gray-600 dark:text-axium-gray-400 mt-1">
+            Video views, watch time, and content schedule consistency
+          </p>
         </div>
         
+        {/* Brand Partnerships */}
         <div>
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center gap-2">
-              <Briefcase className="h-4 w-4 text-orange-500" />
-              <span className="text-sm font-medium">Brand Deals</span>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center">
+              <DollarSign className="h-4 w-4 mr-1.5 text-green-500" />
+              <span className="text-sm font-medium">Brand Partnerships</span>
             </div>
-            <span className="text-sm">{metrics.brandDealsInfluence.value.toFixed(1)}</span>
+            <div className="flex items-center">
+              <span className="text-sm font-bold mr-2">
+                {Math.round(normalizedMetrics.brandDealsInfluence)}%
+              </span>
+              <Badge variant="outline" className={getRatingLabel(normalizedMetrics.brandDealsInfluence).color}>
+                {getRatingLabel(normalizedMetrics.brandDealsInfluence).text}
+              </Badge>
+            </div>
           </div>
-          <Progress 
-            value={normalizeValue(metrics.brandDealsInfluence.value)} 
-            className="h-2 bg-axium-gray-200"
-            indicatorClassName="bg-orange-500"
-          />
-          <div className="text-xs text-axium-gray-500 mt-1">
-            Weight: {(metrics.brandDealsInfluence.weight * 100).toFixed(0)}%
-          </div>
+          <Progress value={normalizedMetrics.brandDealsInfluence} max={100} className="h-1.5" />
+          <p className="text-xs text-axium-gray-600 dark:text-axium-gray-400 mt-1">
+            Sponsorship deals, brand integration quality and monetization
+          </p>
         </div>
         
+        {/* Market Sentiment */}
         <div>
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center gap-2">
-              <Heart className="h-4 w-4 text-red-500" />
-              <span className="text-sm font-medium">Sentiment</span>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center">
+              <Heart className="h-4 w-4 mr-1.5 text-red-500" />
+              <span className="text-sm font-medium">Market Sentiment</span>
             </div>
-            <span className="text-sm">{metrics.sentimentInfluence.value.toFixed(1)}</span>
+            <div className="flex items-center">
+              <span className="text-sm font-bold mr-2">
+                {Math.round(normalizedMetrics.sentimentInfluence)}%
+              </span>
+              <Badge variant="outline" className={getRatingLabel(normalizedMetrics.sentimentInfluence).color}>
+                {getRatingLabel(normalizedMetrics.sentimentInfluence).text}
+              </Badge>
+            </div>
           </div>
-          <Progress 
-            value={normalizeValue(metrics.sentimentInfluence.value)} 
-            className="h-2 bg-axium-gray-200"
-            indicatorClassName="bg-red-500"
-          />
-          <div className="text-xs text-axium-gray-500 mt-1">
-            Weight: {(metrics.sentimentInfluence.weight * 100).toFixed(0)}%
-          </div>
+          <Progress value={normalizedMetrics.sentimentInfluence} max={100} className="h-1.5" />
+          <p className="text-xs text-axium-gray-600 dark:text-axium-gray-400 mt-1">
+            Public perception, social media sentiment and audience loyalty
+          </p>
         </div>
         
+        {/* Market Depth */}
         <div>
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-green-500" />
-              <span className="text-sm font-medium">Financial Metrics</span>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center">
+              <TrendingUp className="h-4 w-4 mr-1.5 text-purple-500" />
+              <span className="text-sm font-medium">Market Depth</span>
             </div>
-            <span className="text-sm">{metrics.financialInfluence.value.toFixed(1)}</span>
+            <div className="flex items-center">
+              <span className="text-sm font-bold mr-2">
+                {Math.round(normalizedMetrics.marketDepthInfluence)}%
+              </span>
+              <Badge variant="outline" className={getRatingLabel(normalizedMetrics.marketDepthInfluence).color}>
+                {getRatingLabel(normalizedMetrics.marketDepthInfluence).text}
+              </Badge>
+            </div>
           </div>
-          <Progress 
-            value={normalizeValue(metrics.financialInfluence.value)} 
-            className="h-2 bg-axium-gray-200"
-            indicatorClassName="bg-green-500"
-          />
-          <div className="text-xs text-axium-gray-500 mt-1">
-            Weight: {(metrics.financialInfluence.weight * 100).toFixed(0)}%
-          </div>
+          <Progress value={normalizedMetrics.marketDepthInfluence} max={100} className="h-1.5" />
+          <p className="text-xs text-axium-gray-600 dark:text-axium-gray-400 mt-1">
+            Trading volume, liquidity, and demand indicators
+          </p>
         </div>
         
+        {/* News Impact */}
         <div>
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-sky-500" />
-              <span className="text-sm font-medium">Fan Engagement</span>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center">
+              <Radio className="h-4 w-4 mr-1.5 text-pink-500" />
+              <span className="text-sm font-medium">News Impact</span>
             </div>
-            <span className="text-sm">{metrics.fanEngagementInfluence.value.toFixed(1)}</span>
+            <div className="flex items-center">
+              <span className="text-sm font-bold mr-2">
+                {Math.round(normalizedMetrics.newsInfluence)}%
+              </span>
+              <Badge variant="outline" className={getRatingLabel(normalizedMetrics.newsInfluence).color}>
+                {getRatingLabel(normalizedMetrics.newsInfluence).text}
+              </Badge>
+            </div>
           </div>
-          <Progress 
-            value={normalizeValue(metrics.fanEngagementInfluence.value)} 
-            className="h-2 bg-axium-gray-200"
-            indicatorClassName="bg-sky-500"
-          />
-          <div className="text-xs text-axium-gray-500 mt-1">
-            Weight: {(metrics.fanEngagementInfluence.weight * 100).toFixed(0)}%
-          </div>
+          <Progress value={normalizedMetrics.newsInfluence} max={100} className="h-1.5" />
+          <p className="text-xs text-axium-gray-600 dark:text-axium-gray-400 mt-1">
+            Media coverage, news sentiment, and public relations
+          </p>
         </div>
       </div>
     </GlassCard>
   );
 };
+
+export default MetricsPanel;

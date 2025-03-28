@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo } from 'react';
+
+import { useCallback, useState } from 'react';
 import { useAnomalyDetection } from './useAnomalyDetection';
 import { useCreatorMarketScore } from './useCreatorMarketScore';
 import { useMarketDepth } from './useMarketDepth';
@@ -6,9 +7,6 @@ import { useSocialSentiment } from './useSocialSentiment';
 import { useQuery } from '@tanstack/react-query';
 import { 
   AIModelType, 
-  AIValuationInput, 
-  AIValuationResult, 
-  DataSourceConfig,
   PredictionTimeframe,
   MarketDepthModel as EngineMarketDepthModel
 } from "@/utils/mockAIModels";
@@ -59,26 +57,21 @@ export interface UseAIValuationEngineProps {
   enabled?: boolean;
 }
 
-const adaptMarketDepthModel = (model: any): EngineMarketDepthModel => {
+const adaptMarketDepthModel = (model: any): MarketDepthModel => {
   return {
-    buyWallStrength: model.buyWallStrength || 0,
-    sellWallStrength: model.sellWallStrength || 0,
-    supportLevels: model.supportLevels || [],
-    resistanceLevels: model.resistanceLevels || [],
-    currentSpread: model.currentSpread || { bid: 0, ask: 0 },
-    orderBookDepth: model.orderBookDepth || 0,
-    liquidityScore: model.liquidityScore || 0,
-    volumeProfile: model.volumeProfile || 0,
-    volatilityRisk: model.volatilityRisk || 0,
-    priceDiscovery: model.priceDiscovery || 0,
-    largeOrderImpact: model.largeOrderImpact || 0
+    orderBookDepth: model?.orderBookDepth || 0,
+    liquidityScore: model?.liquidityScore || 0,
+    volumeProfile: model?.volumeProfile || 0,
+    volatilityRisk: model?.volatilityRisk || 0,
+    buyPressure: model?.buyPressure || 0,
+    sellPressure: model?.sellPressure || 0
   };
 };
 
 const calculateAIValuation = (
   externalMetrics?: CreatorMetrics, 
   sentimentData?: any, 
-  marketDepth?: MarketDepthModel,
+  marketDepth?: any,
   creatorScore?: any,
   anomalyData?: any
 ): AIValuationResult => {
@@ -93,14 +86,7 @@ const calculateAIValuation = (
   };
   
   const sentiment = sentimentData?.overall || 65;
-  const marketMetrics = marketDepth || {
-    orderBookDepth: 75,
-    liquidityScore: 68,
-    volumeProfile: 72,
-    volatilityRisk: 35,
-    buyPressure: 65,
-    sellPressure: 40
-  };
+  const marketMetrics = adaptMarketDepthModel(marketDepth);
   
   const weights = {
     social: 0.25,
@@ -192,10 +178,16 @@ export const useAIValuationEngine = ({
   ipoId,
   enabled = true
 }: UseAIValuationEngineProps) => {
-  const { sentimentData } = useSocialSentiment({ ipoId: ipoId || '' });
+  const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(false);
+  
+  const { data: sentimentData } = useSocialSentiment({ ipoId: ipoId || '' });
   const { data: marketDepthData } = useMarketDepth({ ipoId, enabled });
-  const { score: creatorScoreData } = useCreatorMarketScore(ipoId || '');
+  const { data: creatorScoreData } = useCreatorMarketScore(ipoId || '');
   const { data: anomalyData } = useAnomalyDetection({ ipoId, enabled });
+  
+  const toggleRealTime = useCallback(() => {
+    setIsRealTimeEnabled(prev => !prev);
+  }, []);
   
   const fetchExternalMetrics = useCallback(async (id: string): Promise<CreatorMetrics> => {
     await new Promise(resolve => setTimeout(resolve, 800));
@@ -254,6 +246,9 @@ export const useAIValuationEngine = ({
     isLoading: isLoading || isExternalMetricsLoading,
     error,
     refetch,
+    toggleRealTime,
+    isRealTimeEnabled,
+    rawMetrics: data?.breakdown,
     dataSources: {
       externalMetrics,
       sentimentData,

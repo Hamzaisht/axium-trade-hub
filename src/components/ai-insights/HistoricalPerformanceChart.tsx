@@ -16,14 +16,18 @@ export interface HistoricalPerformanceChartProps {
   showPrediction?: boolean;
   height?: number | string;
   className?: string;
+  timeframe?: string;
+  historicalData?: any[];
 }
 
-const HistoricalPerformanceChart: React.FC<HistoricalPerformanceChartProps> = ({
+export const HistoricalPerformanceChart: React.FC<HistoricalPerformanceChartProps> = ({
   data,
   title = 'Historical Price Performance',
   showPrediction = true,
   height = 400,
-  className = ''
+  className = '',
+  timeframe,
+  historicalData
 }) => {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -34,13 +38,16 @@ const HistoricalPerformanceChart: React.FC<HistoricalPerformanceChartProps> = ({
     return `$${price.toFixed(2)}`;
   };
 
+  // Use the data that's provided or fallback to historicalData
+  const chartData = data || historicalData || [];
+
   return (
     <GlassCard className={`p-5 ${className}`}>
       <h2 className="text-xl font-semibold mb-4">{title}</h2>
       <div style={{ width: '100%', height }}>
         <ResponsiveContainer>
           <LineChart
-            data={data}
+            data={chartData}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" opacity={0.2} />

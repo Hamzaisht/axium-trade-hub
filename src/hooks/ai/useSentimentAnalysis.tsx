@@ -2,37 +2,20 @@
 import { useQuery } from '@tanstack/react-query';
 import { mockAIValuationAPI } from '@/utils/mockApi';
 
-export interface SocialSentimentData {
+export interface CreatorSentimentData {
   overallSentiment: number;
   positiveMentions: number;
   negativeMentions: number;
   keywords: string[];
-  sources: Array<{
-    name: string;
-    sentiment: number;
-    volume: number;
-  }>;
-  trend: Array<{
-    date: string;
-    sentiment: number;
-  }>;
-  trust: {
-    score: number;
-    factors: string[];
-  };
-  platforms: Array<{
-    name: string;
-    sentiment: number;
-    engagement: number;
-  }>;
+  lastUpdated: string;
 }
 
 export interface UseSentimentAnalysisProps {
   creatorId?: string;
 }
 
-const useSentimentAnalysis = ({ creatorId }: UseSentimentAnalysisProps) => {
-  return useQuery({
+export const useSentimentAnalysis = ({ creatorId }: UseSentimentAnalysisProps) => {
+  return useQuery<CreatorSentimentData, Error>({
     queryKey: ['sentiment-analysis', creatorId],
     queryFn: async () => {
       if (!creatorId) {

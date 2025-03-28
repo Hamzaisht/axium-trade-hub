@@ -1,49 +1,62 @@
 
 import React from 'react';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { TrendingUp, TrendingDown } from 'lucide-react';
-import { formatDate } from '@/lib/formatters';
+import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
-interface MarketMover {
-  factor: string;
-  impact: number;
-  description: string;
-  timestamp: string;
+export interface MarketMover {
+  id: string;
+  name: string;
+  change: number;
+  price: number;
 }
 
-interface MarketMoversTableProps {
+export interface MarketMoversTableProps {
   marketMovers: MarketMover[];
-  className?: string;
+  onSelectCreator: (creatorId: string) => void;
 }
 
-export const MarketMoversTable: React.FC<MarketMoversTableProps> = ({
-  marketMovers,
-  className
+export const MarketMoversTable: React.FC<MarketMoversTableProps> = ({ 
+  marketMovers, 
+  onSelectCreator 
 }) => {
+  // Sort movers by absolute change
+  const sortedMovers = [...marketMovers].sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
+
   return (
-    <GlassCard className={`p-6 ${className || ''}`}>
-      <h3 className="text-lg font-semibold mb-4">Top Market Movers</h3>
-      <div className="space-y-4 overflow-hidden">
-        {marketMovers.slice(0, 5).map((mover, index) => (
-          <div key={index} className="border-b border-axium-gray-200/50 last:border-b-0 pb-3 last:pb-0">
-            <div className="flex justify-between items-center mb-1">
-              <div className="font-medium">{mover.factor}</div>
-              <div className={`flex items-center ${mover.impact >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {mover.impact >= 0 ? (
-                  <TrendingUp className="h-4 w-4 mr-1" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 mr-1" />
-                )}
-                {Math.abs(mover.impact).toFixed(2)}%
+    <div className="overflow-hidden">
+      <div className="space-y-1">
+        {sortedMovers.map((mover) => (
+          <div 
+            key={mover.id} 
+            className="flex items-center justify-between p-2 rounded-md hover:bg-axium-gray-100 dark:hover:bg-axium-gray-800 cursor-pointer transition-colors"
+            onClick={() => onSelectCreator(mover.id)}
+          >
+            <div className="flex items-center">
+              <div className={`w-1.5 h-8 rounded-sm mr-2 ${mover.change >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <div>
+                <div className="font-medium text-sm">{mover.name}</div>
+                <div className="text-xs text-axium-gray-600 dark:text-axium-gray-400">${mover.price.toFixed(2)}</div>
               </div>
             </div>
-            <p className="text-sm text-axium-gray-600 mb-1">{mover.description}</p>
-            <div className="text-xs text-axium-gray-500">
-              {formatDate(new Date(mover.timestamp))}
-            </div>
+            <Badge 
+              className={`flex items-center ${
+                mover.change >= 0 
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+                  : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+              }`}
+            >
+              {mover.change >= 0 ? (
+                <ArrowUpRight className="h-3 w-3 mr-1" />
+              ) : (
+                <ArrowDownRight className="h-3 w-3 mr-1" />
+              )}
+              {mover.change >= 0 ? '+' : ''}{mover.change.toFixed(1)}%
+            </Badge>
           </div>
         ))}
       </div>
-    </GlassCard>
+    </div>
   );
 };
+
+export default MarketMoversTable;

@@ -40,36 +40,35 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
 import Navbar from '@/components/layout/Navbar';
-import { ValuationBreakdownChart } from '@/components/ai-insights/ValuationBreakdownChart';
-import { HistoricalPerformanceChart } from '@/components/ai-insights/HistoricalPerformanceChart';
-import { MarketMoversTable } from '@/components/ai-insights/MarketMoversTable'; 
-import { MetricsPanel } from '@/components/ai-insights/MetricsPanel';
+import ValuationBreakdownChart from '@/components/ai-insights/ValuationBreakdownChart';
+import HistoricalPerformanceChart from '@/components/ai-insights/HistoricalPerformanceChart';
+import MarketMoversTable from '@/components/ai-insights/MarketMoversTable'; 
+import MetricsPanel from '@/components/ai-insights/MetricsPanel';
 
 const AIInsights = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { ipos, findIPO } = useIPO();
+  const { ipos } = useIPO();
   const [selectedTimeframe, setSelectedTimeframe] = useState('24h');
   
   // Find creator data from id param or use first creator
-  const selectedIPO = id ? findIPO(id) : ipos[0];
+  const selectedIPO = ipos.find(ipo => ipo.id === id) || ipos[0];
   
   const {
     valuation,
     isLoading,
-    isError,
     error,
     refetch,
     toggleRealTime,
     isRealTimeEnabled,
     rawMetrics
-  } = useAIValuationEngine(selectedIPO?.id);
+  } = useAIValuationEngine({ ipoId: selectedIPO?.id });
   
   // Get social sentiment data
-  const { sentimentData, isLoading: isSentimentLoading } = useSocialSentiment({ creatorId: selectedIPO?.id || '' });
+  const { data: sentimentData, isLoading: isSentimentLoading } = useSocialSentiment({ ipoId: selectedIPO?.id });
   
   // Get creator market score
-  const { score: creatorScore, isLoading: isScoreLoading } = useCreatorMarketScore(selectedIPO?.id || '');
+  const { data: creatorScore, isLoading: isScoreLoading } = useCreatorMarketScore(selectedIPO?.id || '');
   
   // Handle navigation to different creator
   const handleCreatorChange = (creatorId: string) => {
@@ -101,13 +100,9 @@ const AIInsights = () => {
       const priceFactor = 1 + randomFactor + trendFactor;
       const price = basePrice * priceFactor;
       
-      // Confidence is higher in the middle of the range
-      const confidence = Math.max(0.6, Math.min(0.9, 0.75 + randomFactor));
-      
       data.push({
-        timestamp: date.toISOString(),
-        price: price,
-        confidence: confidence
+        date: date.toISOString(),
+        price: price
       });
     }
     
@@ -135,7 +130,7 @@ const AIInsights = () => {
     );
   }
   
-  if (isError || !valuation || !selectedIPO) {
+  if (!valuation || !selectedIPO) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-axium-gray-100/50 to-axium-gray-200/50 dark:from-axium-gray-900/50 dark:to-axium-gray-800/50">
         <Navbar />
@@ -158,20 +153,55 @@ const AIInsights = () => {
     );
   }
   
-  // Extract data from valuation result
-  const {
-    currentPrice,
-    previousPrice,
-    predictedPrice,
-    priceChange,
-    priceChangePercent,
-    valuationBreakdown,
-    newsEvents,
-    marketMovers
-  } = valuation;
+  // Extract data for display components
+  const mockValuation = {
+    currentPrice: selectedIPO.currentPrice || 25.0,
+    previousPrice: selectedIPO.currentPrice ? (selectedIPO.currentPrice * 0.95) : 23.75,
+    predictedPrice: valuation.currentValue || 27.5,
+    priceChange: 1.25,
+    priceChangePercent: 5.0,
+    valuationBreakdown: [
+      { name: 'Social Reach', value: Math.round(valuation.breakdown?.socialInfluence || 25) },
+      { name: 'Engagement', value: Math.round(valuation.breakdown?.streamingInfluence || 20) },
+      { name: 'Growth Rate', value: Math.round(valuation.breakdown?.marketDepthInfluence || 15) },
+      { name: 'Revenue Potential', value: Math.round(valuation.breakdown?.brandDealsInfluence || 15) },
+      { name: 'Content Quality', value: Math.round(valuation.breakdown?.newsInfluence || 10) },
+      { name: 'Market Sentiment', value: Math.round(valuation.breakdown?.sentimentInfluence || 15) },
+    ],
+    newsEvents: [
+      {
+        title: 'Viral content spike',
+        impact: 3.2,
+        description: 'Recent video gained over 5M views in 24 hours, driving significant engagement',
+        source: 'Platform Analytics',
+        date: '2 days ago'
+      },
+      {
+        title: 'New brand partnership',
+        impact: 2.8,
+        description: 'Announced exclusive sponsorship with major sports brand',
+        source: 'Press Release',
+        date: '5 days ago'
+      },
+      {
+        title: 'Platform algorithm change',
+        impact: -1.5,
+        description: 'Recent changes may temporarily reduce reach for similar content',
+        source: 'Platform Update',
+        date: '1 week ago'
+      }
+    ],
+    marketMovers: [
+      { id: '1', name: 'Creator A', change: 8.5, price: 32.45 },
+      { id: '2', name: 'Creator B', change: 5.2, price: 18.70 },
+      { id: '3', name: 'Creator C', change: -3.8, price: 41.20 },
+      { id: '4', name: 'Creator D', change: -5.1, price: 12.35 },
+      { id: '5', name: 'Creator E', change: 2.3, price: 28.90 }
+    ]
+  };
   
-  const isPositiveChange = priceChangePercent >= 0;
-  const formattedPriceChange = `${isPositiveChange ? '+' : ''}${priceChangePercent.toFixed(2)}%`;
+  const isPositiveChange = mockValuation.priceChangePercent >= 0;
+  const formattedPriceChange = `${isPositiveChange ? '+' : ''}${mockValuation.priceChangePercent.toFixed(2)}%`;
   
   // Format market score for display
   const formatMarketScore = (score: number) => {
@@ -242,7 +272,7 @@ const AIInsights = () => {
               
               <div className="mt-3 md:mt-0 flex flex-col items-start md:items-end">
                 <div className="flex items-center">
-                  <span className="text-2xl font-bold mr-2">${currentPrice.toFixed(2)}</span>
+                  <span className="text-2xl font-bold mr-2">${mockValuation.currentPrice.toFixed(2)}</span>
                   <Badge 
                     className={`flex items-center ${isPositiveChange ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-red-500/10 text-red-600 dark:text-red-400'}`}
                   >
@@ -254,7 +284,7 @@ const AIInsights = () => {
                   </Badge>
                 </div>
                 <p className="text-axium-gray-600 dark:text-axium-gray-400 text-sm">
-                  AI Valuation: ${predictedPrice.toFixed(2)}
+                  AI Valuation: ${mockValuation.predictedPrice.toFixed(2)}
                 </p>
               </div>
             </div>
@@ -283,7 +313,7 @@ const AIInsights = () => {
               </div>
               
               <div className="flex flex-wrap gap-3 justify-center sm:justify-end">
-                {sentimentData?.platforms && Object.entries(sentimentData.platforms).slice(0, 3).map(([platform, data]) => (
+                {sentimentData?.platforms && Object.entries(sentimentData.platforms).slice(0, 3).map(([platform, data]: [string, any]) => (
                   <div key={platform} className="bg-white dark:bg-axium-gray-900/90 p-2 rounded-lg shadow-sm flex items-center gap-2">
                     {platform === 'twitter' ? (
                       <Twitter className="h-4 w-4 text-blue-400" />
@@ -305,7 +335,7 @@ const AIInsights = () => {
                           <X className="h-3 w-3 text-red-500 mr-1" />
                         )}
                         <span className="text-xs">
-                          {Math.round(data.sentiment as unknown as number)}%
+                          {Math.round(data.sentiment)}%
                         </span>
                       </div>
                     </div>
@@ -332,7 +362,7 @@ const AIInsights = () => {
                     </div>
                   </div>
                   <HistoricalPerformanceChart 
-                    historicalData={historicalData} 
+                    data={historicalData}
                     timeframe={selectedTimeframe}
                   />
                 </div>
@@ -344,13 +374,13 @@ const AIInsights = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
                       <ValuationBreakdownChart 
-                        data={valuationBreakdown}
+                        data={mockValuation.valuationBreakdown}
                       />
                     </div>
                     <div className="space-y-4">
                       <div>
                         <h4 className="text-sm font-medium mb-2">Factor Weights & Contributions</h4>
-                        {valuationBreakdown.map((factor) => (
+                        {mockValuation.valuationBreakdown.map((factor) => (
                           <div key={factor.name} className="mb-2">
                             <div className="flex justify-between items-center mb-1">
                               <div className="flex items-center">
@@ -395,7 +425,7 @@ const AIInsights = () => {
                 <div className="mb-4">
                   <h3 className="font-semibold mb-3">What's Moving the Market</h3>
                   <div className="space-y-3">
-                    {newsEvents.length > 0 ? newsEvents.map((event, idx) => (
+                    {mockValuation.newsEvents.length > 0 ? mockValuation.newsEvents.map((event, idx) => (
                       <div key={idx} className="flex bg-axium-gray-100/70 dark:bg-axium-gray-800/70 p-3 rounded-lg">
                         <div className={`flex flex-shrink-0 items-center justify-center h-10 w-10 rounded-full mr-3 ${
                           event.impact > 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
@@ -441,10 +471,7 @@ const AIInsights = () => {
           {/* RIGHT SIDEBAR */}
           <div className="lg:col-span-1 space-y-6">
             {/* AI Metrics Panel */}
-            <MetricsPanel 
-              metrics={rawMetrics}
-              symbol={selectedIPO.symbol}
-            />
+            <MetricsPanel metrics={rawMetrics} />
             
             {/* Market Movers */}
             <GlassCard className="p-5">
@@ -453,7 +480,7 @@ const AIInsights = () => {
                 Market Movers
               </h3>
               <MarketMoversTable 
-                data={marketMovers} 
+                marketMovers={mockValuation.marketMovers} 
                 onSelectCreator={handleCreatorChange}
               />
             </GlassCard>
@@ -476,14 +503,14 @@ const AIInsights = () => {
               <div className="h-2 bg-axium-gray-200 dark:bg-axium-gray-700 rounded-full overflow-hidden">
                 <div 
                   className={`h-full ${
-                    predictedPrice > currentPrice ? 'bg-green-500' : 'bg-red-500'
+                    mockValuation.predictedPrice > mockValuation.currentPrice ? 'bg-green-500' : 'bg-red-500'
                   }`}
                   style={{ 
                     width: `${Math.min(
                       100, 
-                      Math.abs((predictedPrice - currentPrice) / currentPrice * 100) * 5
+                      Math.abs((mockValuation.predictedPrice - mockValuation.currentPrice) / mockValuation.currentPrice * 100) * 5
                     )}%`,
-                    marginLeft: predictedPrice > currentPrice ? '0' : 'auto'
+                    marginLeft: mockValuation.predictedPrice > mockValuation.currentPrice ? '0' : 'auto'
                   }}
                 ></div>
               </div>
@@ -491,7 +518,7 @@ const AIInsights = () => {
             
             <div className="flex items-center justify-between bg-axium-gray-100/70 dark:bg-axium-gray-800/70 p-3 rounded-lg mb-4">
               <div className="flex items-center">
-                {predictedPrice > currentPrice ? (
+                {mockValuation.predictedPrice > mockValuation.currentPrice ? (
                   <TrendingUp className="h-8 w-8 text-green-500 mr-3" />
                 ) : (
                   <TrendingDown className="h-8 w-8 text-red-500 mr-3" />
@@ -501,25 +528,25 @@ const AIInsights = () => {
                     AI Prediction
                   </div>
                   <div className="text-xl font-bold">
-                    ${predictedPrice.toFixed(2)}
+                    ${mockValuation.predictedPrice.toFixed(2)}
                   </div>
                 </div>
               </div>
               <div>
                 <Badge className={`${
-                  predictedPrice > currentPrice ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
+                  mockValuation.predictedPrice > mockValuation.currentPrice ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
                 }`}>
-                  {predictedPrice > currentPrice ? '+' : ''}
-                  {((predictedPrice - currentPrice) / currentPrice * 100).toFixed(1)}%
+                  {mockValuation.predictedPrice > mockValuation.currentPrice ? '+' : ''}
+                  {((mockValuation.predictedPrice - mockValuation.currentPrice) / mockValuation.currentPrice * 100).toFixed(1)}%
                 </Badge>
               </div>
             </div>
             
             <p className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
               Our AI model predicts this creator is <span className={`font-semibold ${
-                predictedPrice > currentPrice ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                mockValuation.predictedPrice > mockValuation.currentPrice ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
               }`}>
-                {predictedPrice > currentPrice ? 'undervalued' : 'overvalued'}
+                {mockValuation.predictedPrice > mockValuation.currentPrice ? 'undervalued' : 'overvalued'}
               </span> based on current market conditions, social metrics, and projected earnings.
             </p>
           </GlassCard>
@@ -570,10 +597,10 @@ const AIInsights = () => {
                 <div className="flex-1 h-2 bg-axium-gray-200 dark:bg-axium-gray-700 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-                    style={{ width: `${Math.round(creatorScore?.components.growth || 0) * 10}%` }}
+                    style={{ width: `${Math.round(creatorScore?.components?.growth || 0) * 10}%` }}
                   ></div>
                 </div>
-                <span className="ml-3 font-bold">{Math.round(creatorScore?.components.growth || 0)}/10</span>
+                <span className="ml-3 font-bold">{Math.round(creatorScore?.components?.growth || 0)}/10</span>
               </div>
             </div>
           </GlassCard>
