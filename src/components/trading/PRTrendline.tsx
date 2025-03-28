@@ -102,7 +102,7 @@ const PRTrendline = ({ creatorId, className, showOverlay = false, onMajorEvent }
   const eventPoints = prEvents?.map(event => ({
     date: new Date(event.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     fullDate: event.timestamp,
-    eventValue: normalizeSentimentScore(event.sentimentScore), // Fixed: This now correctly returns a number
+    eventValue: normalizeSentimentScore(event.sentimentScore), // This returns a number (from -100/+100 to 0-100 scale)
     eventImpact: event.impact,
     eventHeadline: event.headline,
     eventIsPositive: event.isPositive,
