@@ -1,4 +1,3 @@
-
 /**
  * Mock API
  * Simulates API endpoints for fetching creator data, IPOs, and AI valuations.
@@ -15,39 +14,35 @@ export interface IPO {
   currentPrice: number;
   totalSupply: number;
   availableSupply: number;
-  totalShares: number;
-  priceChange: number;
-  sentimentScore?: number;
-  category?: string;
-  launchDate?: string;
-  revenueUSD?: number;
+  launchDate: string;
+  revenueUSD: number;
   engagementScore: number;
-  engagementRate?: number;
   aiScore: number;
-  averageDailyVolume?: number;
-  volume24h?: number;
-  investorCount?: number;
-  followerCount?: number;
-  activeUserCount?: number;
-  description?: string;
-  totalRevenue?: number;
-  yoyGrowth?: number;
-  audienceGrowth?: number;
-  contentGrowth?: number;
-  platformExpansion?: number;
-  projectedGrowth?: number;
-  revenueStreams?: {
-    subscriptions?: number;
-    advertising?: number;
-    merchandise?: number;
-    sponsorships?: number;
-  };
-  socialLinks?: {
+  averageDailyVolume: number;
+  description: string;
+  socialLinks: {
     twitter?: string;
     instagram?: string;
     youtube?: string;
+    twitch?: string;
     tiktok?: string;
   };
+  totalShares: number;
+  priceChange: number;
+  volume24h: number;
+  investorCount: number;
+  followerCount: number;
+  activeUserCount: number;
+  engagementRate: number;
+  sentimentScore: number;
+  revenueStreams: any[];
+  totalRevenue: number;
+  yoyGrowth: number;
+  audienceGrowth: number;
+  contentGrowth: number;
+  platformExpansion: number;
+  projectedGrowth: number;
+  category?: string;
 }
 
 export interface Order {
@@ -140,10 +135,10 @@ export const mockIPOs: IPO[] = Array(20).fill(null).map((_, i) => {
     platformExpansion: parseFloat((Math.random() * 20 + 5).toFixed(1)),
     projectedGrowth: parseFloat((Math.random() * 30 + 10).toFixed(1)),
     revenueStreams: {
-      subscriptions: faker.number.int({ min: 50000, max: 1000000 }),
-      advertising: faker.number.int({ min: 50000, max: 1000000 }),
-      merchandise: faker.number.int({ min: 50000, max: 1000000 }),
-      sponsorships: faker.number.int({ min: 50000, max: 1000000 })
+      subscriptions?: number;
+      advertising?: number;
+      merchandise?: number;
+      sponsorships?: number;
     },
     socialLinks: {
       twitter: `@${creatorName.replace(' ', '').toLowerCase()}`,
@@ -223,8 +218,25 @@ export class MockIPOAPI {
         twitter: '',
         instagram: '',
         youtube: '',
+        twitch: '',
         tiktok: ''
-      }
+      },
+      totalShares: ipoData.totalSupply || 1000000,
+      priceChange: (Math.random() * 10) * (Math.random() > 0.5 ? 1 : -1),
+      volume24h: Math.floor(Math.random() * 1000000),
+      investorCount: Math.floor(Math.random() * 10000),
+      followerCount: Math.floor(Math.random() * 1000000),
+      activeUserCount: Math.floor(Math.random() * 500000),
+      engagementRate: Math.floor(Math.random() * 100) / 10,
+      sentimentScore: Math.floor(Math.random() * 100),
+      revenueStreams: [],
+      totalRevenue: Math.floor(Math.random() * 10000000),
+      yoyGrowth: parseFloat((Math.random() * 30 + 10).toFixed(1)),
+      audienceGrowth: parseFloat((Math.random() * 25 + 5).toFixed(1)),
+      contentGrowth: parseFloat((Math.random() * 40 + 10).toFixed(1)),
+      platformExpansion: parseFloat((Math.random() * 20 + 5).toFixed(1)),
+      projectedGrowth: parseFloat((Math.random() * 30 + 10).toFixed(1)),
+      category: ['Gaming', 'Education', 'Entertainment', 'Fitness', 'Finance'][Math.floor(Math.random() * 5)]
     };
     
     // Add to mock data

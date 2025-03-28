@@ -17,6 +17,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const { ipos, isLoading } = useIPO();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTab, setSelectedTab] = useState("trading");
 
   // Calculate market overview data
   const marketOverview = {
@@ -36,7 +37,7 @@ const Dashboard = () => {
     creatorName: ipo.creatorName,
     symbol: ipo.symbol,
     currentPrice: ipo.currentPrice,
-    priceChange: ipo.priceChange,
+    priceChange: 5.2, // Mock price change (will be replaced with actual data once available)
   }));
 
   const topLosers = [...ipos].reverse().slice(0, 5).map(ipo => ({
@@ -44,7 +45,7 @@ const Dashboard = () => {
     creatorName: ipo.creatorName,
     symbol: ipo.symbol,
     currentPrice: ipo.currentPrice,
-    priceChange: -Math.abs(ipo.priceChange),
+    priceChange: -Math.abs(3.8), // Mock price change (will be replaced with actual data once available)
   }));
 
   return (
@@ -61,6 +62,7 @@ const Dashboard = () => {
           <SearchBar 
             value={searchTerm}
             onChange={setSearchTerm}
+            className="md:w-64 lg:w-80"
           />
         </div>
         
@@ -69,26 +71,30 @@ const Dashboard = () => {
           <MetricCard
             title="Market Cap"
             value={`$${(marketOverview?.totalMarketCap || 0).toLocaleString()}`}
+            subtitle={`${marketOverview?.marketCapChange >= 0 ? '+' : ''}${marketOverview?.marketCapChange.toFixed(2)}% this month`}
+            icon={Activity}
             change={marketOverview?.marketCapChange || 0}
-            icon={<Activity size={20} className="h-5 w-5" />}
           />
           <MetricCard
             title="Avg. Creator Price"
             value={`$${(marketOverview?.averagePrice || 0).toFixed(2)}`}
+            subtitle={`${marketOverview?.averagePriceChange >= 0 ? '+' : ''}${marketOverview?.averagePriceChange.toFixed(2)}% this month`}
+            icon={TrendingUp}
             change={marketOverview?.averagePriceChange || 0}
-            icon={<TrendingUp size={20} className="h-5 w-5" />}
           />
           <MetricCard
             title="Active Creators"
             value={`${marketOverview?.activeCreators || 0}`}
+            subtitle={`${marketOverview?.activeCreatorsChange >= 0 ? '+' : ''}${marketOverview?.activeCreatorsChange.toFixed(2)}% this month`}
+            icon={Users}
             change={marketOverview?.activeCreatorsChange || 0}
-            icon={<Users size={20} className="h-5 w-5" />}
           />
           <MetricCard
             title="24h Volume"
             value={`$${(marketOverview?.volume24h || 0).toLocaleString()}`}
+            subtitle={`${marketOverview?.volumeChange >= 0 ? '+' : ''}${marketOverview?.volumeChange.toFixed(2)}% this month`}
+            icon={Activity}
             change={marketOverview?.volumeChange || 0}
-            icon={<Activity size={20} className="h-5 w-5" />}
           />
         </div>
         
@@ -170,7 +176,10 @@ const Dashboard = () => {
         
         {/* Market Insights Tabs */}
         <div className="mt-8">
-          <DashboardTabs selectedTab="market" onTabChange={() => {}}>
+          <DashboardTabs 
+            selectedTab={selectedTab} 
+            onTabChange={setSelectedTab}
+          >
             <div>Market insights content will go here</div>
           </DashboardTabs>
         </div>
