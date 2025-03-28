@@ -1,5 +1,4 @@
 
-// Import testing libraries
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -52,23 +51,23 @@ vi.mock('@/hooks/ai/usePREngine', () => ({
 }));
 
 // Mock child components
-vi.mock('../PRTrendlineChart', () => ({
+vi.mock('../../pr-trendline/PRTrendlineChart', () => ({
   default: () => <div data-testid="pr-trendline-chart">PRTrendlineChart</div>
 }));
 
-vi.mock('../PRTrendlineOverlay', () => ({
+vi.mock('../../pr-trendline/PRTrendlineOverlay', () => ({
   default: () => <div data-testid="pr-trendline-overlay">PRTrendlineOverlay</div>
 }));
 
-vi.mock('../PREventsList', () => ({
+vi.mock('../../pr-trendline/PREventsList', () => ({
   default: () => <div data-testid="pr-events-list">PR Events List</div>
 }));
 
-vi.mock('../SentimentScoreDisplay', () => ({
+vi.mock('../../pr-trendline/SentimentScoreDisplay', () => ({
   default: () => <div data-testid="sentiment-score">Sentiment Score</div>
 }));
 
-vi.mock('../MajorEventNotification', () => ({
+vi.mock('../../pr-trendline/MajorEventNotification', () => ({
   default: () => <div data-testid="major-event-notification">Major Event</div>
 }));
 
@@ -91,7 +90,6 @@ vi.mock('@/components/ui/skeleton', () => ({
   )
 }));
 
-// Basic test that the PRTrendline component renders correctly
 describe('PRTrendline', () => {
   it('renders the overlay when showOverlay is true', () => {
     render(<PRTrendline creatorId="123" showOverlay={true} />);
