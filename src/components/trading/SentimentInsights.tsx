@@ -1,9 +1,12 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { MessageSquare, TrendingUp, BarChart4, AlertCircle } from 'lucide-react';
+import { MessageSquare, TrendingUp, BarChart4, AlertCircle, ArrowUp, ArrowDown } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import useSentimentAnalysis from '@/hooks/ai/useSentimentAnalysis';
 import { cn } from '@/lib/utils';
 
