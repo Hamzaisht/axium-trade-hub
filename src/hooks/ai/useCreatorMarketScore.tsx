@@ -1,133 +1,79 @@
 
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useSocialSentiment } from './useSocialSentiment';
+import { mockAIValuationAPI } from '@/utils/mockApi';
+import useSentimentAnalysis from './useSentimentAnalysis';
 
-interface SocialEngagement {
-  followers: number;
-  engagement: number;
+export interface MarketScoreFactors {
+  sentiment: number;
+  social: number;
+  brand: number;
+  content: number;
+  stability: number;
   growth: number;
-}
-
-interface BrandDealMetrics {
-  deals: number;
-  value: number;
-  growth: number;
-}
-
-interface ContentMetrics {
-  views: number;
-  frequency: number;
-  engagement: number;
 }
 
 export interface CreatorMarketScore {
   overall: number;
-  components: {
-    social: number;
-    brand: number;
-    content: number;
-    sentiment: number;
-    stability: number;
-  };
-  details: {
-    social: SocialEngagement;
-    brand: BrandDealMetrics;
-    content: ContentMetrics;
-  };
+  factors: MarketScoreFactors;
+  recommendation: string;
+  riskLevel: 'low' | 'medium' | 'high';
+  potentialUpside: number;
+  insights: string[];
   lastUpdated: string;
 }
 
-// Mock API function to get creator market score
-const fetchCreatorMarketScore = async (creatorId: string): Promise<CreatorMarketScore> => {
-  // Simulate API request
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  // Generate consistent but seemingly random scores based on creatorId
-  const hashCode = (str: string) => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return Math.abs(hash);
-  };
-  
-  const hash = hashCode(creatorId);
-  const baseValue = (hash % 50) + 50; // Between 50-99
-  const randomize = (base: number, range = 10) => Math.max(0, Math.min(100, base + (Math.sin(hash * 0.1) * range)));
-  
-  return {
-    overall: baseValue,
-    components: {
-      social: randomize(baseValue, 15),
-      brand: randomize(baseValue - 5, 15),
-      content: randomize(baseValue + 5, 15),
-      sentiment: randomize(baseValue - 10, 20),
-      stability: randomize(baseValue + 10, 15),
-    },
-    details: {
-      social: {
-        followers: Math.floor(hash % 10000000) + 500000,
-        engagement: randomize(baseValue, 20),
-        growth: (hash % 15) + 1,
-      },
-      brand: {
-        deals: (hash % 20) + 5,
-        value: Math.floor((hash % 1000000) + 500000),
-        growth: (hash % 20) - 5,
-      },
-      content: {
-        views: Math.floor(hash % 50000000) + 1000000,
-        frequency: (hash % 10) + 1,
-        engagement: randomize(baseValue, 20),
-      }
-    },
-    lastUpdated: new Date().toISOString(),
-  };
-};
-
 export interface UseCreatorMarketScoreProps {
-  creatorId: string;
+  creatorId?: string;
 }
 
-export const useCreatorMarketScore = (creatorId: string) => {
-  const { data: sentimentData, isLoading: isSentimentLoading } = useSocialSentiment({ ipoId: creatorId });
+export const useCreatorMarketScore = ({ creatorId }: UseCreatorMarketScoreProps) => {
+  const sentimentAnalysis = useSentimentAnalysis({ creatorId });
   
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['creatorMarketScore', creatorId],
-    queryFn: () => fetchCreatorMarketScore(creatorId),
-    enabled: !!creatorId,
-    refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 30, // 30 minutes
-  });
-  
-  // Calculate adjusted score based on sentiment data if available
-  const adjustedScore = React.useMemo(() => {
-    if (!data || !sentimentData) return null;
-    
-    // Blend the AI sentiment data with the market score
-    const sentimentImpact = sentimentData.overall - 50; // Range: -50 to +50
-    const sentimentWeight = 0.2; // 20% weight for sentiment data
-    
-    return {
-      ...data,
-      overall: Math.min(
-        100, 
-        Math.max(0, data.overall + (sentimentImpact * sentimentWeight))
-      ),
-      components: {
-        ...data.components,
-        sentiment: sentimentData.overall,
+  return useQuery({
+    queryKey: ['creator-market-score', creatorId],
+    queryFn: async () => {
+      if (!creatorId) {
+        throw new Error('Creator ID is required');
       }
-    };
-  }, [data, sentimentData]);
-  
-  return {
-    score: adjustedScore || data,
-    isLoading: isLoading || isSentimentLoading,
-    error,
-    refetch
-  };
+      
+      try {
+        // Fetch market score data
+        const marketScoreData = await mockAIValuationAPI.getCreatorMarketScore(creatorId);
+        
+        // Incorporate sentiment data if available
+        if (sentimentAnalysis.data) {
+          const sentimentImpact = (sentimentAnalysis.data.overallSentiment || 50) / 100;
+          
+          // Adjust overall score with sentiment data (weighted 30%)
+          const adjustedScore = Math.min(
+            100, 
+            Math.max(
+              0, 
+              marketScoreData.overall * 0.7 + sentimentImpact * 30
+            )
+          );
+          
+          // Return enhanced market score with sentiment influence
+          return {
+            ...marketScoreData,
+            overall: Math.round(adjustedScore),
+            insights: [
+              ...marketScoreData.insights,
+              `Score adjusted by ${sentimentImpact > 0.5 ? 'positive' : 'negative'} sentiment analysis.`
+            ]
+          };
+        }
+        
+        return marketScoreData;
+      } catch (error) {
+        console.error('Error fetching creator market score:', error);
+        throw error;
+      }
+    },
+    enabled: !!creatorId && !sentimentAnalysis.isLoading,
+    staleTime: 1000 * 60 * 15, // 15 minutes
+    refetchInterval: 1000 * 60 * 30, // 30 minutes
+  });
 };
+
+export default useCreatorMarketScore;

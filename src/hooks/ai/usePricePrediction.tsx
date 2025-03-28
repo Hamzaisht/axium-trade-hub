@@ -11,14 +11,18 @@ export interface UsePricePredictionProps {
   enabled?: boolean;
 }
 
+export interface PriceMovement {
+  direction: 'up' | 'down' | 'neutral';
+  percentage: number;
+}
+
 export interface PriceMovementResponse {
-  prediction: {
-    direction: 'up' | 'down' | 'neutral';
-    percentage: number;
-  };
+  prediction: PriceMovement;
   confidence: number;
   timestamp: string;
   modelUsed: AIModelType;
+  targetPrice?: number;
+  factors?: string[];
 }
 
 export const usePricePrediction = ({ 
@@ -34,11 +38,21 @@ export const usePricePrediction = ({
       if (!ipoId) throw new Error("IPO ID is required");
       
       try {
-        return await mockAIValuationAPI.predictPriceMovement(
+        const result = await mockAIValuationAPI.predictPriceMovement(
           ipoId, 
           selectedTimeframe, 
           selectedModel
         );
+        
+        // Ensure the response matches the PriceMovementResponse interface
+        return {
+          prediction: result.prediction,
+          confidence: result.confidence,
+          timestamp: result.timestamp || new Date().toISOString(),
+          modelUsed: result.modelUsed || selectedModel,
+          targetPrice: result.targetPrice,
+          factors: result.factors
+        };
       } catch (error) {
         console.error('Error fetching price prediction:', error);
         throw error;

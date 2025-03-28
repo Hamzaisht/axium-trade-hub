@@ -15,7 +15,7 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
   const [valuation, setValuation] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { sentimentData, isLoading: sentimentLoading, error: sentimentError } = useSentimentAnalysis({ creatorId: ipoId });
+  const { data: sentimentData, isLoading: sentimentLoading, error: sentimentError } = useSentimentAnalysis({ creatorId: ipoId });
   
   // Add market depth data
   const { 

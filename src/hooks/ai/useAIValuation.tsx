@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { IPO } from "@/utils/mockApi";
 import useSentimentAnalysis from "./useSentimentAnalysis";
@@ -6,7 +7,7 @@ interface UseAIValuationProps {
   ipoId?: string;
 }
 
-const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
+export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
   const [valuation, setValuation] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);

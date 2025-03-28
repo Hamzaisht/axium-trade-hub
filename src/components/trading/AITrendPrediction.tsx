@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { usePricePrediction } from '@/hooks/ai';
+import { usePricePrediction, PriceMovementResponse } from '@/hooks/ai/usePricePrediction';
 import { TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { PredictionTimeframe, AIModelType } from '@/utils/mockAIModels';
@@ -49,7 +49,6 @@ export default function AITrendPrediction({ ipoId, className }: AITrendPredictio
     );
   }
   
-  // Fixed: Access percentage value correctly based on prediction type
   const predictionValuePercent = typeof data.prediction.percentage === 'number' 
     ? data.prediction.percentage
     : 0;

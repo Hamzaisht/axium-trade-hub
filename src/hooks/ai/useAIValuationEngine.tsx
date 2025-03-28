@@ -1,10 +1,17 @@
-
 import { useCallback, useEffect, useMemo } from 'react';
 import { useAnomalyDetection } from './useAnomalyDetection';
 import { useCreatorMarketScore } from './useCreatorMarketScore';
 import { useMarketDepth } from './useMarketDepth';
 import { useSocialSentiment } from './useSocialSentiment';
 import { useQuery } from '@tanstack/react-query';
+import { 
+  AIModelType, 
+  AIValuationInput, 
+  AIValuationResult, 
+  DataSourceConfig,
+  PredictionTimeframe,
+  MarketDepthModel as EngineMarketDepthModel
+} from "@/utils/mockAIModels";
 
 export interface CreatorMetrics {
   socialFollowers: number;
@@ -52,7 +59,22 @@ export interface UseAIValuationEngineProps {
   enabled?: boolean;
 }
 
-// Mock function to calculate AI valuation
+const adaptMarketDepthModel = (model: any): EngineMarketDepthModel => {
+  return {
+    buyWallStrength: model.buyWallStrength || 0,
+    sellWallStrength: model.sellWallStrength || 0,
+    supportLevels: model.supportLevels || [],
+    resistanceLevels: model.resistanceLevels || [],
+    currentSpread: model.currentSpread || { bid: 0, ask: 0 },
+    orderBookDepth: model.orderBookDepth || 0,
+    liquidityScore: model.liquidityScore || 0,
+    volumeProfile: model.volumeProfile || 0,
+    volatilityRisk: model.volatilityRisk || 0,
+    priceDiscovery: model.priceDiscovery || 0,
+    largeOrderImpact: model.largeOrderImpact || 0
+  };
+};
+
 const calculateAIValuation = (
   externalMetrics?: CreatorMetrics, 
   sentimentData?: any, 
@@ -60,7 +82,6 @@ const calculateAIValuation = (
   creatorScore?: any,
   anomalyData?: any
 ): AIValuationResult => {
-  // Default values if data is missing
   const metrics = externalMetrics || {
     socialFollowers: 1000000,
     socialEngagement: 4.5,
@@ -81,7 +102,6 @@ const calculateAIValuation = (
     sellPressure: 40
   };
   
-  // Determine weights for each component
   const weights = {
     social: 0.25,
     brand: 0.15,
@@ -90,11 +110,10 @@ const calculateAIValuation = (
     market: 0.25
   };
   
-  // Calculate component scores (simplified)
   const socialScore = (metrics.socialFollowers / 10000000) * 100 * (metrics.socialEngagement / 10);
   const brandScore = (metrics.brandDeals / 20) * 100 * (metrics.brandValue / 1000000);
   const contentScore = (metrics.averageViews / 5000000) * 100 * (metrics.contentEngagement / 10);
-  const sentimentScore = sentiment; // Already 0-100
+  const sentimentScore = sentiment;
   const marketScore = 
     (marketMetrics.orderBookDepth * 0.2) + 
     (marketMetrics.liquidityScore * 0.3) + 
@@ -103,27 +122,23 @@ const calculateAIValuation = (
     (marketMetrics.buyPressure * 0.1) -
     (marketMetrics.sellPressure * 0.1);
     
-  // Calculate total score
   const totalScore = (
     socialScore * weights.social +
     brandScore * weights.brand +
     contentScore * weights.content +
     sentimentScore * weights.sentiment +
     marketScore * weights.market
-  ) / 100; // Normalize to 0-1 range
+  ) / 100;
   
-  // Map score to dollar value (simplified example)
-  const baseValue = 15.0; // Base value in dollars
-  const multiplier = 5.0; // Multiplier for score impact
+  const baseValue = 15.0;
+  const multiplier = 5.0;
   const calculatedValue = baseValue + (totalScore * multiplier);
   
-  // Add some volatility if anomalies are detected
   const anomalyImpact = anomalyData?.detected ? 
     (anomalyData.anomalies?.reduce((acc: number, anomaly: any) => acc + (anomaly.severity / 100), 0) || 0) : 0;
   
   const valueWithVolatility = calculatedValue * (1 + (Math.random() * 0.1 - 0.05) - (anomalyImpact * 0.2));
   
-  // Generate factors that affected the price
   const factors = [
     {
       factor: 'Social Media',
@@ -177,18 +192,14 @@ export const useAIValuationEngine = ({
   ipoId,
   enabled = true
 }: UseAIValuationEngineProps) => {
-  // Fetch all required data sources
   const { sentimentData } = useSocialSentiment({ ipoId: ipoId || '' });
   const { data: marketDepthData } = useMarketDepth({ ipoId, enabled });
   const { score: creatorScoreData } = useCreatorMarketScore(ipoId || '');
   const { data: anomalyData } = useAnomalyDetection({ ipoId, enabled });
   
-  // Use a mock for external metrics (in a real app, this would be an API call)
   const fetchExternalMetrics = useCallback(async (id: string): Promise<CreatorMetrics> => {
-    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 800));
     
-    // Generate metrics based on ipoId
     const hashCode = (str: string) => {
       let hash = 0;
       for (let i = 0; i < str.length; i++) {
@@ -212,15 +223,13 @@ export const useAIValuationEngine = ({
     };
   }, []);
   
-  // Fetch external metrics
   const { data: externalMetrics, isLoading: isExternalMetricsLoading } = useQuery({
     queryKey: ['external-metrics', ipoId],
     queryFn: () => fetchExternalMetrics(ipoId!),
     enabled: !!ipoId && enabled,
-    staleTime: 1000 * 60 * 10, // 10 minutes
+    staleTime: 1000 * 60 * 10,
   });
   
-  // Calculate valuation using AI model
   const calculateValuation = useCallback(() => {
     if (!ipoId) return null;
     
@@ -233,12 +242,11 @@ export const useAIValuationEngine = ({
     );
   }, [ipoId, externalMetrics, sentimentData, marketDepthData, creatorScoreData, anomalyData]);
   
-  // Use query to manage caching and refetching
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['ai-valuation', ipoId, Boolean(externalMetrics), Boolean(sentimentData), Boolean(marketDepthData)],
     queryFn: calculateValuation,
     enabled: !!ipoId && enabled && !!externalMetrics,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
   
   return {
@@ -246,7 +254,6 @@ export const useAIValuationEngine = ({
     isLoading: isLoading || isExternalMetricsLoading,
     error,
     refetch,
-    // Provide access to the underlying data sources
     dataSources: {
       externalMetrics,
       sentimentData,
