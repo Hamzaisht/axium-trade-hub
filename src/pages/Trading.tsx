@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrading } from "@/contexts/TradingContext";
 import { useIPO } from "@/contexts/IPOContext";
@@ -53,6 +54,9 @@ const Trading = () => {
   const { user } = useAuth();
   const { isLoading: tradingLoading } = useTrading();
   const { ipos, isLoading: iposLoading } = useIPO();
+  const [searchParams] = useSearchParams();
+  const ipoQueryParam = searchParams.get('ipo');
+  
   const [selectedIPO, setSelectedIPO] = useState(ipos[0] || null);
   const [timeframe, setTimeframe] = useState("1D");
   const [chartType, setChartType] = useState<"candlestick" | "line">("candlestick");
@@ -63,6 +67,16 @@ const Trading = () => {
     bollingerBands: false,
     vwap: false
   });
+  
+  // Handle selecting IPO from query parameter
+  useEffect(() => {
+    if (ipoQueryParam && !iposLoading && ipos.length > 0) {
+      const ipo = ipos.find(i => i.id === ipoQueryParam);
+      if (ipo) {
+        setSelectedIPO(ipo);
+      }
+    }
+  }, [ipoQueryParam, ipos, iposLoading]);
   
   const { isConnected, priceUpdates, latestPrices, orderBook, recentTrades, isLoading: marketDataLoading } = useMarketData(
     selectedIPO?.id

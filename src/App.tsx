@@ -16,6 +16,7 @@ import Dashboard from '@/pages/Dashboard';
 import Portfolio from '@/pages/Portfolio';
 import Creators from '@/pages/Creators';
 import Trading from '@/pages/Trading';
+import CreatorProfile from '@/pages/CreatorProfile';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import NotFound from '@/pages/NotFound';
@@ -70,6 +71,15 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <Creators />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      <Route 
+                        path="/creator/:id" 
+                        element={
+                          <ProtectedRoute>
+                            <CreatorProfile />
                           </ProtectedRoute>
                         } 
                       />
