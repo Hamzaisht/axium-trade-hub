@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   AreaChart, 
@@ -32,6 +33,12 @@ interface PriceChartProps {
   className?: string;
 }
 
+// Define the BrushStartEndIndex type for brush events
+type BrushStartEndIndex = {
+  startIndex: number;
+  endIndex: number;
+};
+
 const PriceChart = ({ 
   ipoId, 
   symbol = 'EMW', 
@@ -45,7 +52,7 @@ const PriceChart = ({
     connect, 
     disconnect 
   } = useMarketData(ipoId);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any[]>([]);
   const [syncBrush, setSyncBrush] = useState(false);
   const [brushStartIndex, setBrushStartIndex] = useState(0);
   const [brushEndIndex, setBrushEndIndex] = useState(50);
@@ -98,14 +105,13 @@ const PriceChart = ({
   // Handle disconnection attempts
   const handleDisconnect = () => {
     disconnect();
-    setIsConnected(false);
     setIsManualDisconnect(true);
     setIsDisconnecting(true);
     
     // Set a timeout to reconnect after 3 seconds
     setTimeout(() => {
-      connect();  // Changed from reconnect to connect
-      setIsConnected(true);
+      connect();
+      setIsDisconnecting(false);
     }, 3000);
   };
   
@@ -117,9 +123,9 @@ const PriceChart = ({
   };
   
   // Handle brush change
-  const handleBrushChange = (startIndex: number, endIndex: number) => {
-    setBrushStartIndex(startIndex);
-    setBrushEndIndex(endIndex);
+  const handleBrushChange = (newIndex: BrushStartEndIndex) => {
+    setBrushStartIndex(newIndex.startIndex);
+    setBrushEndIndex(newIndex.endIndex);
     setIsZoomed(true);
   };
   
@@ -218,7 +224,7 @@ const PriceChart = ({
                   name="Time"
                   tickFormatter={(time) => new Date(time).toLocaleTimeString()}
                   type="number"
-                  interval="preserveStartAndEnd"
+                  interval="preserveStartEnd"
                 />
                 <YAxis 
                   dataKey="price"

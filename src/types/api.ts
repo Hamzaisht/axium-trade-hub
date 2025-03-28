@@ -2,7 +2,7 @@
 // Define types for API responses
 
 export interface SocialPlatformMetrics {
-  platform: string;  // Added platform property
+  platform: string;
   score: number;
   trend: string;
   volume: number;
@@ -45,8 +45,8 @@ export interface CreatorMetrics {
   social: SocialPlatformMetrics[];
   streaming: StreamingPlatformMetrics[];
   brandDeals: BrandDeal[];
-  revenue: RevenueData;  // Add this
-  revenueHistory: RevenuePeriod[];  // Add this
+  revenue: RevenueData;  
+  revenueHistory: RevenuePeriod[];  
   lastUpdated: string;
 }
 

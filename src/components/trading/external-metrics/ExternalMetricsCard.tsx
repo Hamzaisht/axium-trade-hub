@@ -92,7 +92,7 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
       if (platformData) {
         engagementData.push({
           name: platformData.platform,
-          value: platformData.engagement * 100,
+          value: platformData.engagement ? platformData.engagement * 100 : 0,
           color: getPlatformColor(platformName)
         });
       }
