@@ -20,19 +20,19 @@ async getSocialSentiment(ipoId: string): Promise<{
     overall: result.overall,
     metrics: {
       twitter: {
-        score: Number(result.metrics.twitter.score), // Convert to number
+        score: Number(result.metrics.twitter.score),
         trend: result.metrics.twitter.trend,
-        volume: Number(result.metrics.twitter.volume) // Convert volume to number
+        volume: Number(result.metrics.twitter.volume)
       },
       instagram: {
-        score: Number(result.metrics.instagram.score), // Convert to number
+        score: Number(result.metrics.instagram.score),
         trend: result.metrics.instagram.trend,
-        volume: Number(result.metrics.instagram.volume) // Convert volume to number
+        volume: Number(result.metrics.instagram.volume)
       },
       youtube: {
-        score: Number(result.metrics.youtube.score), // Convert to number
+        score: Number(result.metrics.youtube.score),
         trend: result.metrics.youtube.trend,
-        volume: Number(result.metrics.youtube.volume) // Convert volume to number
+        volume: Number(result.metrics.youtube.volume)
       }
     },
     keywords: result.keywords
