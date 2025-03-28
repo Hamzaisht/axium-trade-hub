@@ -44,7 +44,7 @@ export const usePricePrediction = ({
           selectedModel
         );
         
-        // Ensure the response matches the PriceMovementResponse interface
+        // Ensure the response includes timestamp and modelUsed
         return {
           prediction: result.prediction,
           confidence: result.confidence,

@@ -182,7 +182,8 @@ export const useAIValuationEngine = ({
   
   const { data: sentimentData } = useSocialSentiment({ ipoId: ipoId || '' });
   const { data: marketDepthData } = useMarketDepth({ ipoId, enabled });
-  const { data: creatorScoreData } = useCreatorMarketScore(ipoId || '');
+  // Fix the type issue by passing an object instead of a string
+  const { data: creatorScoreData } = useCreatorMarketScore({ creatorId: ipoId || '' });
   const { data: anomalyData } = useAnomalyDetection({ ipoId, enabled });
   
   const toggleRealTime = useCallback(() => {
@@ -243,6 +244,7 @@ export const useAIValuationEngine = ({
   
   return {
     valuation: data,
+    data, // Add the data property to fix missing data error
     isLoading: isLoading || isExternalMetricsLoading,
     error,
     refetch,

@@ -15,7 +15,7 @@ export interface UseSentimentAnalysisProps {
 }
 
 export const useSentimentAnalysis = ({ creatorId }: UseSentimentAnalysisProps) => {
-  return useQuery<CreatorSentimentData, Error>({
+  const result = useQuery<CreatorSentimentData, Error>({
     queryKey: ['sentiment-analysis', creatorId],
     queryFn: async () => {
       if (!creatorId) {
@@ -23,7 +23,20 @@ export const useSentimentAnalysis = ({ creatorId }: UseSentimentAnalysisProps) =
       }
 
       try {
-        return await mockAIValuationAPI.getSentimentAnalysis(creatorId);
+        // Since getSentimentAnalysis doesn't exist in the mockAIValuationAPI, 
+        // we'll use getSocialSentiment and transform the data
+        const socialData = await mockAIValuationAPI.getSocialSentiment(creatorId);
+        
+        // Transform the social sentiment data into the CreatorSentimentData shape
+        return {
+          overallSentiment: Math.round((socialData.metrics.twitter.score + 
+                                       socialData.metrics.instagram.score + 
+                                       socialData.metrics.youtube.score) / 3 * 100),
+          positiveMentions: 12458, // Mock data
+          negativeMentions: 3241,  // Mock data
+          keywords: socialData.keywords,
+          lastUpdated: new Date().toISOString()
+        };
       } catch (error) {
         console.error('Error fetching sentiment analysis:', error);
         throw error;
@@ -33,7 +46,12 @@ export const useSentimentAnalysis = ({ creatorId }: UseSentimentAnalysisProps) =
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchInterval: 1000 * 60 * 15, // 15 minutes
   });
+  
+  // Add sentimentData property to match the expected interface
+  return {
+    ...result,
+    sentimentData: result.data
+  };
 };
 
-// Also export as default for backward compatibility
 export default useSentimentAnalysis;

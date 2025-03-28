@@ -24,7 +24,10 @@ const CreatorProfile = () => {
   const { ipos, isLoading: iposLoading } = useIPO();
   const [creator, setCreator] = useState<IPO | null>(null);
   const { isLoading: marketDataLoading, priceUpdates } = useMarketData(id);
-  const { sentimentData, isLoading: sentimentLoading } = useSentimentAnalysis({ creatorId: id });
+  
+  const sentimentResult = useSentimentAnalysis({ creatorId: id });
+  const sentimentData = sentimentResult.sentimentData;
+  const isLoading = sentimentResult.isLoading;
 
   useEffect(() => {
     if (!iposLoading && ipos.length > 0) {

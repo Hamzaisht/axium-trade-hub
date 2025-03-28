@@ -14,31 +14,26 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
   const [valuation, setValuation] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { data: sentimentData, isLoading: sentimentLoading, error: sentimentError } = useSentimentAnalysis({ creatorId: ipoId });
+  const sentimentAnalysis = useSentimentAnalysis({ creatorId: ipoId });
+  const sentimentData = sentimentAnalysis.sentimentData;
+  const sentimentLoading = sentimentAnalysis.isLoading;
+  const sentimentError = sentimentAnalysis.error;
   
-  // Add market depth data
-  const { 
-    data: marketDepth,
-    isLoading: isMarketDepthLoading
-  } = useMarketDepth({ ipoId });
+  // Add market depth data with correct props
+  const marketDepth = useMarketDepth({ ipoId });
+  const isMarketDepthLoading = marketDepth.isLoading;
   
-  // Add dividend info data
-  const {
-    data: dividendInfo,
-    isLoading: isDividendInfoLoading
-  } = useDividendInfo({ ipoId });
+  // Add dividend info data with correct props
+  const dividendInfo = useDividendInfo({ ipoId });
+  const isDividendInfoLoading = dividendInfo.isLoading;
   
-  // Add vesting rules data
-  const {
-    data: vestingRules,
-    isLoading: isVestingRulesLoading
-  } = useVestingRules({ ipoId });
+  // Add vesting rules data with correct props
+  const vestingRules = useVestingRules({ ipoId });
+  const isVestingRulesLoading = vestingRules.isLoading;
   
-  // Add liquidation rules data
-  const {
-    data: liquidationRules,
-    isLoading: isLiquidationRulesLoading
-  } = useLiquidationRules({ ipoId });
+  // Add liquidation rules data with correct props
+  const liquidationRules = useLiquidationRules({ ipoId });
+  const isLiquidationRulesLoading = liquidationRules.isLoading;
 
   useEffect(() => {
     if (!ipoId) {
@@ -73,16 +68,16 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     sentimentLoading,
     sentimentError,
     // Return market depth data
-    marketDepth,
+    marketDepth: marketDepth.data,
     isMarketDepthLoading,
     // Return dividend info data
-    dividendInfo,
+    dividendInfo: dividendInfo.data,
     isDividendInfoLoading,
     // Return vesting rules data
-    vestingRules,
+    vestingRules: vestingRules.data,
     isVestingRulesLoading,
     // Return liquidation rules data
-    liquidationRules,
+    liquidationRules: liquidationRules.data,
     isLiquidationRulesLoading
   };
 };

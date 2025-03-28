@@ -439,12 +439,27 @@ class AIValuationAPI {
     confidence: number;
     targetPrice: number;
     factors: string[];
+    timestamp: string;
+    modelUsed: AIModelType;
   }> {
     await delay(500);
     const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
 
-    return predictPriceMovementUtil(ipo, timeframe, modelType);
+    const socialData = await this.getSocialSentiment(ipoId);
+
+    return {
+      prediction: {
+        direction: socialData.overall.includes('positive') ? 'up' : 
+                    socialData.overall.includes('negative') ? 'down' : 'neutral',
+        percentage: Math.abs(Math.random() * 10).toFixed(2)
+      },
+      confidence: Math.floor(Math.random() * 30) + 65,
+      timestamp: new Date().toISOString(),
+      modelUsed: AIModelType.STANDARD,
+      targetPrice: parseFloat((ipo.currentPrice * (1 + (Math.random() * 0.2 - 0.1))).toFixed(2)),
+      factors: ['Market Trend', 'Social Sentiment', 'Recent Volume', 'Creator Activity']
+    };
   }
 
   async getSocialSentiment(ipoId: string): Promise<{
@@ -714,10 +729,25 @@ class AIValuationAPI {
       lastUpdated: new Date().toISOString()
     };
   }
+
+  async getSentimentAnalysis(ipoId: string): Promise<any> {
+    // Generate random delay to simulate API latency
+    await delay(300 + Math.random() * 200);
+    
+    // Use the existing getSocialSentiment method and transform its response
+    const socialData = await this.getSocialSentiment(ipoId);
+    
+    // Transform into the format expected by useSentimentAnalysis
+    return {
+      overallSentiment: Math.round((socialData.metrics.twitter.score + 
+                               socialData.metrics.instagram.score + 
+                               socialData.metrics.youtube.score) / 3 * 100),
+      positiveMentions: 12458 + Math.floor(Math.random() * 1000), // Mock data with some variation
+      negativeMentions: 3241 + Math.floor(Math.random() * 500),  // Mock data with some variation
+      keywords: socialData.keywords,
+      lastUpdated: new Date().toISOString()
+    };
+  }
 }
 
-// Instantiate the mock APIs
-export const mockIPOAPI = new MockIPOAPI();
-export const mockTradingAPI = new MockTradingAPI();
-export const mockPortfolioAPI = new MockPortfolioAPI();
-export const mockAIValuationAPI = new AIValuationAPI();
+//
