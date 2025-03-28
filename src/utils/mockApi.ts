@@ -461,7 +461,7 @@ class AIValuationAPI {
     const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
 
-    // Get the result from the utility function and ensure it returns the correct type
+    // Get the result from the utility function
     const result = getSocialSentimentUtil(ipo);
     
     // Ensure all numeric values are properly typed as numbers
@@ -469,17 +469,23 @@ class AIValuationAPI {
       overall: result.overall,
       metrics: {
         twitter: {
-          score: parseFloat(result.metrics.twitter.score.toString()), // Ensure it's a number
+          score: typeof result.metrics.twitter.score === 'string' 
+            ? parseFloat(result.metrics.twitter.score) 
+            : result.metrics.twitter.score,
           trend: result.metrics.twitter.trend,
           volume: result.metrics.twitter.volume
         },
         instagram: {
-          score: parseFloat(result.metrics.instagram.score.toString()), // Ensure it's a number
+          score: typeof result.metrics.instagram.score === 'string' 
+            ? parseFloat(result.metrics.instagram.score) 
+            : result.metrics.instagram.score,
           trend: result.metrics.instagram.trend,
           volume: result.metrics.instagram.volume
         },
         youtube: {
-          score: parseFloat(result.metrics.youtube.score.toString()), // Ensure it's a number
+          score: typeof result.metrics.youtube.score === 'string' 
+            ? parseFloat(result.metrics.youtube.score) 
+            : result.metrics.youtube.score,
           trend: result.metrics.youtube.trend,
           volume: result.metrics.youtube.volume
         }
