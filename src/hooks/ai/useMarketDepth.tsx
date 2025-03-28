@@ -4,9 +4,10 @@ import { mockAIValuationAPI } from '@/utils/mockApi';
 
 interface UseMarketDepthProps {
   ipoId?: string;
+  enabled?: boolean;
 }
 
-export const useMarketDepth = ({ ipoId }: UseMarketDepthProps) => {
+export const useMarketDepth = ({ ipoId, enabled = true }: UseMarketDepthProps) => {
   return useQuery({
     queryKey: ['market-depth', ipoId],
     queryFn: async () => {
@@ -16,7 +17,7 @@ export const useMarketDepth = ({ ipoId }: UseMarketDepthProps) => {
       
       return mockAIValuationAPI.getMarketDepth(ipoId);
     },
-    enabled: !!ipoId,
+    enabled: !!ipoId && enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

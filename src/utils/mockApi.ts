@@ -461,7 +461,7 @@ class AIValuationAPI {
     const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
 
-    // Converting string sentiment score to number to fix the type error
+    // Converting string sentiment score to number
     return getSocialSentimentUtil(ipo);
   }
 

@@ -4,9 +4,10 @@ import { mockAIValuationAPI } from '@/utils/mockApi';
 
 interface UseLiquidationRulesProps {
   ipoId?: string;
+  enabled?: boolean;
 }
 
-export const useLiquidationRules = ({ ipoId }: UseLiquidationRulesProps) => {
+export const useLiquidationRules = ({ ipoId, enabled = true }: UseLiquidationRulesProps) => {
   return useQuery({
     queryKey: ['liquidation-rules', ipoId],
     queryFn: async () => {
@@ -16,7 +17,7 @@ export const useLiquidationRules = ({ ipoId }: UseLiquidationRulesProps) => {
       
       return mockAIValuationAPI.getLiquidationRules(ipoId);
     },
-    enabled: !!ipoId,
+    enabled: !!ipoId && enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

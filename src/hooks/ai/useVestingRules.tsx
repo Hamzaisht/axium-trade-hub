@@ -4,9 +4,10 @@ import { mockAIValuationAPI } from '@/utils/mockApi';
 
 interface UseVestingRulesProps {
   ipoId?: string;
+  enabled?: boolean;
 }
 
-export const useVestingRules = ({ ipoId }: UseVestingRulesProps) => {
+export const useVestingRules = ({ ipoId, enabled = true }: UseVestingRulesProps) => {
   return useQuery({
     queryKey: ['vesting-rules', ipoId],
     queryFn: async () => {
@@ -16,7 +17,7 @@ export const useVestingRules = ({ ipoId }: UseVestingRulesProps) => {
       
       return mockAIValuationAPI.getVestingAndStakingRules(ipoId);
     },
-    enabled: !!ipoId,
+    enabled: !!ipoId && enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

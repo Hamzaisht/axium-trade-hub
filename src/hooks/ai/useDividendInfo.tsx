@@ -4,9 +4,10 @@ import { mockAIValuationAPI } from '@/utils/mockApi';
 
 interface UseDividendInfoProps {
   ipoId?: string;
+  enabled?: boolean;
 }
 
-export const useDividendInfo = ({ ipoId }: UseDividendInfoProps) => {
+export const useDividendInfo = ({ ipoId, enabled = true }: UseDividendInfoProps) => {
   return useQuery({
     queryKey: ['dividend-info', ipoId],
     queryFn: async () => {
@@ -16,7 +17,7 @@ export const useDividendInfo = ({ ipoId }: UseDividendInfoProps) => {
       
       return mockAIValuationAPI.getDividendInfo(ipoId);
     },
-    enabled: !!ipoId,
+    enabled: !!ipoId && enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
