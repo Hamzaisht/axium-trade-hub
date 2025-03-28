@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAIValuation as useAIValuationHook } from '@/hooks/ai/useAIValuation';
 import { useExternalData } from '@/hooks/useExternalData';
@@ -38,7 +37,6 @@ interface AIValuationProps {
   className?: string;
 }
 
-// Helper function to find platform data
 const getPlatformData = (metrics: any, platform: string): SocialPlatformMetrics | undefined => {
   if (!metrics?.social || !Array.isArray(metrics.social)) return undefined;
   return metrics.social.find(p => p.platform.toLowerCase() === platform);
@@ -65,11 +63,9 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
     refetch: refetchExternalMetrics
   } = useExternalData({ creatorId: ipoId });
   
-  // Mock valuation factors since valuationFactors doesn't exist in the hook
   const [valuationFactors, setValuationFactors] = useState<any>(null);
   
   useEffect(() => {
-    // Mock data for demonstration
     if (externalMetrics) {
       setValuationFactors({
         socialEngagement: {
@@ -104,7 +100,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
     }
   }, [externalMetrics]);
   
-  // Auto-refresh mechanism
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval>;
     
@@ -112,7 +107,7 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
       intervalId = setInterval(() => {
         refetch();
         refetchExternalMetrics();
-      }, 15000); // Refresh every 15 seconds
+      }, 15000);
     }
     
     return () => {
@@ -120,7 +115,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
     };
   }, [autoRefresh, ipoId, refetch, refetchExternalMetrics]);
   
-  // Toggle auto-refresh
   const toggleAutoRefresh = () => {
     setAutoRefresh(prev => {
       const newState = !prev;
@@ -128,7 +122,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
     });
   };
   
-  // Format score data for pie chart
   const getPieChartData = () => {
     if (!valuationFactors) return [];
     
@@ -157,7 +150,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
     ];
   };
   
-  // Format data for factor breakdown
   const getFactorData = (type: 'social' | 'content' | 'revenue') => {
     if (!valuationFactors) return [];
     
@@ -182,7 +174,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
     }));
   };
   
-  // Get color based on score
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-500';
     if (score >= 60) return 'text-blue-500';
@@ -191,7 +182,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
     return 'text-red-500';
   };
   
-  // Get platform data
   const youtubeData = getPlatformData(externalMetrics, 'youtube');
   const instagramData = getPlatformData(externalMetrics, 'instagram');
   const twitterData = getPlatformData(externalMetrics, 'twitter');
@@ -202,7 +192,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
       <h1 className="text-4xl font-bold mb-6">AI Valuation Dashboard</h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Valuation Factors */}
         <div className="lg:col-span-2 space-y-6">
           <GlassCard className="p-4">
             <div className="flex justify-between items-center mb-4">
@@ -259,7 +248,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
               </div>
             ) : (
               <>
-                {/* Score Display */}
                 <div className="flex flex-col items-center mb-4">
                   <div className={cn(
                     "text-4xl font-bold",
@@ -272,7 +260,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
                   </p>
                 </div>
                 
-                {/* Tabs for different views */}
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid grid-cols-3">
                     <TabsTrigger value="overview">
@@ -289,7 +276,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
                     </TabsTrigger>
                   </TabsList>
                   
-                  {/* Score Tab - Pie Chart */}
                   <TabsContent value="overview" className="pt-2">
                     <div className="h-[180px]">
                       <ResponsiveContainer width="100%" height="100%">
@@ -339,7 +325,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
                     </div>
                   </TabsContent>
                   
-                  {/* Breakdown Tab - Bar Chart */}
                   <TabsContent value="breakdown" className="pt-2">
                     <div className="h-[200px]">
                       <ResponsiveContainer width="100%" height="100%">
@@ -391,7 +376,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
                     </div>
                   </TabsContent>
                   
-                  {/* Factors Tab */}
                   <TabsContent value="factors" className="pt-2">
                     <Tabs defaultValue="social" className="w-full">
                       <TabsList className="w-full grid grid-cols-3">
@@ -454,7 +438,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
                   </TabsContent>
                 </Tabs>
                 
-                {/* Additional info */}
                 <div className="mt-2 pt-2 border-t border-axium-gray-200 text-xs text-axium-gray-600">
                   Last updated: {new Date().toLocaleTimeString()}
                   {autoRefresh && " • Live updates enabled"}
@@ -463,7 +446,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
             )}
           </GlassCard>
           
-          {/* Price Prediction */}
           <GlassCard className="p-4">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <TrendingUp className="h-5 w-5 mr-2 text-green-500" />
@@ -490,7 +472,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
             )}
           </GlassCard>
           
-          {/* Social Sentiment Analysis */}
           <GlassCard className="p-4">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <MessageSquare className="h-5 w-5 mr-2 text-blue-500" />
@@ -516,7 +497,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
           </GlassCard>
         </div>
         
-        {/* Right Column - External Metrics */}
         <div className="space-y-6">
           <GlassCard className="p-4">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
@@ -545,7 +525,7 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
                   </div>
                 </div>
                 
-                {externalMetrics.revenue && (
+                {externalMetrics?.revenue && (
                   <>
                     <div className="text-xl font-semibold">
                       ${formatCompactNumber(externalMetrics.revenue.totalRevenue || 0)}
@@ -581,7 +561,6 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
             )}
           </GlassCard>
           
-          {/* Market Depth Analysis */}
           <GlassCard className="p-4">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <LayoutDashboard className="h-5 w-5 mr-2 text-orange-500" />
@@ -596,13 +575,12 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
               <>
                 <div>Buy Wall Strength: {marketDepth.buyWallStrength}</div>
                 <div>Sell Wall Strength: {marketDepth.sellWallStrength}</div>
-                <div>Current Spread: {typeof marketDepth.currentSpread === 'object' ? 
-                  `${marketDepth.currentSpread.bid} - ${marketDepth.currentSpread.ask}` : marketDepth.currentSpread}</div>
+                <div>Current Spread: {marketDepth && typeof marketDepth.currentSpread === 'object' ? 
+                  `${marketDepth.currentSpread.bid} - ${marketDepth.currentSpread.ask}` : 'N/A'}</div>
               </>
             )}
           </GlassCard>
           
-          {/* Anomaly Detection */}
           <GlassCard className="p-4">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <AlertTriangle className="h-5 w-5 mr-2 text-red-500" />

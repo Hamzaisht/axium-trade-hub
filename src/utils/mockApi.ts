@@ -237,7 +237,7 @@ export class MockAIValuationAPI {
     const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
     
-    return getSocialSentimentUtil(ipo);
+    return getSocialSentimentUtil();
   }
 
   // Market depth analysis
