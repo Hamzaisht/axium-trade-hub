@@ -29,6 +29,7 @@ import { AnomalyDetectionCard } from '@/components/trading/AnomalyDetectionCard'
 import { MarketDepthChart } from '@/components/trading/MarketDepthChart';
 import { SentimentScoreBadge } from '@/components/trading/SentimentScoreBadge';
 import { cn } from '@/lib/utils';
+import { MarketDepthModel } from '@/types';
 
 interface SentimentBoxProps {
   platform: string;
@@ -80,21 +81,21 @@ const AIInsights = () => {
   const marketDepthValue = (metricName: string) => {
     if (!aiEngine.valuation || !aiEngine.dataSources.marketDepthData) return 0;
 
-    const marketDepthData = aiEngine.dataSources.marketDepthData;
+    const marketDepthData = aiEngine.dataSources.marketDepthData as MarketDepthModel;
 
     switch (metricName) {
       case 'orderBookDepth':
-        return marketDepthData.orderBookDepth;
+        return marketDepthData.orderBookDepth || 0;
       case 'liquidityScore':
-        return marketDepthData.liquidityScore;
+        return marketDepthData.liquidityScore || 0;
       case 'volumeProfile':
-        return marketDepthData.volumeProfile;
+        return marketDepthData.volumeProfile || 0;
       case 'volatilityRisk':
-        return marketDepthData.volatilityRisk;
+        return marketDepthData.volatilityRisk || 0;
       case 'buyPressure':
-        return marketDepthData.buyPressure;
+        return marketDepthData.buyPressure || 0;
       case 'sellPressure':
-        return marketDepthData.sellPressure;
+        return marketDepthData.sellPressure || 0;
       default:
         return 0;
     }
@@ -321,13 +322,13 @@ const AIInsights = () => {
               </h3>
               
               <div className="grid grid-cols-1 gap-4">
-                {socialData?.platforms && (
-                  Object.entries(socialData.platforms).map(([platform, data], index) => (
+                {socialData.metrics && (
+                  Object.entries(socialData.metrics).map(([platform, data], index) => (
                     <SentimentBox 
                       key={index}
                       platform={platform.charAt(0).toUpperCase() + platform.slice(1)}
-                      score={data.sentiment}
-                      engagement={data.engagement}
+                      score={data.score}
+                      engagement={data.volume}
                     />
                   ))
                 )}
@@ -355,12 +356,12 @@ const AIInsights = () => {
                     <circle
                       className={cn(
                         "text-blue-500",
-                        socialData.trust >= 80 && "text-green-500",
-                        socialData.trust < 60 && "text-orange-500",
-                        socialData.trust < 40 && "text-red-500"
+                        (socialData.trust || 0) >= 80 && "text-green-500",
+                        (socialData.trust || 0) < 60 && "text-orange-500",
+                        (socialData.trust || 0) < 40 && "text-red-500"
                       )}
                       strokeWidth="8"
-                      strokeDasharray={`${(socialData.trust / 100) * 2 * Math.PI * 56} ${2 * Math.PI * 56}`}
+                      strokeDasharray={`${((socialData.trust || 0) / 100) * 2 * Math.PI * 56} ${2 * Math.PI * 56}`}
                       strokeLinecap="round"
                       stroke="currentColor"
                       fill="transparent"
@@ -370,19 +371,19 @@ const AIInsights = () => {
                       transform="rotate(-90 64 64)"
                     />
                   </svg>
-                  <span className="absolute text-3xl font-bold">{socialData.trust}%</span>
+                  <span className="absolute text-3xl font-bold">{socialData.trust || 0}%</span>
                 </div>
                 
                 <div className="mt-6 text-center">
                   <h4 className="text-lg font-medium">
-                    {socialData.trust >= 80 ? "Excellent" : 
-                     socialData.trust >= 60 ? "Good" : 
-                     socialData.trust >= 40 ? "Average" : "Poor"}
+                    {(socialData.trust || 0) >= 80 ? "Excellent" : 
+                     (socialData.trust || 0) >= 60 ? "Good" : 
+                     (socialData.trust || 0) >= 40 ? "Average" : "Poor"}
                   </h4>
                   <p className="text-axium-gray-600 mt-1">
-                    {socialData.trust >= 80 ? "Strong community trust and excellent brand reputation" : 
-                     socialData.trust >= 60 ? "Good market reputation with solid trust signals" : 
-                     socialData.trust >= 40 ? "Average trust metrics with some concerning signals" : 
+                    {(socialData.trust || 0) >= 80 ? "Strong community trust and excellent brand reputation" : 
+                     (socialData.trust || 0) >= 60 ? "Good market reputation with solid trust signals" : 
+                     (socialData.trust || 0) >= 40 ? "Average trust metrics with some concerning signals" : 
                      "Significant trust issues that need addressing"}
                   </p>
                 </div>

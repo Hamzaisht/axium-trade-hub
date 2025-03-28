@@ -1,3 +1,4 @@
+
 /**
  * Mock API
  * Simulates API endpoints for fetching creator data, IPOs, and AI valuations.
@@ -718,7 +719,7 @@ class AIValuationAPI {
   }
 }
 
-// Create instances of the mock APIs
+// Export the mock API instances
 export const mockIPOAPI = new MockIPOAPI();
 export const mockTradingAPI = new MockTradingAPI();
 export const mockPortfolioAPI = new MockPortfolioAPI();

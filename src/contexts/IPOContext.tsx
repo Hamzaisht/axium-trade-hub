@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { IPO } from '@/types';
+import { IPO } from '@/utils/mockApi';
+import { ReactNode } from 'react';
 import { mockIPOAPI, mockAIValuationAPI } from '@/utils/mockApi';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';

@@ -17,7 +17,7 @@ import Dashboard from '@/pages/Dashboard';
 import Portfolio from '@/pages/Portfolio';
 import Creators from '@/pages/Creators';
 import Trading from '@/pages/Trading';
-import CreatorProfile from '@/pages/CreatorProfile';
+import { CreatorProfile } from '@/pages/CreatorProfile';
 import AIInsights from '@/pages/AIInsights';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';

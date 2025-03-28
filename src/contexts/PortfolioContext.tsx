@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { mockPortfolioAPI } from '@/utils/mockApi';
 import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';
+import { Portfolio } from '@/types';
+import { toast } from 'sonner';
 
 interface PortfolioContextType {
   portfolio: Portfolio | null;

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSentimentAnalysis } from "./ai/useSentimentAnalysis";
 import { useMarketDepth } from "./ai/useMarketDepth";
@@ -19,19 +18,15 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
   const sentimentLoading = sentimentAnalysis.isLoading;
   const sentimentError = sentimentAnalysis.error;
   
-  // Add market depth data with correct props
   const marketDepth = useMarketDepth({ ipoId });
   const isMarketDepthLoading = marketDepth.isLoading;
   
-  // Add dividend info data with correct props
   const dividendInfo = useDividendInfo({ ipoId });
   const isDividendInfoLoading = dividendInfo.isLoading;
   
-  // Add vesting rules data with correct props
   const vestingRules = useVestingRules({ ipoId });
   const isVestingRulesLoading = vestingRules.isLoading;
   
-  // Add liquidation rules data with correct props
   const liquidationRules = useLiquidationRules({ ipoId });
   const isLiquidationRulesLoading = liquidationRules.isLoading;
 
@@ -43,11 +38,8 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
 
     setIsLoading(true);
     
-    // Simulate API call with setTimeout
     const timer = setTimeout(() => {
       try {
-        // Generate mock AI valuation
-        // In a real app, this would be an API call to an AI valuation service
         const mockValuation = Math.floor(60 + Math.random() * 40); // 60-100
         setValuation(mockValuation);
         setIsLoading(false);
@@ -67,16 +59,12 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     sentimentData,
     sentimentLoading,
     sentimentError,
-    // Return market depth data
     marketDepth: marketDepth.data,
     isMarketDepthLoading,
-    // Return dividend info data
     dividendInfo: dividendInfo.data,
     isDividendInfoLoading,
-    // Return vesting rules data
     vestingRules: vestingRules.data,
     isVestingRulesLoading,
-    // Return liquidation rules data
     liquidationRules: liquidationRules.data,
     isLiquidationRulesLoading
   };

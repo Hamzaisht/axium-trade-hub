@@ -6,6 +6,7 @@ import { useAnomalyDetection } from '@/hooks/ai/useAnomalyDetection';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 interface AnomalyDetectionCardProps {
   ipoId?: string;
@@ -77,7 +78,7 @@ export const AnomalyDetectionCard: React.FC<AnomalyDetectionCardProps> = ({
             {anomalyData.anomalies.slice(0, 3).map((anomaly, index) => (
               <div key={index} className="border p-3 rounded-lg">
                 <div className="flex justify-between items-center mb-1">
-                  <h4 className={`font-medium ${getAnomalySeverityColor(anomaly.severity)}`}>
+                  <h4 className={cn("font-medium", getAnomalySeverityColor(anomaly.severity))}>
                     {anomaly.type.replace('_', ' ')}
                   </h4>
                   <span className="text-xs text-axium-gray-500">
@@ -98,3 +99,5 @@ export const AnomalyDetectionCard: React.FC<AnomalyDetectionCardProps> = ({
     </GlassCard>
   );
 };
+
+export default AnomalyDetectionCard;

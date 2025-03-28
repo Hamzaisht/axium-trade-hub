@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { mockTradingAPI } from '@/utils/mockApi';
 import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';
+import { Order, Trade } from '@/types';
+import { toast } from 'sonner';
 
 interface OrderBookData {
   bids: Order[];
