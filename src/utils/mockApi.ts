@@ -1,4 +1,5 @@
-import { mockIPOs, delay } from './data';
+
+import { mockIPOs, delay, mockOrders, mockTrades } from './data';
 import { getSocialSentiment as getSocialSentimentUtil } from './socialSentimentUtil';
 
 export type SentimentTrend = 'positive' | 'negative' | 'neutral';
@@ -23,6 +24,14 @@ export interface IPO {
   youtube: string;
   instagram: string;
   featured: boolean;
+  // Fields needed for mockAIModels.ts
+  engagementScore?: number;
+  aiScore?: number;
+  totalSupply?: number;
+  availableSupply?: number;
+  initialPrice?: number;
+  revenueUSD?: number;
+  averageDailyVolume?: number;
 }
 
 export interface Order {
@@ -33,7 +42,7 @@ export interface Order {
   orderType: 'market' | 'limit';
   price: number;
   quantity: number;
-  status: 'pending' | 'fulfilled' | 'cancelled';
+  status: 'pending' | 'fulfilled' | 'cancelled' | 'open';
   timestamp: string;
 }
 
@@ -50,12 +59,38 @@ export interface Trade {
 export class MockTradingAPI {
   async getIPOs(): Promise<IPO[]> {
     await delay(300);
-    return mockIPOs;
+    
+    // Add the missing properties required by mockAIModels.ts
+    return mockIPOs.map(ipo => ({
+      ...ipo,
+      engagementScore: 50 + Math.floor(Math.random() * 50),
+      aiScore: 40 + Math.floor(Math.random() * 60),
+      totalSupply: ipo.supply,
+      availableSupply: Math.floor(ipo.supply * 0.3),
+      initialPrice: ipo.currentPrice * (0.8 + Math.random() * 0.3),
+      revenueUSD: Math.floor(Math.random() * 10000000),
+      averageDailyVolume: ipo.volume
+    }));
   }
 
   async getIPO(ipoId: string): Promise<IPO | undefined> {
     await delay(300);
-    return mockIPOs.find(ipo => ipo.id === ipoId);
+    const ipo = mockIPOs.find(ipo => ipo.id === ipoId);
+    
+    if (ipo) {
+      return {
+        ...ipo,
+        engagementScore: 50 + Math.floor(Math.random() * 50),
+        aiScore: 40 + Math.floor(Math.random() * 60),
+        totalSupply: ipo.supply,
+        availableSupply: Math.floor(ipo.supply * 0.3),
+        initialPrice: ipo.currentPrice * (0.8 + Math.random() * 0.3),
+        revenueUSD: Math.floor(Math.random() * 10000000),
+        averageDailyVolume: ipo.volume
+      };
+    }
+    
+    return undefined;
   }
 
   async placeOrder(orderData: Partial<Order>): Promise<Order> {
@@ -69,7 +104,7 @@ export class MockTradingAPI {
       orderType: orderData.orderType || 'market',
       price: orderData.price || 100,
       quantity: orderData.quantity || 1,
-      status: 'pending',
+      status: orderData.status || 'pending',
       timestamp: new Date().toISOString()
     };
     
@@ -170,7 +205,7 @@ export class MockTradingAPI {
     keywords: string[];
   }> {
     await delay(300);
-    const ipo = mockIPOs.find(item => item.id === ipoId);
+    const ipo = await this.getIPO(ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
 
     // Get the result from the utility function
@@ -202,3 +237,30 @@ export class MockTradingAPI {
 }
 
 export const mockTradingAPI = new MockTradingAPI();
+
+// Add these missing APIs that are referenced elsewhere in the codebase
+export const mockIPOAPI = mockTradingAPI;
+export const mockAIValuationAPI = {
+  // Placeholder implementation to satisfy imports
+  getPricePrediction: () => Promise.resolve({}),
+  getSocialSentiment: mockTradingAPI.getSocialSentiment.bind(mockTradingAPI),
+  calculateMarketDepth: () => Promise.resolve({}),
+  getValuation: () => Promise.resolve({}),
+  detectAnomalies: () => Promise.resolve({}),
+  getCreatorScore: () => Promise.resolve({}),
+  getDividendInfo: () => Promise.resolve({}),
+  getVestingRules: () => Promise.resolve({}),
+  getLiquidationRules: () => Promise.resolve({})
+};
+
+export const mockPortfolioAPI = {
+  // Placeholder implementation
+  getPortfolio: () => Promise.resolve({
+    userId: 'test-user',
+    holdings: [],
+    totalValue: 0,
+    cash: 10000,
+    invested: 0
+  }),
+  updatePortfolio: () => Promise.resolve({})
+};

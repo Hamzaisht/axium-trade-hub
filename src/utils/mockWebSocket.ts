@@ -1,10 +1,10 @@
-
 /**
  * Mock WebSocket Service
  * Simulates real-time data streaming for market prices, order execution, etc.
  */
 
-import { IPO, Order, Trade, mockIPOs, mockOrders, mockTrades } from "./mockApi";
+import { IPO } from "./mockApi";
+import { mockIPOs, mockOrders, mockTrades } from "./data";
 
 // Create a custom event emitter class without relying on Node.js EventEmitter
 class CustomEventEmitter {
@@ -187,8 +187,8 @@ class WebSocketEmulator extends CustomEventEmitter {
     // Calculate volatility based on engagement score and AI score
     // Higher scores generally mean less volatility, but with randomness
     const baseVolatility = 0.05; // 5% base volatility
-    const engagementImpact = (100 - ipo.engagementScore) / 1000; // Lower engagement = higher volatility
-    const aiScoreImpact = (100 - ipo.aiScore) / 800; // Lower AI score = higher volatility
+    const engagementImpact = (100 - (ipo.engagementScore || 50)) / 1000; // Lower engagement = higher volatility
+    const aiScoreImpact = (100 - (ipo.aiScore || 50)) / 800; // Lower AI score = higher volatility
     
     return baseVolatility + engagementImpact + aiScoreImpact;
   }
