@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useIPO } from '@/contexts/IPOContext';
@@ -51,7 +50,10 @@ const AIInsights = () => {
   const { ipos } = useIPO();
   const [selectedTimeframe, setSelectedTimeframe] = useState('24h');
   
-  // Find creator data from id param or use first creator
+  const formatIpoDate = (ipo: any) => {
+    return ipo.launchDate || ipo.createdAt || new Date().toISOString();
+  };
+
   const selectedIPO = ipos.find(ipo => ipo.id === id) || ipos[0];
   
   const {
@@ -64,18 +66,14 @@ const AIInsights = () => {
     rawMetrics
   } = useAIValuationEngine({ ipoId: selectedIPO?.id });
   
-  // Get social sentiment data
   const { data: sentimentData, isLoading: isSentimentLoading } = useSocialSentiment({ ipoId: selectedIPO?.id });
   
-  // Get creator market score
   const { data: creatorScore, isLoading: isScoreLoading } = useCreatorMarketScore(selectedIPO?.id || '');
   
-  // Handle navigation to different creator
   const handleCreatorChange = (creatorId: string) => {
     navigate(`/ai-insights/${creatorId}`);
   };
   
-  // Historical performance mock data
   const generateHistoricalData = () => {
     const now = new Date();
     const data = [];
@@ -84,19 +82,15 @@ const AIInsights = () => {
       const date = new Date();
       date.setDate(now.getDate() - i);
       
-      // Base value around current price with some fluctuation
       const basePrice = selectedIPO?.currentPrice || 20;
-      const rangePercent = 0.15; // 15% range
+      const rangePercent = 0.15;
       
-      // More volatility in the middle, more stable at ends
       const volatilityFactor = Math.sin((i / 30) * Math.PI) * 0.6 + 0.4;
       const randomFactor = (Math.random() * 2 - 1) * rangePercent * volatilityFactor;
       
-      // Create a trend direction (up or down)
-      const trendDirection = i > 15 ? -1 : 1; // down then up
+      const trendDirection = i > 15 ? -1 : 1;
       const trendFactor = (Math.abs(i - 15) / 15) * 0.1 * trendDirection;
       
-      // Combine factors
       const priceFactor = 1 + randomFactor + trendFactor;
       const price = basePrice * priceFactor;
       
@@ -153,7 +147,6 @@ const AIInsights = () => {
     );
   }
   
-  // Extract data for display components
   const mockValuation = {
     currentPrice: selectedIPO.currentPrice || 25.0,
     previousPrice: selectedIPO.currentPrice ? (selectedIPO.currentPrice * 0.95) : 23.75,
@@ -203,7 +196,6 @@ const AIInsights = () => {
   const isPositiveChange = mockValuation.priceChangePercent >= 0;
   const formattedPriceChange = `${isPositiveChange ? '+' : ''}${mockValuation.priceChangePercent.toFixed(2)}%`;
   
-  // Format market score for display
   const formatMarketScore = (score: number) => {
     if (score >= 90) return { text: 'Exceptional', color: 'text-green-500' };
     if (score >= 80) return { text: 'Excellent', color: 'text-green-500' };
@@ -266,7 +258,7 @@ const AIInsights = () => {
                   </Badge>
                 </div>
                 <p className="text-axium-gray-600 dark:text-axium-gray-400 text-sm">
-                  IPO Date: {new Date(selectedIPO.ipoDate).toLocaleDateString()}
+                  IPO Date: {new Date(formatIpoDate(selectedIPO)).toLocaleDateString()}
                 </p>
               </div>
               
@@ -289,7 +281,6 @@ const AIInsights = () => {
               </div>
             </div>
             
-            {/* Market Score Banner */}
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-axium-gray-100/50 dark:bg-axium-gray-800/50 p-4 rounded-lg mb-5">
               <div className="flex items-center">
                 <div className="hidden sm:block mr-4">
@@ -468,12 +459,9 @@ const AIInsights = () => {
             </Tabs>
           </GlassCard>
           
-          {/* RIGHT SIDEBAR */}
           <div className="lg:col-span-1 space-y-6">
-            {/* AI Metrics Panel */}
             <MetricsPanel metrics={rawMetrics} />
             
-            {/* Market Movers */}
             <GlassCard className="p-5">
               <h3 className="text-lg font-semibold mb-3 flex items-center">
                 <BarChart4 className="h-5 w-5 mr-2 text-axium-blue" />
@@ -487,7 +475,6 @@ const AIInsights = () => {
           </div>
         </div>
         
-        {/* Bottom Insights Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <GlassCard className="p-5">
             <h3 className="text-lg font-semibold mb-3 flex items-center">

@@ -34,7 +34,7 @@ export interface UseCreatorMarketScoreProps {
 }
 
 export const useCreatorMarketScore = (creatorId: string) => {
-  const { sentimentData, isLoading: sentimentLoading } = useSentimentAnalysis({ creatorId });
+  const { data: sentimentData, isLoading: sentimentLoading } = useSentimentAnalysis({ creatorId });
   
   return useQuery({
     queryKey: ['creator-market-score', creatorId],

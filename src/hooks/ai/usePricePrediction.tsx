@@ -3,14 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { mockAIValuationAPI } from '@/utils/mockApi';
 import { AIModelType, PredictionTimeframe } from '@/utils/mockAIModels';
 
-export interface UsePricePredictionProps {
-  ipoId: string;
-  selectedTimeframe: PredictionTimeframe;
-  selectedModel: AIModelType;
-  externalMetricsLastUpdated?: string;
-  enabled?: boolean;
-}
-
 export interface PriceMovement {
   direction: 'up' | 'down' | 'neutral';
   percentage: number;
@@ -23,6 +15,14 @@ export interface PriceMovementResponse {
   modelUsed: AIModelType;
   targetPrice?: number;
   factors?: string[];
+}
+
+export interface UsePricePredictionProps {
+  ipoId: string;
+  selectedTimeframe: PredictionTimeframe;
+  selectedModel: AIModelType;
+  externalMetricsLastUpdated?: string;
+  enabled?: boolean;
 }
 
 export const usePricePrediction = ({ 

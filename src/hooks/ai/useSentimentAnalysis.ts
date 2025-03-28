@@ -1,5 +1,6 @@
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { mockAIValuationAPI } from '@/utils/mockApi';
 
 export interface CreatorSentimentData {
   overallSentiment: number;
@@ -9,55 +10,30 @@ export interface CreatorSentimentData {
   lastUpdated: string;
 }
 
-interface UseSentimentAnalysisProps {
+export interface UseSentimentAnalysisProps {
   creatorId?: string;
 }
 
-const useSentimentAnalysis = ({ creatorId }: UseSentimentAnalysisProps) => {
-  const [sentimentData, setSentimentData] = useState<CreatorSentimentData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    if (!creatorId) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    
-    // Simulate API call with setTimeout
-    const timer = setTimeout(() => {
-      try {
-        // Generate mock sentiment data
-        // In a real app, this would be an API call to a sentiment analysis service
-        const mockSentimentData: CreatorSentimentData = {
-          overallSentiment: Math.floor(65 + Math.random() * 25), // 65-90
-          positiveMentions: Math.floor(8000 + Math.random() * 10000),
-          negativeMentions: Math.floor(1000 + Math.random() * 5000),
-          keywords: [
-            'trending', 'viral', 'growth', 'partnership', 'collaboration',
-            'innovative', 'authentic', 'engaging'
-          ],
-          lastUpdated: new Date().toISOString()
-        };
-        
-        setSentimentData(mockSentimentData);
-        setIsLoading(false);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Unknown error occurred'));
-        setIsLoading(false);
+export const useSentimentAnalysis = ({ creatorId }: UseSentimentAnalysisProps) => {
+  return useQuery<CreatorSentimentData, Error>({
+    queryKey: ['sentiment-analysis', creatorId],
+    queryFn: async () => {
+      if (!creatorId) {
+        throw new Error('Creator ID is required');
       }
-    }, 800);
-    
-    return () => clearTimeout(timer);
-  }, [creatorId]);
 
-  return {
-    sentimentData,
-    isLoading,
-    error
-  };
+      try {
+        return await mockAIValuationAPI.getSentimentAnalysis(creatorId);
+      } catch (error) {
+        console.error('Error fetching sentiment analysis:', error);
+        throw error;
+      }
+    },
+    enabled: !!creatorId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchInterval: 1000 * 60 * 15, // 15 minutes
+  });
 };
 
+// Also export as default for backward compatibility
 export default useSentimentAnalysis;

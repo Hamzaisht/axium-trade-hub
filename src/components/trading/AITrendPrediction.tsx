@@ -1,102 +1,219 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Sparkles, TrendingUp, TrendingDown, BarChart4, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import { usePricePrediction, PriceMovementResponse } from '@/hooks/ai/usePricePrediction';
-import { TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import { PredictionTimeframe, AIModelType } from '@/utils/mockAIModels';
+import { AIModelType, PredictionTimeframe } from '@/utils/mockAIModels';
 
 interface AITrendPredictionProps {
   ipoId: string;
   className?: string;
 }
 
-export default function AITrendPrediction({ ipoId, className }: AITrendPredictionProps) {
-  // Set default values for prediction parameters
-  const predictionParams = {
+const AITrendPrediction = ({ ipoId, className }: AITrendPredictionProps) => {
+  const [selectedTimeframe, setSelectedTimeframe] = useState<PredictionTimeframe>('24h');
+  const [selectedModel, setSelectedModel] = useState<AIModelType>('balanced');
+  
+  const { 
+    data: predictionData,
+    isLoading,
+    error,
+    refetch
+  } = usePricePrediction({
     ipoId,
-    selectedTimeframe: '24h' as PredictionTimeframe,
-    selectedModel: 'axium-neural' as AIModelType,
-    enabled: true
+    selectedTimeframe,
+    selectedModel
+  });
+  
+  const getDirectionColor = (direction?: 'up' | 'down' | 'neutral') => {
+    if (direction === 'up') return "text-green-500";
+    if (direction === 'down') return "text-red-500";
+    return "text-blue-500";
   };
-
-  const { data, isLoading, error } = usePricePrediction(predictionParams);
   
-  if (isLoading) {
-    return (
-      <GlassCard className={`p-4 ${className || ''}`}>
-        <h3 className="text-lg font-semibold mb-2">AI Trend Prediction</h3>
-        <div className="animate-pulse">
-          <div className="h-4 bg-axium-gray-200 dark:bg-axium-gray-700 rounded mb-3 w-3/4"></div>
-          <div className="h-10 bg-axium-gray-200 dark:bg-axium-gray-700 rounded mb-3"></div>
-          <div className="h-4 bg-axium-gray-200 dark:bg-axium-gray-700 rounded w-1/2"></div>
-        </div>
-      </GlassCard>
-    );
-  }
+  const getDirectionIcon = (direction?: 'up' | 'down' | 'neutral') => {
+    if (direction === 'up') return <TrendingUp className="h-5 w-5 text-green-500" />;
+    if (direction === 'down') return <TrendingDown className="h-5 w-5 text-red-500" />;
+    return <BarChart4 className="h-5 w-5 text-blue-500" />;
+  };
   
-  if (error || !data) {
-    return (
-      <GlassCard className={`p-4 ${className || ''}`}>
-        <div className="flex items-center mb-2">
-          <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />
-          <h3 className="text-lg font-semibold">AI Prediction Unavailable</h3>
-        </div>
-        <p className="text-axium-gray-600 dark:text-axium-gray-400 text-sm">
-          Our AI model is currently recalibrating based on recent market events. Check back soon.
-        </p>
-      </GlassCard>
-    );
-  }
+  const getModelName = (modelType: AIModelType) => {
+    switch (modelType) {
+      case 'conservative': return 'Conservative';
+      case 'balanced': return 'Balanced';
+      case 'aggressive': return 'Aggressive';
+      case 'experimental': return 'Experimental';
+      default: return 'Balanced';
+    }
+  };
   
-  const predictionValuePercent = typeof data.prediction.percentage === 'number' 
-    ? data.prediction.percentage
-    : 0;
+  const handleTimeframeChange = (value: string) => {
+    setSelectedTimeframe(value as PredictionTimeframe);
+  };
   
-  const isPositive = data.prediction.direction === 'up';
-  const confidenceValue = data.confidence;
-  const timeframeText = predictionParams.selectedTimeframe;
-  const indicatorClassName = isPositive ? "bg-green-500" : "bg-red-500";
+  const handleModelChange = (value: string) => {
+    setSelectedModel(value as AIModelType);
+  };
   
   return (
-    <GlassCard className={`p-4 ${className || ''}`}>
-      <h3 className="text-lg font-semibold mb-2">AI Trend Prediction</h3>
-      
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
-            {timeframeText} Forecast
-          </span>
-          <span className="text-sm font-medium">
-            Confidence: {confidenceValue}%
-          </span>
-        </div>
-        <Progress value={confidenceValue} max={100} indicatorClassName={indicatorClassName} />
+    <GlassCard className={cn("p-4", className)}>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold flex items-center">
+          <Sparkles className="h-5 w-5 mr-2 text-purple-500" />
+          AI Trend Prediction
+        </h3>
+        <Badge variant="outline" className="bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 border-purple-500/30">
+          Beta
+        </Badge>
       </div>
       
-      <div className={`flex items-center justify-between p-3 rounded-lg ${
-        isPositive ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'
-      }`}>
-        <div className="flex items-center">
-          {isPositive ? (
-            <TrendingUp className="h-8 w-8 text-green-500 mr-3" />
+      <Tabs defaultValue="prediction" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="prediction">Prediction</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="prediction" className="space-y-4">
+          {isLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-8 w-3/4" />
+            </div>
+          ) : error ? (
+            <div className="p-4 bg-red-50 text-red-600 rounded-md">
+              <p>Error loading prediction: {error.message}</p>
+            </div>
+          ) : predictionData && predictionData.prediction ? (
+            <>
+              <div className="bg-axium-gray-100/50 dark:bg-axium-gray-800/30 p-4 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm text-axium-gray-500 mb-1">Predicted Movement ({selectedTimeframe})</div>
+                    <div className="text-2xl font-bold flex items-center">
+                      {getDirectionIcon(predictionData.prediction.direction)}
+                      <span className={cn("ml-2", getDirectionColor(predictionData.prediction.direction))}>
+                        {predictionData.prediction.direction === 'up' ? '+' : predictionData.prediction.direction === 'down' ? '-' : ''}
+                        {predictionData.prediction.percentage.toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-axium-gray-500 mb-1">Confidence</div>
+                    <div className="text-2xl font-bold">{predictionData.confidence}%</div>
+                  </div>
+                </div>
+                
+                {predictionData.targetPrice && (
+                  <div className="mt-3 pt-3 border-t border-axium-gray-200 dark:border-axium-gray-700">
+                    <div className="text-sm text-axium-gray-500 mb-1">Predicted Target Price</div>
+                    <div className="text-xl font-semibold">${predictionData.targetPrice.toFixed(2)}</div>
+                  </div>
+                )}
+              </div>
+              
+              <div>
+                <div className="text-sm text-axium-gray-500 mb-2">Key Factors</div>
+                <div className="space-y-2">
+                  {predictionData.factors?.map((factor, index) => (
+                    <div key={index} className="text-sm flex items-start">
+                      <Zap className="h-4 w-4 text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
+                      <span>{factor}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="text-xs text-axium-gray-500 mt-2">
+                Model: {getModelName(predictionData.modelUsed)} • Last Updated: {new Date(predictionData.timestamp).toLocaleString()}
+              </div>
+            </>
           ) : (
-            <TrendingDown className="h-8 w-8 text-red-500 mr-3" />
+            <div className="p-4 bg-amber-50 text-amber-600 rounded-md">
+              <p>No prediction data available</p>
+            </div>
           )}
-          <div>
-            <div className={`text-xl font-bold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {isPositive ? '+' : ''}{predictionValuePercent.toFixed(2)}%
+        </TabsContent>
+        
+        <TabsContent value="settings">
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Timeframe</label>
+              <div className="flex flex-wrap gap-2">
+                <Button 
+                  variant={selectedTimeframe === '24h' ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => handleTimeframeChange('24h')}
+                >
+                  24h
+                </Button>
+                <Button 
+                  variant={selectedTimeframe === '7d' ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => handleTimeframeChange('7d')}
+                >
+                  7 Days
+                </Button>
+                <Button 
+                  variant={selectedTimeframe === '30d' ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => handleTimeframeChange('30d')}
+                >
+                  30 Days
+                </Button>
+              </div>
             </div>
-            <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
-              Expected movement
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">Model Type</label>
+              <div className="flex flex-wrap gap-2">
+                <Button 
+                  variant={selectedModel === 'conservative' ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => handleModelChange('conservative')}
+                >
+                  Conservative
+                </Button>
+                <Button 
+                  variant={selectedModel === 'balanced' ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => handleModelChange('balanced')}
+                >
+                  Balanced
+                </Button>
+                <Button 
+                  variant={selectedModel === 'aggressive' ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => handleModelChange('aggressive')}
+                >
+                  Aggressive
+                </Button>
+                <Button 
+                  variant={selectedModel === 'experimental' ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => handleModelChange('experimental')}
+                >
+                  Experimental
+                </Button>
+              </div>
             </div>
+            
+            <Button 
+              className="w-full mt-2" 
+              onClick={() => refetch()}
+            >
+              Update Prediction
+            </Button>
           </div>
-        </div>
-      </div>
-      
-      <p className="text-xs text-axium-gray-500 mt-3">
-        Based on historical data, sentiment analysis, and market conditions
-      </p>
+        </TabsContent>
+      </Tabs>
     </GlassCard>
   );
-}
+};
+
+export default AITrendPrediction;

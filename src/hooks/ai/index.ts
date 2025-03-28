@@ -7,6 +7,6 @@ export { useDividendInfo } from './useDividendInfo';
 export { useLiquidationRules } from './useLiquidationRules';
 export { useMarketDepth } from './useMarketDepth';
 export { usePricePrediction } from './usePricePrediction';
-export { default as useSentimentAnalysis } from './useSentimentAnalysis';
+export { useSentimentAnalysis } from './useSentimentAnalysis';
 export { useSocialSentiment } from './useSocialSentiment';
 export { useVestingRules } from './useVestingRules';
