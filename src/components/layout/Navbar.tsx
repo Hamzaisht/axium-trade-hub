@@ -150,12 +150,10 @@ export function Navbar() {
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link to="/dashboard" legacyBehavior passHref>
-                  <NavigationMenuLink
-                    className={cn(navigationMenuTriggerStyle(), 'bg-transparent', 
-                      !isScrolled && isHomePage ? 'text-white hover:text-white/80' : ''
-                    )}
-                  >
+                <Link to="/dashboard">
+                  <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), 'bg-transparent', 
+                    !isScrolled && isHomePage ? 'text-white hover:text-white/80' : ''
+                  )}>
                     Dashboard
                   </NavigationMenuLink>
                 </Link>
@@ -245,7 +243,7 @@ export function Navbar() {
                     )}
                   >
                     <User className="h-5 w-5 mr-1" />
-                    <span className="hidden sm:inline">{user?.displayName || user?.username}</span>
+                    <span className="hidden sm:inline">{user?.name || user?.email}</span>
                     <ChevronDown className="h-4 w-4 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>

@@ -1,238 +1,194 @@
 
-/**
- * Mock WebSocket Service
- * Simulates real-time data streaming for market prices, order execution, etc.
- */
+// Mock WebSocket implementation
+import { faker } from '@faker-js/faker';
+import { IPO, Trade, Order } from './mockApi';
+import { mockIPOs } from './data';
 
-import { IPO, Order, Trade, mockIPOs, mockOrders, mockTrades } from "./mockApi";
+// Mock orders and trades for the mock WebSocket
+const mockOrders: Order[] = [];
+const mockTrades: Trade[] = [];
 
-// Create a custom event emitter class without relying on Node.js EventEmitter
-class CustomEventEmitter {
-  private events: Record<string, Function[]> = {};
-
-  on(event: string, listener: Function): this {
-    if (!this.events[event]) {
-      this.events[event] = [];
-    }
-    this.events[event].push(listener);
-    return this;
-  }
-
-  off(event: string, listener: Function): this {
-    if (!this.events[event]) return this;
-    this.events[event] = this.events[event].filter(l => l !== listener);
-    return this;
-  }
-
-  emit(event: string, ...args: any[]): boolean {
-    if (!this.events[event]) return false;
-    this.events[event].forEach(listener => listener(...args));
-    return true;
-  }
-
-  setMaxListeners(n: number): this {
-    // This is just a stub for compatibility
-    return this;
-  }
+// WebSocket events
+export enum WSEvents {
+  CONNECTION = 'connection',
+  PRICE_UPDATE = 'price-update',
+  ORDERBOOK_UPDATE = 'orderbook-update',
+  TRADE_EXECUTED = 'trade-executed'
 }
 
-// Create a global event emitter to simulate WebSocket events
-class WebSocketEmulator extends CustomEventEmitter {
-  private static instance: WebSocketEmulator;
-  private connected: boolean = false;
-  private reconnectInterval: number = 3000;
-  private reconnectAttempts: number = 0;
-  private maxReconnectAttempts: number = 5;
-  private intervalIds: number[] = [];
+// Mock WebSocket class
+class MockWebSocket {
+  private isConnected = false;
+  private listeners: Record<string, Function[]> = {};
+  private intervals: Record<string, NodeJS.Timeout> = {};
   
-  private constructor() {
-    super();
-    // Set max listeners to avoid memory leak warnings
-    this.setMaxListeners(50);
+  // Connect to the mock WebSocket
+  connect() {
+    if (this.isConnected) return;
+    
+    this.isConnected = true;
+    this.emit(WSEvents.CONNECTION, { status: 'connected' });
+    
+    // Start regular price updates
+    this.startPriceUpdates();
+    
+    // Start regular order book updates
+    this.startOrderBookUpdates();
+    
+    // Start random trade executions
+    this.startTradeExecutions();
+    
+    console.log('WebSocket connected');
   }
   
-  public static getInstance(): WebSocketEmulator {
-    if (!WebSocketEmulator.instance) {
-      WebSocketEmulator.instance = new WebSocketEmulator();
+  // Disconnect from the mock WebSocket
+  disconnect() {
+    if (!this.isConnected) return;
+    
+    this.isConnected = false;
+    this.emit(WSEvents.CONNECTION, { status: 'disconnected' });
+    
+    // Clear all intervals
+    Object.values(this.intervals).forEach(interval => clearInterval(interval));
+    this.intervals = {};
+    
+    console.log('WebSocket disconnected');
+  }
+  
+  // Register an event listener
+  on(event: string, callback: Function) {
+    if (!this.listeners[event]) {
+      this.listeners[event] = [];
     }
-    return WebSocketEmulator.instance;
+    this.listeners[event].push(callback);
   }
   
-  public connect(): void {
-    if (this.connected) return;
-    
-    console.log("WebSocket: Connecting...");
-    
-    // Simulate connection delay
-    setTimeout(() => {
-      this.connected = true;
-      this.reconnectAttempts = 0;
-      this.emit("connection", { status: "connected" });
-      console.log("WebSocket: Connected successfully");
+  // Remove an event listener
+  off(event: string, callback: Function) {
+    if (!this.listeners[event]) return;
+    this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+  }
+  
+  // Emit an event
+  private emit(event: string, data: any) {
+    if (!this.listeners[event]) return;
+    this.listeners[event].forEach(callback => callback(data));
+  }
+  
+  // Start price update interval
+  private startPriceUpdates() {
+    this.intervals.prices = setInterval(() => {
+      if (!this.isConnected) return;
       
-      // Start price update simulations for all IPOs
-      this.startPriceSimulation();
-    }, 1000);
-  }
-  
-  public disconnect(): void {
-    if (!this.connected) return;
-    
-    console.log("WebSocket: Disconnecting...");
-    
-    // Clear all interval timers
-    this.intervalIds.forEach(id => window.clearInterval(id));
-    this.intervalIds = [];
-    
-    this.connected = false;
-    this.emit("connection", { status: "disconnected" });
-    console.log("WebSocket: Disconnected");
-  }
-  
-  public reconnect(): void {
-    if (this.connected || this.reconnectAttempts >= this.maxReconnectAttempts) return;
-    
-    this.reconnectAttempts++;
-    console.log(`WebSocket: Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
-    
-    setTimeout(() => {
-      this.connect();
-    }, this.reconnectInterval);
-  }
-  
-  private startPriceSimulation(): void {
-    // Simulate price updates every 5 seconds
-    const priceUpdateId = window.setInterval(() => {
-      if (!this.connected) return;
+      // Randomly select an IPO to update
+      const ipo = mockIPOs[Math.floor(Math.random() * mockIPOs.length)];
       
-      mockIPOs.forEach(ipo => {
-        // Apply random price change based on volatility factor
-        const volatilityFactor = this.getVolatilityFactor(ipo);
-        const priceChange = this.calculatePriceChange(ipo.currentPrice, volatilityFactor);
-        
-        const oldPrice = ipo.currentPrice;
-        ipo.currentPrice = parseFloat((ipo.currentPrice + priceChange).toFixed(2));
-        
-        // Ensure price doesn't go below 0.01
-        if (ipo.currentPrice < 0.01) {
-          ipo.currentPrice = 0.01;
-        }
-        
-        // Emit price update event
-        this.emit("price_update", {
-          ipoId: ipo.id,
-          symbol: ipo.symbol,
-          oldPrice,
-          newPrice: ipo.currentPrice,
-          timestamp: new Date().toISOString()
-        });
+      // Generate a small price change
+      const changePercent = faker.number.float({ min: -1, max: 1, fractionDigits: 2 });
+      const oldPrice = ipo.currentPrice;
+      const newPrice = parseFloat((oldPrice * (1 + changePercent / 100)).toFixed(2));
+      
+      // Update the IPO price in our mock data
+      ipo.currentPrice = newPrice;
+      
+      // Emit the price update event
+      this.emit(WSEvents.PRICE_UPDATE, {
+        ipoId: ipo.id,
+        symbol: ipo.symbol,
+        oldPrice,
+        newPrice,
+        timestamp: new Date().toISOString()
       });
-    }, 5000);
-    
-    this.intervalIds.push(priceUpdateId);
-    
-    // Simulate order book updates every 3 seconds
-    const orderBookUpdateId = window.setInterval(() => {
-      if (!this.connected) return;
+    }, faker.number.int({ min: 2000, max: 5000 })); // Every 2-5 seconds
+  }
+  
+  // Start order book update interval
+  private startOrderBookUpdates() {
+    this.intervals.orderBook = setInterval(() => {
+      if (!this.isConnected) return;
       
-      mockIPOs.forEach(ipo => {
-        const openOrders = mockOrders.filter(o => o.ipoId === ipo.id && o.status === 'open');
-        
-        const bids = openOrders.filter(o => o.type === 'buy').sort((a, b) => b.price - a.price);
-        const asks = openOrders.filter(o => o.type === 'sell').sort((a, b) => a.price - b.price);
-        
-        this.emit("orderbook_update", {
+      // Randomly select an IPO to update
+      const ipo = mockIPOs[Math.floor(Math.random() * mockIPOs.length)];
+      
+      // Generate mock bids and asks
+      const bidsCount = faker.number.int({ min: 3, max: 10 });
+      const asksCount = faker.number.int({ min: 3, max: 10 });
+      
+      const bids = Array.from({ length: bidsCount }, (_, i) => {
+        const priceDecrement = i * faker.number.float({ min: 0.1, max: 0.5 });
+        return {
+          id: faker.string.uuid(),
           ipoId: ipo.id,
-          symbol: ipo.symbol,
-          bids,
-          asks,
-          timestamp: new Date().toISOString()
-        });
+          userId: faker.string.uuid(),
+          type: 'buy',
+          orderType: 'limit',
+          price: ipo.currentPrice - priceDecrement,
+          quantity: faker.number.int({ min: 10, max: 1000 }),
+          status: 'open',
+          timestamp: new Date().toISOString(),
+          createdAt: new Date().toISOString()
+        } as Order;
+      }).sort((a, b) => b.price - a.price); // Sort by price descending
+      
+      const asks = Array.from({ length: asksCount }, (_, i) => {
+        const priceIncrement = i * faker.number.float({ min: 0.1, max: 0.5 });
+        return {
+          id: faker.string.uuid(),
+          ipoId: ipo.id,
+          userId: faker.string.uuid(),
+          type: 'sell',
+          orderType: 'limit',
+          price: ipo.currentPrice + priceIncrement,
+          quantity: faker.number.int({ min: 10, max: 1000 }),
+          status: 'open',
+          timestamp: new Date().toISOString(),
+          createdAt: new Date().toISOString()
+        } as Order;
+      }).sort((a, b) => a.price - b.price); // Sort by price ascending
+      
+      // Emit the order book update event
+      this.emit(WSEvents.ORDERBOOK_UPDATE, {
+        ipoId: ipo.id,
+        symbol: ipo.symbol,
+        bids,
+        asks,
+        timestamp: new Date().toISOString()
       });
-    }, 3000);
-    
-    this.intervalIds.push(orderBookUpdateId);
-    
-    // Simulate random trade executions every 8 seconds
-    const tradeExecutionId = window.setInterval(() => {
-      if (!this.connected) return;
+    }, faker.number.int({ min: 5000, max: 10000 })); // Every 5-10 seconds
+  }
+  
+  // Start trade execution interval
+  private startTradeExecutions() {
+    this.intervals.trades = setInterval(() => {
+      if (!this.isConnected) return;
       
-      // Randomly select an IPO to simulate a trade for
-      const randomIndex = Math.floor(Math.random() * mockIPOs.length);
-      const ipo = mockIPOs[randomIndex];
+      // Randomly decide if a trade should happen
+      if (faker.number.int({ min: 1, max: 5 }) > 2) return; // 60% chance of no trade
       
-      // Create a simulated trade
-      const simulatedTrade = {
-        id: `sim-trade-${Date.now()}`,
-        buyerId: `sim-buyer-${Math.floor(Math.random() * 1000)}`,
-        sellerId: `sim-seller-${Math.floor(Math.random() * 1000)}`,
+      // Randomly select an IPO for the trade
+      const ipo = mockIPOs[Math.floor(Math.random() * mockIPOs.length)];
+      
+      // Generate a random trade
+      const tradePrice = ipo.currentPrice * (1 + faker.number.float({ min: -0.5, max: 0.5, fractionDigits: 2 }) / 100);
+      const tradeQuantity = faker.number.int({ min: 10, max: 500 });
+      const tradeSide = faker.helpers.arrayElement(['buy', 'sell']);
+      
+      const trade = {
+        id: faker.string.uuid(),
+        buyerId: faker.string.uuid(),
+        sellerId: faker.string.uuid(),
         ipoId: ipo.id,
         creatorSymbol: ipo.symbol,
-        price: parseFloat((ipo.currentPrice * (0.95 + Math.random() * 0.1)).toFixed(2)),
-        quantity: Math.floor(Math.random() * 10) + 1,
-        timestamp: new Date().toISOString()
+        price: tradePrice,
+        quantity: tradeQuantity,
+        timestamp: new Date().toISOString(),
+        side: tradeSide as 'buy' | 'sell'
       };
       
-      // Add trade to mock data
-      mockTrades.push(simulatedTrade);
-      
-      // Emit trade execution event
-      this.emit("trade_executed", simulatedTrade);
-    }, 8000);
-    
-    this.intervalIds.push(tradeExecutionId);
-  }
-  
-  private getVolatilityFactor(ipo: IPO): number {
-    // Calculate volatility based on engagement score and AI score
-    // Higher scores generally mean less volatility, but with randomness
-    const baseVolatility = 0.05; // 5% base volatility
-    const engagementImpact = (100 - ipo.engagementScore) / 1000; // Lower engagement = higher volatility
-    const aiScoreImpact = (100 - ipo.aiScore) / 800; // Lower AI score = higher volatility
-    
-    return baseVolatility + engagementImpact + aiScoreImpact;
-  }
-  
-  private calculatePriceChange(currentPrice: number, volatilityFactor: number): number {
-    // Random walk model with mean reversion tendency
-    const randomFactor = (Math.random() * 2 - 1); // Random value between -1 and 1
-    const maxChange = currentPrice * volatilityFactor;
-    return randomFactor * maxChange;
-  }
-  
-  // For debugging - get current connection status
-  public isConnected(): boolean {
-    return this.connected;
+      // Emit the trade execution event
+      this.emit(WSEvents.TRADE_EXECUTED, trade);
+    }, faker.number.int({ min: 3000, max: 8000 })); // Every 3-8 seconds
   }
 }
 
-// Export singleton instance
-export const mockWebSocket = WebSocketEmulator.getInstance();
-
-// Common event names for consumers to use
-export const WSEvents = {
-  CONNECTION: "connection",
-  PRICE_UPDATE: "price_update",
-  ORDERBOOK_UPDATE: "orderbook_update",
-  TRADE_EXECUTED: "trade_executed",
-  ORDER_UPDATED: "order_updated",
-  PORTFOLIO_UPDATED: "portfolio_updated"
-};
-
-// Hook to use the mock WebSocket
-export const useWebSocketMock = () => {
-  const connect = () => mockWebSocket.connect();
-  const disconnect = () => mockWebSocket.disconnect();
-  const subscribe = (event: string, callback: (...args: any[]) => void) => {
-    mockWebSocket.on(event, callback);
-    return () => mockWebSocket.off(event, callback);
-  };
-  
-  return {
-    connect,
-    disconnect,
-    subscribe,
-    isConnected: () => mockWebSocket.isConnected(),
-    events: WSEvents
-  };
-};
+export const mockWebSocket = new MockWebSocket();

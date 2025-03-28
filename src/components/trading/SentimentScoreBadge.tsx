@@ -30,8 +30,10 @@ const SentimentScoreBadge = ({
   useEffect(() => {
     if (sentimentData) {
       setScore(sentimentData.summary.overallScore);
-      setDirection(sentimentData.summary.direction);
-      setChange(sentimentData.summary.overallChange);
+      // Calculate direction based on change
+      setDirection(sentimentData.summary.change > 0 ? 'positive' : 
+                  sentimentData.summary.change < 0 ? 'negative' : 'neutral');
+      setChange(sentimentData.summary.change);
     }
   }, [sentimentData]);
   
