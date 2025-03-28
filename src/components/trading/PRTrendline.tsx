@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { usePREngine } from '@/hooks/ai/usePREngine';
 import { 
@@ -13,7 +12,7 @@ import {
   Scatter,
   ReferenceArea
 } from 'recharts';
-import { Milestone, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
+import { Milestone, TrendingUp, TrendingDown, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
