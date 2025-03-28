@@ -22,7 +22,6 @@ import CreatorDashboard from './pages/CreatorDashboard.tsx';
 import LaunchIPO from './pages/LaunchIPO.tsx';
 import SettingsPage from './pages/Settings.tsx';
 import './index.css';
-import { AuthProvider } from './contexts/AuthContext';
 
 // Create the router configuration
 const router = createBrowserRouter([
@@ -87,11 +86,9 @@ const router = createBrowserRouter([
   },
 ]);
 
-// Render the application, wrapping the router in AuthProvider
+// Render the application, moving the AuthProvider inside App so it has access to RouterProvider
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <RouterProvider router={router} />
   </React.StrictMode>,
 );
