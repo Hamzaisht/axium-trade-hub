@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { mockPortfolioAPI } from '@/utils/mockApi';
 import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';

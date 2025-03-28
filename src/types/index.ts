@@ -54,7 +54,6 @@ export interface MarketDepthModel {
   volatilityRisk: number;
   buyPressure: number;
   sellPressure: number;
-  // Include any other properties from the original interface
   bidAskSpread?: number;
   depth?: {
     bids: { price: number; quantity: number }[];
@@ -65,4 +64,29 @@ export interface MarketDepthModel {
     quantity: number;
     timestamp: string;
   }[];
+}
+
+// SocialSentimentData interface 
+export interface SocialSentimentData {
+  overall: number;
+  overallSentiment?: number;
+  positiveMentions: number;
+  negativeMentions: number;
+  keywords: string[];
+  sources: Array<{
+    name: string;
+    sentiment: number;
+    volume: number;
+  }>;
+  trend: Array<{
+    date: string;
+    sentiment: number;
+  }>;
+  trust: number;
+  metrics: {
+    [key: string]: {
+      score: number;
+      volume: number;
+    };
+  };
 }

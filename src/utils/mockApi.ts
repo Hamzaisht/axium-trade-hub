@@ -1,4 +1,3 @@
-
 /**
  * Mock API
  * Simulates API endpoints for fetching creator data, IPOs, and AI valuations.
@@ -462,6 +461,7 @@ class AIValuationAPI {
     const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
 
+    // Fix line 442 - ensure we're using a number instead of a string
     return getSocialSentimentUtil(ipo);
   }
 

@@ -29,7 +29,7 @@ import { AnomalyDetectionCard } from '@/components/trading/AnomalyDetectionCard'
 import { MarketDepthChart } from '@/components/trading/MarketDepthChart';
 import { SentimentScoreBadge } from '@/components/trading/SentimentScoreBadge';
 import { cn } from '@/lib/utils';
-import { MarketDepthModel } from '@/types';
+import { MarketDepthModel, SocialSentimentData } from '@/types';
 
 interface SentimentBoxProps {
   platform: string;
@@ -81,7 +81,7 @@ const AIInsights = () => {
   const marketDepthValue = (metricName: string) => {
     if (!aiEngine.valuation || !aiEngine.dataSources.marketDepthData) return 0;
 
-    const marketDepthData = aiEngine.dataSources.marketDepthData as MarketDepthModel;
+    const marketDepthData = aiEngine.dataSources.marketDepthData as unknown as MarketDepthModel;
 
     switch (metricName) {
       case 'orderBookDepth':

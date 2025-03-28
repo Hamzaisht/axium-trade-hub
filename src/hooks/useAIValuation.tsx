@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSentimentAnalysis } from "./ai/useSentimentAnalysis";
 import { useMarketDepth } from "./ai/useMarketDepth";
@@ -13,6 +14,7 @@ export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
   const [valuation, setValuation] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  
   const sentimentAnalysis = useSentimentAnalysis({ creatorId: ipoId });
   const sentimentData = sentimentAnalysis.data;
   const sentimentLoading = sentimentAnalysis.isLoading;
