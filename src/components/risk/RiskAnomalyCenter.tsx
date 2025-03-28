@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useMarketAnomalies, getSeverityInfo, getSuggestedAction } from '@/hooks/ai/useAnomalyDetection';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -21,7 +20,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
-// Component to display anomaly type icon
 const AnomalyTypeIcon = ({ type }: { type: AnomalyType }) => {
   switch (type) {
     case AnomalyType.WASH_TRADING:
@@ -38,7 +36,6 @@ const AnomalyTypeIcon = ({ type }: { type: AnomalyType }) => {
   }
 };
 
-// Component to display severity level
 const SeverityBadge = ({ severity }: { severity: number }) => {
   const { text, color } = getSeverityInfo(severity);
   
@@ -62,7 +59,6 @@ const SeverityBadge = ({ severity }: { severity: number }) => {
   );
 };
 
-// Component for action buttons
 const ActionButton = ({ action }: { action: string }) => {
   let Icon = Eye;
   let variant: 'default' | 'outline' | 'destructive' = 'outline';
@@ -85,20 +81,17 @@ const ActionButton = ({ action }: { action: string }) => {
   );
 };
 
-// Main component for the Risk & Anomaly Center
 const RiskAnomalyCenter = () => {
   const [ipoIds, setIpoIds] = useState<string[]>([]);
   const [ipoMap, setIpoMap] = useState<Record<string, any>>({});
   const [selectedTab, setSelectedTab] = useState<string>('all');
   
-  // Fetch all IPOs to get their IDs
   useEffect(() => {
     const fetchIPOs = async () => {
       try {
-        const ipos = await mockIPOAPI.getAllIPOs();
+        const ipos = await mockIPOAPI.getIPOs();
         setIpoIds(ipos.map(ipo => ipo.id));
         
-        // Create a map of IPO ID to IPO data for easy lookup
         const map: Record<string, any> = {};
         ipos.forEach(ipo => {
           map[ipo.id] = ipo;
@@ -112,16 +105,13 @@ const RiskAnomalyCenter = () => {
     fetchIPOs();
   }, []);
   
-  // Fetch anomalies across all IPOs
   const { data: marketAnomalies, isLoading, refetch } = useMarketAnomalies(ipoIds);
   
-  // Get total anomaly count
   const totalAnomalies = marketAnomalies?.reduce(
     (count, item) => count + (item.anomalies?.length || 0), 
     0
   ) || 0;
   
-  // Get high severity anomaly count (severity >= 7)
   const highSeverityCount = marketAnomalies?.reduce(
     (count, item) => count + (
       item.anomalies?.filter((a: any) => a.severity >= 7).length || 0
@@ -129,7 +119,6 @@ const RiskAnomalyCenter = () => {
     0
   ) || 0;
   
-  // Filter anomalies based on selected tab
   const filteredAnomalies = marketAnomalies?.flatMap((item: any) => {
     if (!item.detected || !item.anomalies) return [];
     
@@ -154,7 +143,6 @@ const RiskAnomalyCenter = () => {
     return false;
   });
   
-  // Format anomaly type for display
   const formatAnomalyType = (type: AnomalyType): string => {
     switch (type) {
       case AnomalyType.WASH_TRADING:

@@ -7,7 +7,22 @@ export enum AIModelType {
   TECHNICAL = 'technical',
   FUNDAMENTAL = 'fundamental',
   SOCIAL = 'social',
-  HYBRID = 'hybrid'
+  HYBRID = 'hybrid',
+  STANDARD = 'standard',
+  ENGAGEMENT = 'engagement',
+  SENTIMENT = 'sentiment',
+  REVENUE_WEIGHTED = 'revenue_weighted',
+  SOCIAL_WEIGHTED = 'social_weighted'
+}
+
+// Define anomaly types for detection
+export enum AnomalyType {
+  WASH_TRADING = 'wash_trading',
+  PUMP_AND_DUMP = 'pump_and_dump',
+  UNUSUAL_VOLUME = 'unusual_volume',
+  RAPID_PRICE_CHANGE = 'rapid_price_change',
+  CIRCULAR_TRADING = 'circular_trading',
+  SPOOFING = 'spoofing'
 }
 
 // Define prediction timeframes
@@ -140,7 +155,9 @@ export const predictPriceMovement = (
     confidence,
     modelType,
     factors,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    prediction: uptrend ? 'bullish' : 'bearish',
+    targetPrice: predictedPrice
   };
 };
 
@@ -191,6 +208,26 @@ export const calculateMarketDepth = (ipo: IPO) => {
   
   const strongestResistance = asks.reduce((max, ask) => 
     ask.quantity > max.quantity ? ask : max, asks[0]);
+    
+  // Generate support and resistance levels
+  const supportLevels = [
+    strongestSupport.price,
+    strongestSupport.price * 0.95,
+    strongestSupport.price * 0.90
+  ];
+  
+  const resistanceLevels = [
+    strongestResistance.price,
+    strongestResistance.price * 1.05,
+    strongestResistance.price * 1.10
+  ];
+  
+  // Calculate buy and sell wall strengths (0-100)
+  const buyWallStrength = faker.number.int({ min: 20, max: 85 });
+  const sellWallStrength = faker.number.int({ min: 20, max: 85 });
+  
+  // Calculate current spread for display
+  const currentSpread = spread;
   
   return {
     bids,
@@ -208,6 +245,11 @@ export const calculateMarketDepth = (ipo: IPO) => {
       strongestSupport: strongestSupport.price,
       strongestResistance: strongestResistance.price
     },
+    supportLevels,
+    resistanceLevels,
+    buyWallStrength,
+    sellWallStrength,
+    currentSpread,
     timestamp: new Date().toISOString()
   };
 };
@@ -228,33 +270,48 @@ export const detectAnomalies = (ipo: IPO, recentTrades = []) => {
   
   // Generate random anomalies
   const anomalyCount = faker.number.int({ min: 1, max: 3 });
+  
+  // Convert string anomaly types to enum values for better typing
   const anomalyTypes = [
-    'Large sell order',
-    'Unusual trading volume',
-    'Price manipulation pattern',
-    'Wash trading activity',
-    'Abnormal buy wall',
-    'Order book imbalance'
+    AnomalyType.WASH_TRADING,
+    AnomalyType.UNUSUAL_VOLUME,
+    AnomalyType.PUMP_AND_DUMP,
+    AnomalyType.RAPID_PRICE_CHANGE,
+    AnomalyType.CIRCULAR_TRADING,
+    AnomalyType.SPOOFING
   ];
+  
+  // Generate severity levels
+  const severityLevels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // 1-10 scale
   
   const anomalies = Array.from({ length: anomalyCount }, () => {
     const anomalyType = faker.helpers.arrayElement(anomalyTypes);
-    const severity = faker.helpers.arrayElement(['Low', 'Medium', 'High']);
+    const severity = faker.helpers.arrayElement(severityLevels);
+    
+    // Generate affected metrics for this anomaly
+    const affectedMetrics = [];
+    if (anomalyType === AnomalyType.UNUSUAL_VOLUME || anomalyType === AnomalyType.PUMP_AND_DUMP) {
+      affectedMetrics.push('trading_volume', 'price_volatility');
+    } else if (anomalyType === AnomalyType.WASH_TRADING || anomalyType === AnomalyType.CIRCULAR_TRADING) {
+      affectedMetrics.push('order_patterns', 'account_activity');
+    } else {
+      affectedMetrics.push('price_movement', 'market_depth');
+    }
     
     return {
       type: anomalyType,
       severity,
       confidence: faker.number.int({ min: 60, max: 95 }),
-      description: `Detected ${anomalyType.toLowerCase()} with ${severity.toLowerCase()} severity`,
-      timestamp: faker.date.recent({ days: 1 }).toISOString()
+      description: `Detected ${anomalyType.replace('_', ' ')} with severity ${severity}/10`,
+      timestamp: faker.date.recent({ days: 1 }).toISOString(),
+      affectedMetrics
     };
   });
   
   // Calculate risk score based on anomalies
-  const severityWeights = { Low: 10, Medium: 25, High: 40 };
   const baseRiskScore = faker.number.int({ min: 30, max: 50 });
   const anomalyRiskContribution = anomalies.reduce((total, anomaly) => {
-    return total + severityWeights[anomaly.severity];
+    return total + anomaly.severity * 4; // Scale severity to risk contribution
   }, 0);
   
   const riskScore = Math.min(95, baseRiskScore + anomalyRiskContribution);
