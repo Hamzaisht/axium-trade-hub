@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useIPO } from '@/contexts/IPOContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -8,14 +8,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreatorCard } from '@/components/creators/CreatorCard';
 import { Search, TrendingUp, BarChart3, Users } from 'lucide-react';
-import { IPO } from '@/utils/mockApi';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 
 const Creators = () => {
-  const { ipos, isLoading } = useIPO();
+  const { ipos, isLoading, fetchAllIPOs } = useIPO();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('popularity');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  
+  // Fetch creators data on component mount
+  useEffect(() => {
+    fetchAllIPOs();
+  }, [fetchAllIPOs]);
 
   // Mock categories for filtering
   const categories = [
@@ -77,6 +82,11 @@ const Creators = () => {
   const highestAIScore = [...ipos]
     .sort((a, b) => b.aiScore - a.aiScore)
     .slice(0, 6);
+    
+  // For debugging
+  console.log("IPOs data:", ipos);
+  console.log("Filtered creators:", filteredCreators);
+  console.log("Loading state:", isLoading);
 
   return (
     <div className="min-h-screen bg-axium-gray-100/30">
@@ -176,8 +186,16 @@ const Creators = () => {
                   <p className="text-axium-gray-600">Loading creators...</p>
                 </div>
               ) : sortedCreators.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-axium-gray-600">No creators match your search criteria.</p>
+                <div className="text-center py-12 space-y-6">
+                  <p className="text-axium-gray-600">No creators found with your search criteria.</p>
+                  {ipos.length === 0 && (
+                    <div>
+                      <p className="text-axium-gray-600 mb-4">No creator data available. Try refreshing the page.</p>
+                      <Button onClick={() => fetchAllIPOs()} className="bg-axium-blue hover:bg-axium-blue/90">
+                        Refresh Creators
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -192,7 +210,14 @@ const Creators = () => {
               {isLoading ? (
                 <div className="text-center py-12">
                   <div className="animate-spin h-10 w-10 border-4 border-axium-blue border-t-transparent rounded-full mx-auto mb-4"></div>
-                  <p className="text-axium-gray-600">Loading creators...</p>
+                  <p className="text-axium-gray-600">Loading trending creators...</p>
+                </div>
+              ) : trendingCreators.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-axium-gray-600">No trending creators available.</p>
+                  <Button onClick={() => fetchAllIPOs()} className="mt-4 bg-axium-blue hover:bg-axium-blue/90">
+                    Refresh Data
+                  </Button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -207,7 +232,14 @@ const Creators = () => {
               {isLoading ? (
                 <div className="text-center py-12">
                   <div className="animate-spin h-10 w-10 border-4 border-axium-blue border-t-transparent rounded-full mx-auto mb-4"></div>
-                  <p className="text-axium-gray-600">Loading creators...</p>
+                  <p className="text-axium-gray-600">Loading creators by engagement...</p>
+                </div>
+              ) : highestEngagement.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-axium-gray-600">No creator engagement data available.</p>
+                  <Button onClick={() => fetchAllIPOs()} className="mt-4 bg-axium-blue hover:bg-axium-blue/90">
+                    Refresh Data
+                  </Button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -222,7 +254,14 @@ const Creators = () => {
               {isLoading ? (
                 <div className="text-center py-12">
                   <div className="animate-spin h-10 w-10 border-4 border-axium-blue border-t-transparent rounded-full mx-auto mb-4"></div>
-                  <p className="text-axium-gray-600">Loading creators...</p>
+                  <p className="text-axium-gray-600">Loading creators by AI score...</p>
+                </div>
+              ) : highestAIScore.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-axium-gray-600">No AI score data available.</p>
+                  <Button onClick={() => fetchAllIPOs()} className="mt-4 bg-axium-blue hover:bg-axium-blue/90">
+                    Refresh Data
+                  </Button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
