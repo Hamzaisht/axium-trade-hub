@@ -582,8 +582,8 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
               <>
                 <div>Buy Wall Strength: {marketDepth.buyWallStrength}</div>
                 <div>Sell Wall Strength: {marketDepth.sellWallStrength}</div>
-                <div>Current Spread: {marketDepth && marketDepth.currentSpread ? 
-                  `${marketDepth.currentSpread?.bid ?? 0} - ${marketDepth.currentSpread?.ask ?? 0}` : 'N/A'}</div>
+                <div>Current Spread: {marketDepth && marketDepth.currentSpread && typeof marketDepth.currentSpread === 'object' ? 
+                  `${marketDepth.currentSpread.bid || 0} - ${marketDepth.currentSpread.ask || 0}` : 'N/A'}</div>
               </>
             )}
           </GlassCard>
