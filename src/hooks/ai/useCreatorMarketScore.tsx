@@ -1,129 +1,128 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { mockAIValuationAPI } from '@/utils/mockApi';
-import { useExternalData } from '@/hooks/useExternalData';
 import { useSocialSentiment } from './useSocialSentiment';
-import { useAnomalyDetection } from './useAnomalyDetection';
 
-interface CreatorMarketScoreParams {
-  ipoId?: string;
-  enabled?: boolean;
+interface SocialEngagement {
+  followers: number;
+  engagement: number;
+  growth: number;
 }
 
-export interface CreatorMarketScore {
-  totalScore: number;
-  revenueInfluence: {
-    score: number;
-    weight: number;
-    rawScore: number;
-    factors: Array<{name: string, impact: number, description: string}>;
+interface BrandDealMetrics {
+  deals: number;
+  value: number;
+  growth: number;
+}
+
+interface ContentMetrics {
+  views: number;
+  frequency: number;
+  engagement: number;
+}
+
+interface CreatorMarketScore {
+  overall: number;
+  components: {
+    social: number;
+    brand: number;
+    content: number;
+    sentiment: number;
+    stability: number;
   };
-  socialEngagementInfluence: {
-    score: number;
-    weight: number;
-    rawScore: number;
-    factors: Array<{name: string, impact: number, description: string}>;
-  };
-  aiSentimentScore: {
-    score: number;
-    weight: number;
-    rawScore: number;
-    factors: Array<{name: string, impact: number, description: string}>;
-  };
-  priceImpact: {
-    recommendedPrice: number;
-    priceChange: number;
-    priceChangePercent: number;
-    confidence: number;
-  };
-  anomalyDetection: {
-    hasAnomalies: boolean;
-    anomalyImpact: number;
-    adjustedPrice?: number;
+  details: {
+    social: SocialEngagement;
+    brand: BrandDealMetrics;
+    content: ContentMetrics;
   };
   lastUpdated: string;
 }
 
-/**
- * Hook to fetch and calculate the Creator Market Score (CMS)
- * CMS = (Revenue Influence * 50%) + (Social Engagement Influence * 30%) + (AI Sentiment Score * 20%)
- */
-export const useCreatorMarketScore = ({ ipoId, enabled = true }: CreatorMarketScoreParams) => {
-  // Fetch external metrics data (for revenue information)
-  const { metrics: externalMetrics, aggregatedMetrics } = useExternalData({
-    creatorId: ipoId,
-    enabled: !!ipoId && enabled
-  });
+// Mock API function to get creator market score
+const fetchCreatorMarketScore = async (creatorId: string): Promise<CreatorMarketScore> => {
+  // Simulate API request
+  await new Promise(resolve => setTimeout(resolve, 1500));
   
-  // Get social sentiment data
-  const socialSentimentQuery = useSocialSentiment({
-    ipoId,
-    enabled: !!ipoId && enabled
-  });
+  // Generate consistent but seemingly random scores based on creatorId
+  const hashCode = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash);
+  };
   
-  // Get anomaly detection data
-  const anomalyDetectionQuery = useAnomalyDetection({
-    ipoId,
-    enabled: !!ipoId && enabled
-  });
-  
-  // The main CMS calculation query
-  const cmsQuery = useQuery({
-    queryKey: ['creator-market-score', ipoId, externalMetrics?.lastUpdated, socialSentimentQuery.data?.overall],
-    queryFn: async () => {
-      if (!ipoId) return null;
-      
-      try {
-        // Get the raw CMS data from our API
-        const cmsData = await mockAIValuationAPI.getCreatorMarketScore(
-          ipoId, 
-          externalMetrics, 
-          socialSentimentQuery.data,
-          anomalyDetectionQuery.data
-        );
-        
-        // Apply anomaly adjustments if needed
-        if (anomalyDetectionQuery.data?.detected && anomalyDetectionQuery.data.riskScore > 50) {
-          // Calculate anomaly impact percentage (negative impact up to -30% for severe anomalies)
-          const anomalyImpact = -(anomalyDetectionQuery.data.riskScore / 100) * 0.3;
-          
-          // Adjust the price based on detected anomalies
-          const adjustedPrice = cmsData.priceImpact.recommendedPrice * (1 + anomalyImpact);
-          
-          return {
-            ...cmsData,
-            anomalyDetection: {
-              hasAnomalies: true,
-              anomalyImpact,
-              adjustedPrice
-            },
-            priceImpact: {
-              ...cmsData.priceImpact,
-              recommendedPrice: adjustedPrice
-            }
-          };
-        }
-        
-        return cmsData;
-      } catch (error) {
-        console.error('Error calculating Creator Market Score:', error);
-        throw error;
-      }
-    },
-    enabled: !!ipoId && enabled && !!externalMetrics && !!socialSentimentQuery.data,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false
-  });
+  const hash = hashCode(creatorId);
+  const baseValue = (hash % 50) + 50; // Between 50-99
+  const randomize = (base: number, range = 10) => Math.max(0, Math.min(100, base + (Math.sin(hash * 0.1) * range)));
   
   return {
-    creatorMarketScore: cmsQuery.data,
-    isLoading: cmsQuery.isLoading || socialSentimentQuery.isLoading,
-    isError: cmsQuery.isError,
-    error: cmsQuery.error,
-    refetch: cmsQuery.refetch,
-    socialSentiment: socialSentimentQuery.data,
-    externalMetrics,
-    aggregatedMetrics,
-    anomalyData: anomalyDetectionQuery.data
+    overall: baseValue,
+    components: {
+      social: randomize(baseValue, 15),
+      brand: randomize(baseValue - 5, 15),
+      content: randomize(baseValue + 5, 15),
+      sentiment: randomize(baseValue - 10, 20),
+      stability: randomize(baseValue + 10, 15),
+    },
+    details: {
+      social: {
+        followers: Math.floor(hash % 10000000) + 500000,
+        engagement: randomize(baseValue, 20),
+        growth: (hash % 15) + 1,
+      },
+      brand: {
+        deals: (hash % 20) + 5,
+        value: Math.floor((hash % 1000000) + 500000),
+        growth: (hash % 20) - 5,
+      },
+      content: {
+        views: Math.floor(hash % 50000000) + 1000000,
+        frequency: (hash % 10) + 1,
+        engagement: randomize(baseValue, 20),
+      }
+    },
+    lastUpdated: new Date().toISOString(),
+  };
+};
+
+export const useCreatorMarketScore = (creatorId: string) => {
+  const { sentimentData, isLoading: isSentimentLoading } = useSocialSentiment(creatorId);
+  
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['creatorMarketScore', creatorId],
+    queryFn: () => fetchCreatorMarketScore(creatorId),
+    enabled: !!creatorId,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 30, // 30 minutes
+  });
+  
+  // Calculate adjusted score based on sentiment data if available
+  const adjustedScore = React.useMemo(() => {
+    if (!data || !sentimentData) return null;
+    
+    // Blend the AI sentiment data with the market score
+    const sentimentImpact = sentimentData.overall - 50; // Range: -50 to +50
+    const sentimentWeight = 0.2; // 20% weight for sentiment data
+    
+    return {
+      ...data,
+      overall: Math.min(
+        100, 
+        Math.max(0, data.overall + (sentimentImpact * sentimentWeight))
+      ),
+      components: {
+        ...data.components,
+        sentiment: sentimentData.overall,
+      }
+    };
+  }, [data, sentimentData]);
+  
+  return {
+    score: adjustedScore || data,
+    isLoading: isLoading || isSentimentLoading,
+    error,
+    refetch
   };
 };

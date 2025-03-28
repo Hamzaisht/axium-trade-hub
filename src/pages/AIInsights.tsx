@@ -1,539 +1,552 @@
 
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useIPO } from '@/contexts/IPOContext';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BarChart, LineChart, PieChart } from '@/components/charts';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { Button } from '@/components/ui/button';
-import { useAIValuationEngine } from '@/hooks/ai/useAIValuationEngine';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { 
-  BarChart3, 
-  LineChart as LineChartIcon, 
-  PieChart as PieChartIcon, 
+  useAIValuationEngine, 
+  useSocialSentiment,
+  useCreatorMarketScore
+} from '@/hooks/ai';
+import { useIPO } from '@/contexts/IPOContext';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { 
+  Brain,
   TrendingUp, 
-  TrendingDown, 
-  AlertCircle, 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  Globe, 
-  Music, 
-  DollarSign, 
-  Heart,
+  BarChart2,
   Users,
-  Briefcase,
-  Refresh,
+  RefreshCw,
   Info,
-  Settings
+  AlertTriangle,
+  Zap,
+  LineChart,
+  AreaChart
 } from 'lucide-react';
-import { formatDate, formatCurrency, formatNumber } from '@/lib/formatters';
-import { ValuationBreakdownChart } from '@/components/ai-insights/ValuationBreakdownChart';
+import ValuationBreakdownChart from '@/components/ai-insights/ValuationBreakdownChart';
+import HistoricalPerformanceChart from '@/components/ai-insights/HistoricalPerformanceChart';
 import { MarketMoversTable } from '@/components/ai-insights/MarketMoversTable';
-import { HistoricalPerformanceChart } from '@/components/ai-insights/HistoricalPerformanceChart';
-import { MetricsPanel } from '@/components/ai-insights/MetricsPanel';
+import MetricsPanel from '@/components/ai-insights/MetricsPanel';
 
 const AIInsights = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { ipos, getIPOById } = useIPO();
-  const [selectedAsset, setSelectedAsset] = useState<string | undefined>(id);
-  const [timeframe, setTimeframe] = useState('1d');
-  const [activeTab, setActiveTab] = useState('overview');
+  const { id } = useParams<{ id: string }>();
+  const { ipos, getIPO } = useIPO();
+  const [selectedCreator, setSelectedCreator] = useState<string | null>(id || null);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  
+  const { 
+    creatorValuation, 
+    valuationFactors,
+    confidence,
+    lastUpdated,
+    isLoading: valuationLoading 
+  } = useAIValuationEngine(selectedCreator || '');
+  
+  const { 
+    sentimentData, 
+    isLoading: sentimentLoading 
+  } = useSocialSentiment(selectedCreator || '');
   
   const {
-    valuation,
-    isLoading,
-    isError,
-    refetch,
-    isRealTimeEnabled,
-    toggleRealTime,
-    rawMetrics
-  } = useAIValuationEngine(selectedAsset, timeframe);
+    score: marketScore,
+    isLoading: scoreLoading
+  } = useCreatorMarketScore(selectedCreator || '');
   
-  // If no ID is specified in URL, use the first IPO
-  useEffect(() => {
-    if (!id && ipos.length > 0) {
-      navigate(`/ai-insights/${ipos[0].id}`);
-    }
-  }, [id, ipos, navigate]);
+  const isLoading = valuationLoading || sentimentLoading || scoreLoading;
   
-  // Update selected asset when ID changes
   useEffect(() => {
     if (id) {
-      setSelectedAsset(id);
+      setSelectedCreator(id);
+    } else if (ipos.length > 0 && !selectedCreator) {
+      setSelectedCreator(ipos[0].id);
     }
-  }, [id]);
+  }, [id, ipos, selectedCreator]);
   
-  // Get the current IPO details
-  const currentIPO = getIPOById(selectedAsset || '');
-  
-  // Handle asset selection change
-  const handleAssetChange = (value: string) => {
-    navigate(`/ai-insights/${value}`);
+  const handleCreatorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCreator(e.target.value);
   };
   
-  if (!currentIPO) {
-    return (
-      <div>
-        <Navbar />
-        <div className="min-h-screen bg-axium-gray-100/30 pt-24 pb-16 px-4">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-8">AI Insights Dashboard</h1>
-            {isLoading ? (
-              <div className="flex justify-center">
-                <div className="animate-spin h-10 w-10 border-4 border-axium-blue border-t-transparent rounded-full"></div>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <AlertCircle className="h-16 w-16 text-axium-gray-400 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold mb-2">No Creator Selected</h2>
-                <p className="text-axium-gray-600 mb-6">Please select a creator to view AI insights</p>
-                {ipos.length > 0 ? (
-                  <Select onValueChange={handleAssetChange}>
-                    <SelectTrigger className="w-[300px] mx-auto">
-                      <SelectValue placeholder="Select a creator" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ipos.map((ipo) => (
-                        <SelectItem key={ipo.id} value={ipo.id}>
-                          {ipo.symbol} - {ipo.creatorName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <p className="text-axium-gray-500">No creators available</p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+  const handleRefresh = () => {
+    setRefreshing(true);
+    
+    // Simulate refresh of data
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  };
+  
+  // Mock market movers data for the "What Moved the Market" section
+  const marketMovers = [
+    {
+      factor: "Social Media Engagement",
+      impact: 2.8,
+      description: "Spike in engagement after latest Instagram post",
+      timestamp: new Date().toISOString()
+    },
+    {
+      factor: "News Sentiment",
+      impact: -1.2,
+      description: "Industry-wide negative press on sponsorship deals",
+      timestamp: new Date(Date.now() - 3600000).toISOString()
+    },
+    {
+      factor: "Brand Deal Announcement",
+      impact: 4.5,
+      description: "New partnership with major fashion brand",
+      timestamp: new Date(Date.now() - 7200000).toISOString()
+    },
+    {
+      factor: "Content Performance",
+      impact: 1.3,
+      description: "Latest video exceeded view expectations by 20%",
+      timestamp: new Date(Date.now() - 10800000).toISOString()
+    },
+    {
+      factor: "Competitor Activity",
+      impact: -0.7,
+      description: "Similar creator launched competing product line",
+      timestamp: new Date(Date.now() - 14400000).toISOString()
+    }
+  ];
+  
+  const selectedIPO = selectedCreator ? getIPO(selectedCreator) : null;
   
   return (
-    <div className="bg-gradient-to-br from-axium-gray-100/10 to-axium-gray-100/30 dark:from-axium-gray-800/20 dark:to-axium-gray-900/40 min-h-screen">
-      <Navbar />
-      
-      <main className="pt-24 pb-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-            <div>
-              <h1 className="text-3xl font-bold">AI Insights Dashboard</h1>
-              <p className="text-axium-gray-600">Advanced AI analysis and valuation breakdown</p>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <Select value={selectedAsset} onValueChange={handleAssetChange}>
-                <SelectTrigger className="w-[220px]">
-                  <SelectValue placeholder="Select a creator" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ipos.map((ipo) => (
-                    <SelectItem key={ipo.id} value={ipo.id}>
-                      {ipo.symbol} - {ipo.creatorName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => refetch()}
-                className="gap-2"
-              >
-                <Refresh className="h-4 w-4" />
-                <span className="hidden sm:inline">Refresh</span>
-              </Button>
-              
-              <Button 
-                variant={isRealTimeEnabled ? "default" : "outline"} 
-                size="sm" 
-                onClick={toggleRealTime}
-                className="gap-2"
-              >
-                <Settings className="h-4 w-4" />
-                <span className="hidden sm:inline">
-                  {isRealTimeEnabled ? "Disable Real-time" : "Enable Real-time"}
-                </span>
-              </Button>
-            </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center">
+              <Brain className="mr-2 h-6 w-6 text-axium-blue" />
+              AI Insights Dashboard
+            </h1>
+            <p className="text-axium-gray-600 dark:text-axium-gray-400">
+              Harnessing machine learning to provide deeper market intelligence
+            </p>
           </div>
           
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <GlassCard key={i} className="p-6 h-40 animate-pulse">
-                  <div className="w-1/3 h-4 mb-4 bg-axium-gray-300 rounded"></div>
-                  <div className="w-1/2 h-8 mb-2 bg-axium-gray-300 rounded"></div>
-                  <div className="w-1/4 h-4 bg-axium-gray-300 rounded"></div>
-                </GlassCard>
-              ))}
-              
-              <GlassCard className="p-6 md:col-span-3 h-80 animate-pulse">
-                <div className="w-1/4 h-6 mb-8 bg-axium-gray-300 rounded"></div>
-                <div className="w-full h-64 bg-axium-gray-300 rounded"></div>
-              </GlassCard>
+          <div className="flex items-center space-x-3">
+            <div className="flex-1">
+              <select 
+                value={selectedCreator || ''} 
+                onChange={handleCreatorChange}
+                className="w-full px-3 py-2 bg-white dark:bg-axium-gray-800 border border-axium-gray-200 dark:border-axium-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-axium-blue focus:border-axium-blue"
+              >
+                <option value="" disabled>Select Creator Asset</option>
+                {ipos.map(ipo => (
+                  <option key={ipo.id} value={ipo.id}>
+                    {ipo.symbol} - {ipo.creatorName}
+                  </option>
+                ))}
+              </select>
             </div>
-          ) : isError ? (
-            <GlassCard className="p-6 text-center">
-              <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Error Loading AI Insights</h2>
-              <p className="text-axium-gray-600 mb-6">We couldn't load the AI valuation data for this creator</p>
-              <Button onClick={() => refetch()}>Try Again</Button>
-            </GlassCard>
-          ) : (
-            <>
-              {valuation && (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <GlassCard className="p-6">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="text-sm text-axium-gray-600">Current Valuation</div>
-                        <div className="text-xs bg-axium-gray-200 px-2 py-0.5 rounded-full">
-                          {isRealTimeEnabled ? "Live" : "Static"}
+            
+            <Button 
+              onClick={handleRefresh} 
+              variant="outline" 
+              className="flex items-center"
+              disabled={refreshing || isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
+        </div>
+        
+        {/* Main content area */}
+        {selectedCreator && selectedIPO ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left column - Creator valuation and factors */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h2 className="text-xl font-semibold">{selectedIPO.creatorName} ({selectedIPO.symbol})</h2>
+                    <p className="text-axium-gray-600 dark:text-axium-gray-400 text-sm">
+                      AI-Derived Valuation Analysis
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs bg-axium-gray-100 dark:bg-axium-gray-800 px-2 py-1 rounded-full flex items-center">
+                      <Info className="h-3 w-3 mr-1" /> 
+                      {confidence}% Confidence
+                    </span>
+                    
+                    <span className="text-xs bg-axium-gray-100 dark:bg-axium-gray-800 px-2 py-1 rounded-full">
+                      Updated {lastUpdated ? new Date(lastUpdated).toLocaleString() : 'Recently'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <div className="mb-4">
+                      <h3 className="text-lg font-medium mb-1">AI Valuation Breakdown</h3>
+                      <p className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
+                        Key factors influencing current valuation
+                      </p>
+                    </div>
+                    
+                    {valuationLoading ? (
+                      <div className="h-64 flex items-center justify-center bg-axium-gray-100 dark:bg-axium-gray-800 rounded-lg animate-pulse">
+                        <div className="text-axium-gray-500">Loading valuation data...</div>
+                      </div>
+                    ) : (
+                      <ValuationBreakdownChart data={valuationFactors} />
+                    )}
+                  </div>
+                  
+                  <div>
+                    <div className="mb-4">
+                      <h3 className="text-lg font-medium mb-1">Historical Performance</h3>
+                      <p className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
+                        Asset price vs. AI valuation over time
+                      </p>
+                    </div>
+                    
+                    {valuationLoading ? (
+                      <div className="h-64 flex items-center justify-center bg-axium-gray-100 dark:bg-axium-gray-800 rounded-lg animate-pulse">
+                        <div className="text-axium-gray-500">Loading historical data...</div>
+                      </div>
+                    ) : (
+                      <HistoricalPerformanceChart ipoId={selectedCreator} />
+                    )}
+                  </div>
+                </div>
+                
+                <div className="mt-6">
+                  <Tabs defaultValue="overview">
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="overview">Overview</TabsTrigger>
+                      <TabsTrigger value="social">Social Impact</TabsTrigger>
+                      <TabsTrigger value="brand">Brand Value</TabsTrigger>
+                      <TabsTrigger value="forecast">Forecasts</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="overview" className="pt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div className="bg-axium-gray-50 dark:bg-axium-gray-800/50 rounded-lg p-4">
+                          <div className="flex items-center mb-2">
+                            <TrendingUp className="h-5 w-5 text-axium-blue mr-2" />
+                            <h4 className="font-medium">Current Status</h4>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-axium-gray-600 dark:text-axium-gray-400">Market Price</span>
+                              <span className="font-medium">${selectedIPO.currentPrice.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-axium-gray-600 dark:text-axium-gray-400">AI Valuation</span>
+                              <span className="font-medium">${creatorValuation?.toFixed(2) || 'N/A'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-axium-gray-600 dark:text-axium-gray-400">Variance</span>
+                              {creatorValuation && (
+                                <span className={`font-medium ${
+                                  creatorValuation > selectedIPO.currentPrice 
+                                    ? 'text-green-600 dark:text-green-400' 
+                                    : 'text-red-600 dark:text-red-400'
+                                }`}>
+                                  {(((creatorValuation - selectedIPO.currentPrice) / selectedIPO.currentPrice) * 100).toFixed(2)}%
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-axium-gray-50 dark:bg-axium-gray-800/50 rounded-lg p-4">
+                          <div className="flex items-center mb-2">
+                            <BarChart2 className="h-5 w-5 text-axium-blue mr-2" />
+                            <h4 className="font-medium">Risk Assessment</h4>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-axium-gray-600 dark:text-axium-gray-400">Volatility</span>
+                              <span className="font-medium">Medium</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-axium-gray-600 dark:text-axium-gray-400">Stability Score</span>
+                              <span className="font-medium">{marketScore?.components.stability || 'N/A'}/100</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-axium-gray-600 dark:text-axium-gray-400">Confidence</span>
+                              <span className="font-medium">{confidence}%</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-baseline">
-                        <div className="text-3xl font-semibold">${valuation.currentPrice.toFixed(2)}</div>
-                        <div className={`text-sm ml-2 ${valuation.priceChangePercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                          {valuation.priceChangePercent >= 0 ? (
-                            <span className="flex items-center">
-                              <ArrowUpRight className="h-3 w-3 mr-0.5" />
-                              {valuation.priceChangePercent.toFixed(2)}%
-                            </span>
+                      
+                      <div className="bg-axium-gray-50 dark:bg-axium-gray-800/50 rounded-lg p-4">
+                        <div className="flex items-center mb-2">
+                          <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />
+                          <h4 className="font-medium">AI Insights</h4>
+                        </div>
+                        
+                        <p className="text-sm text-axium-gray-700 dark:text-axium-gray-300 mb-2">
+                          {selectedIPO.creatorName}'s asset is currently {
+                            creatorValuation && creatorValuation > selectedIPO.currentPrice
+                              ? <span className="text-green-600 dark:text-green-400 font-medium">undervalued</span>
+                              : <span className="text-red-600 dark:text-red-400 font-medium">overvalued</span>
+                          } by our AI model. The valuation is primarily driven by {
+                            valuationFactors.length > 0 
+                              ? `strong ${valuationFactors[0].name.toLowerCase()} metrics`
+                              : 'several key metrics'
+                          }.
+                        </p>
+                        
+                        <p className="text-sm text-axium-gray-700 dark:text-axium-gray-300">
+                          Our model has detected {sentimentData?.positive > 70 ? 'highly positive' : 'mixed'} sentiment trends from social media and content performance.
+                          {marketScore?.components.stability && marketScore.components.stability > 70 
+                            ? ' Long-term projections indicate stable growth potential.'
+                            : ' The asset shows higher than average volatility in the near term.'}
+                        </p>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="social" className="pt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="col-span-2 bg-axium-gray-50 dark:bg-axium-gray-800/50 rounded-lg p-4">
+                          <h4 className="font-medium mb-4">Social Media Performance</h4>
+                          
+                          {sentimentLoading ? (
+                            <div className="h-48 flex items-center justify-center animate-pulse">
+                              <div className="text-axium-gray-500">Loading sentiment data...</div>
+                            </div>
                           ) : (
-                            <span className="flex items-center">
-                              <ArrowDownRight className="h-3 w-3 mr-0.5" />
-                              {Math.abs(valuation.priceChangePercent).toFixed(2)}%
-                            </span>
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-white dark:bg-axium-gray-800 rounded p-3 shadow-sm">
+                                  <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400">Overall Sentiment</div>
+                                  <div className="mt-1 text-2xl font-bold">
+                                    {sentimentData?.overall || 'N/A'}<span className="text-sm font-normal">/100</span>
+                                  </div>
+                                </div>
+                                
+                                <div className="bg-white dark:bg-axium-gray-800 rounded p-3 shadow-sm">
+                                  <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400">Engagement Rate</div>
+                                  <div className="mt-1 text-2xl font-bold">
+                                    {marketScore?.details.social.engagement || 'N/A'}<span className="text-sm font-normal">%</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="bg-white dark:bg-axium-gray-800 rounded p-3 shadow-sm">
+                                <div className="flex justify-between mb-2">
+                                  <div className="text-sm">Sentiment Breakdown</div>
+                                </div>
+                                
+                                <div className="grid grid-cols-3 gap-2">
+                                  <div>
+                                    <div className="text-xs text-axium-gray-600 dark:text-axium-gray-400">Positive</div>
+                                    <div className="text-green-600 dark:text-green-400 font-medium">{sentimentData?.positive || 0}%</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-xs text-axium-gray-600 dark:text-axium-gray-400">Neutral</div>
+                                    <div className="text-axium-gray-600 dark:text-axium-gray-400 font-medium">{sentimentData?.neutral || 0}%</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-xs text-axium-gray-600 dark:text-axium-gray-400">Negative</div>
+                                    <div className="text-red-600 dark:text-red-400 font-medium">{sentimentData?.negative || 0}%</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="bg-axium-gray-50 dark:bg-axium-gray-800/50 rounded-lg p-4">
+                          <h4 className="font-medium mb-4">Platform Breakdown</h4>
+                          
+                          {sentimentData?.platforms ? (
+                            <div className="space-y-3">
+                              {Object.entries(sentimentData.platforms).map(([platform, score]) => (
+                                <div key={platform} className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <div className="w-3 h-3 rounded-full mr-2" 
+                                      style={{ 
+                                        backgroundColor: score > 70 
+                                          ? '#10B981' 
+                                          : score > 40 
+                                            ? '#F59E0B' 
+                                            : '#EF4444'
+                                      }} 
+                                    />
+                                    <span className="text-sm">{platform}</span>
+                                  </div>
+                                  <span className="text-sm font-medium">{score}/100</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="h-48 flex items-center justify-center">
+                              <div className="text-axium-gray-500 text-sm">Platform data unavailable</div>
+                            </div>
                           )}
                         </div>
                       </div>
-                      <div className="text-xs text-axium-gray-500 mt-1">
-                        Last updated: {formatDate(new Date(valuation.lastUpdated))}
-                      </div>
-                    </GlassCard>
+                    </TabsContent>
                     
-                    <GlassCard className="p-6">
-                      <div className="text-sm text-axium-gray-600 mb-2">Risk Assessment</div>
-                      <div className="flex items-center gap-6">
-                        <div>
-                          <div className="text-xs text-axium-gray-500">Confidence</div>
-                          <div className="flex items-baseline">
-                            <div className="text-2xl font-medium">{(valuation.confidence * 100).toFixed(0)}%</div>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <Info className="h-3 w-3 ml-1 text-axium-gray-500" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className="text-xs max-w-[200px]">
-                                    AI confidence in valuation accuracy based on available data quality and consistency
-                                  </p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                    <TabsContent value="brand" className="pt-4">
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="bg-axium-gray-50 dark:bg-axium-gray-800/50 rounded-lg p-4">
+                          <h4 className="font-medium mb-4">Brand Value Components</h4>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="bg-white dark:bg-axium-gray-800 p-4 rounded shadow-sm">
+                              <div className="flex items-center mb-2">
+                                <Zap className="h-4 w-4 text-amber-500 mr-2" />
+                                <h5 className="font-medium">Active Brand Deals</h5>
+                              </div>
+                              <div className="text-3xl font-bold mb-1">
+                                {marketScore?.details.brand.deals || 'N/A'}
+                              </div>
+                              <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
+                                Growth: {marketScore?.details.brand.growth || 0}% year-over-year
+                              </div>
+                            </div>
+                            
+                            <div className="bg-white dark:bg-axium-gray-800 p-4 rounded shadow-sm">
+                              <div className="flex items-center mb-2">
+                                <BarChart2 className="h-4 w-4 text-axium-blue mr-2" />
+                                <h5 className="font-medium">Est. Deal Value</h5>
+                              </div>
+                              <div className="text-3xl font-bold mb-1">
+                                ${marketScore?.details.brand.value 
+                                  ? (marketScore.details.brand.value / 1000000).toFixed(1) + 'M'
+                                  : 'N/A'
+                                }
+                              </div>
+                              <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
+                                Average of ${marketScore?.details.brand.value && marketScore.details.brand.deals
+                                  ? ((marketScore.details.brand.value / marketScore.details.brand.deals) / 1000).toFixed(0) + 'K'
+                                  : 'N/A'
+                                } per deal
+                              </div>
+                            </div>
+                            
+                            <div className="bg-white dark:bg-axium-gray-800 p-4 rounded shadow-sm">
+                              <div className="flex items-center mb-2">
+                                <Users className="h-4 w-4 text-indigo-500 mr-2" />
+                                <h5 className="font-medium">Audience Trust</h5>
+                              </div>
+                              <div className="text-3xl font-bold mb-1">
+                                {(sentimentData?.trust || 0) * 100}%
+                              </div>
+                              <div className="text-sm text-axium-gray-600 dark:text-axium-gray-400">
+                                Based on engagement and sentiment
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-axium-gray-500">Volatility</div>
-                          <div className="flex items-baseline">
-                            <div className="text-2xl font-medium">{(valuation.volatility * 100).toFixed(1)}%</div>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <Info className="h-3 w-3 ml-1 text-axium-gray-500" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className="text-xs max-w-[200px]">
-                                    Expected price fluctuation based on historical performance and market conditions
-                                  </p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                          
+                          <div className="mt-4 p-4 border border-axium-gray-200 dark:border-axium-gray-700 rounded-lg bg-white dark:bg-axium-gray-800/50">
+                            <h5 className="font-medium mb-2">AI Brand Analysis</h5>
+                            <p className="text-sm text-axium-gray-700 dark:text-axium-gray-300">
+                              {selectedIPO.creatorName}'s brand partnerships show {
+                                marketScore?.details.brand.growth && marketScore.details.brand.growth > 0
+                                  ? 'positive growth'
+                                  : 'some signs of slowing'
+                              } with an estimated impact of {
+                                valuationFactors.find(f => f.name === 'Brand Value')?.value.toFixed(2) || '15-25'
+                              }% on total asset valuation. The creator maintains {
+                                sentimentData?.trust && sentimentData.trust > 0.7
+                                  ? 'strong audience trust'
+                                  : 'moderate audience trust'
+                              } which is a key factor for future brand deal potential.
+                            </p>
                           </div>
                         </div>
                       </div>
-                      <div className="mt-3">
-                        <div className="text-xs text-axium-gray-500">Market Stability</div>
-                        <div className="h-2 w-full bg-axium-gray-200 rounded-full mt-1">
-                          <div 
-                            className="h-full rounded-full bg-gradient-to-r from-red-400 via-yellow-400 to-green-400"
-                            style={{ width: `${valuation.confidence * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    </GlassCard>
+                    </TabsContent>
                     
-                    <GlassCard className="p-6">
-                      <div className="text-sm text-axium-gray-600 mb-2">Key Metrics</div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <div className="text-xs text-axium-gray-500 flex items-center">
-                            <Users className="h-3 w-3 mr-1" /> Social Influence
+                    <TabsContent value="forecast" className="pt-4">
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="bg-axium-gray-50 dark:bg-axium-gray-800/50 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="font-medium">AI Price Projections</h4>
+                            <div className="text-xs bg-axium-gray-100 dark:bg-axium-gray-800 px-2 py-1 rounded-full flex items-center">
+                              <Info className="h-3 w-3 mr-1" /> 
+                              {confidence}% Model Confidence
+                            </div>
                           </div>
-                          <div className="text-lg font-medium">
-                            {(valuation.valuationBreakdown.socialInfluence.value).toFixed(1)}
+                          
+                          <div className="h-64 flex items-center justify-center bg-axium-gray-100 dark:bg-axium-gray-800 rounded-lg">
+                            <div className="text-axium-gray-500">Price projection charts coming soon</div>
                           </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-axium-gray-500 flex items-center">
-                            <Music className="h-3 w-3 mr-1" /> Streaming
-                          </div>
-                          <div className="text-lg font-medium">
-                            {(valuation.valuationBreakdown.streamingInfluence.value).toFixed(1)}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-axium-gray-500 flex items-center">
-                            <Briefcase className="h-3 w-3 mr-1" /> Brand Deals
-                          </div>
-                          <div className="text-lg font-medium">
-                            {(valuation.valuationBreakdown.brandDealsInfluence.value).toFixed(1)}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-axium-gray-500 flex items-center">
-                            <Heart className="h-3 w-3 mr-1" /> Sentiment
-                          </div>
-                          <div className="text-lg font-medium">
-                            {(valuation.valuationBreakdown.sentimentInfluence.value).toFixed(1)}
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                            <div className="bg-white dark:bg-axium-gray-800 p-3 rounded shadow-sm">
+                              <div className="text-xs text-axium-gray-600 dark:text-axium-gray-400 mb-1">30-Day Projection</div>
+                              <div className="text-xl font-bold flex items-center">
+                                ${(selectedIPO.currentPrice * 1.08).toFixed(2)}
+                                <span className="ml-2 text-sm text-green-600 dark:text-green-400 font-normal flex items-center">
+                                  <TrendingUp className="h-3 w-3 mr-0.5" />
+                                  8.0%
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-white dark:bg-axium-gray-800 p-3 rounded shadow-sm">
+                              <div className="text-xs text-axium-gray-600 dark:text-axium-gray-400 mb-1">90-Day Projection</div>
+                              <div className="text-xl font-bold flex items-center">
+                                ${(selectedIPO.currentPrice * 1.15).toFixed(2)}
+                                <span className="ml-2 text-sm text-green-600 dark:text-green-400 font-normal flex items-center">
+                                  <TrendingUp className="h-3 w-3 mr-0.5" />
+                                  15.0%
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-white dark:bg-axium-gray-800 p-3 rounded shadow-sm">
+                              <div className="text-xs text-axium-gray-600 dark:text-axium-gray-400 mb-1">1-Year Target</div>
+                              <div className="text-xl font-bold flex items-center">
+                                ${(selectedIPO.currentPrice * 1.35).toFixed(2)}
+                                <span className="ml-2 text-sm text-green-600 dark:text-green-400 font-normal flex items-center">
+                                  <TrendingUp className="h-3 w-3 mr-0.5" />
+                                  35.0%
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </GlassCard>
-                  </div>
-                  
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-                    <TabsList className="grid grid-cols-4 w-full max-w-2xl mx-auto">
-                      <TabsTrigger value="overview" className="flex items-center gap-1">
-                        <BarChart3 className="h-4 w-4" /> Overview
-                      </TabsTrigger>
-                      <TabsTrigger value="valuation" className="flex items-center gap-1">
-                        <PieChartIcon className="h-4 w-4" /> Valuation Breakdown
-                      </TabsTrigger>
-                      <TabsTrigger value="history" className="flex items-center gap-1">
-                        <LineChartIcon className="h-4 w-4" /> Historical Data
-                      </TabsTrigger>
-                      <TabsTrigger value="marketMovers" className="flex items-center gap-1">
-                        <TrendingUp className="h-4 w-4" /> Market Movers
-                      </TabsTrigger>
-                    </TabsList>
+                    </TabsContent>
                   </Tabs>
-                  
-                  <TabsContent value="overview" className="mt-0">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      <ValuationBreakdownChart 
-                        valuationBreakdown={valuation.valuationBreakdown}
-                        className="lg:col-span-2"
-                      />
-                      <MarketMoversTable marketMovers={valuation.marketMovers} />
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="valuation" className="mt-0">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      <MetricsPanel 
-                        metrics={valuation.valuationBreakdown}
-                        className="lg:col-span-1"
-                      />
-                      <GlassCard className="p-6 lg:col-span-2">
-                        <h3 className="text-lg font-semibold mb-4">Detailed Valuation Breakdown</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div>
-                            <h4 className="text-sm font-medium mb-2 flex items-center">
-                              <Globe className="h-4 w-4 mr-1 text-blue-500" /> Social Media Influence
-                            </h4>
-                            <div className="space-y-2">
-                              {Object.entries(valuation.valuationBreakdown.socialInfluence.breakdown).map(([platform, value]) => (
-                                <div key={platform} className="flex justify-between items-center">
-                                  <div className="text-sm capitalize">{platform}</div>
-                                  <div className="text-sm">{value.toFixed(1)}</div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h4 className="text-sm font-medium mb-2 flex items-center">
-                              <Music className="h-4 w-4 mr-1 text-purple-500" /> Streaming Platforms
-                            </h4>
-                            <div className="space-y-2">
-                              {Object.entries(valuation.valuationBreakdown.streamingInfluence.breakdown).map(([platform, value]) => (
-                                <div key={platform} className="flex justify-between items-center">
-                                  <div className="text-sm capitalize">{platform}</div>
-                                  <div className="text-sm">{formatNumber(value)}</div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h4 className="text-sm font-medium mb-2 flex items-center">
-                              <DollarSign className="h-4 w-4 mr-1 text-green-500" /> Financial Metrics
-                            </h4>
-                            <div className="space-y-2">
-                              {Object.entries(valuation.valuationBreakdown.financialInfluence.breakdown).map(([metric, value]) => (
-                                <div key={metric} className="flex justify-between items-center">
-                                  <div className="text-sm capitalize">
-                                    {metric.replace(/([A-Z])/g, ' $1').trim()}
-                                  </div>
-                                  <div className="text-sm">
-                                    {metric === 'ownedCompanies' 
-                                      ? value 
-                                      : formatCurrency(value)
-                                    }
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h4 className="text-sm font-medium mb-2 flex items-center">
-                              <Heart className="h-4 w-4 mr-1 text-red-500" /> Other Factors
-                            </h4>
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <div className="text-sm">Brand Deals Value</div>
-                                <div className="text-sm">{valuation.valuationBreakdown.brandDealsInfluence.value.toFixed(1)}</div>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <div className="text-sm">Sentiment Score</div>
-                                <div className="text-sm">{valuation.valuationBreakdown.sentimentInfluence.value.toFixed(1)}</div>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <div className="text-sm">Fan Engagement</div>
-                                <div className="text-sm">{valuation.valuationBreakdown.fanEngagementInfluence.value.toFixed(1)}</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </GlassCard>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="history" className="mt-0">
-                    <div className="grid grid-cols-1 gap-6">
-                      <GlassCard className="p-6">
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-lg font-semibold">Historical Performance</h3>
-                          <div className="flex items-center space-x-2">
-                            <Button 
-                              variant={timeframe === "1m" ? "default" : "outline"} 
-                              size="sm" 
-                              onClick={() => setTimeframe("1m")}
-                            >
-                              1M
-                            </Button>
-                            <Button 
-                              variant={timeframe === "5m" ? "default" : "outline"} 
-                              size="sm" 
-                              onClick={() => setTimeframe("5m")}
-                            >
-                              5M
-                            </Button>
-                            <Button 
-                              variant={timeframe === "15m" ? "default" : "outline"} 
-                              size="sm" 
-                              onClick={() => setTimeframe("15m")}
-                            >
-                              15M
-                            </Button>
-                            <Button 
-                              variant={timeframe === "1h" ? "default" : "outline"} 
-                              size="sm" 
-                              onClick={() => setTimeframe("1h")}
-                            >
-                              1H
-                            </Button>
-                            <Button 
-                              variant={timeframe === "1d" ? "default" : "outline"} 
-                              size="sm" 
-                              onClick={() => setTimeframe("1d")}
-                            >
-                              1D
-                            </Button>
-                            <Button 
-                              variant={timeframe === "1w" ? "default" : "outline"} 
-                              size="sm" 
-                              onClick={() => setTimeframe("1w")}
-                            >
-                              1W
-                            </Button>
-                            <Button 
-                              variant={timeframe === "1mo" ? "default" : "outline"} 
-                              size="sm" 
-                              onClick={() => setTimeframe("1mo")}
-                            >
-                              1M
-                            </Button>
-                          </div>
-                        </div>
-                        <HistoricalPerformanceChart 
-                          historicalData={valuation.historicalPrices}
-                          timeframe={timeframe}
-                        />
-                      </GlassCard>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="marketMovers" className="mt-0">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      <GlassCard className="p-6 lg:col-span-3">
-                        <h3 className="text-lg font-semibold mb-4">What Moved The Market Today</h3>
-                        <div className="overflow-x-auto">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="border-b border-axium-gray-200">
-                                <th className="text-left py-2 px-4 font-medium text-axium-gray-600">Factor</th>
-                                <th className="text-left py-2 px-4 font-medium text-axium-gray-600">Impact</th>
-                                <th className="text-left py-2 px-4 font-medium text-axium-gray-600">Description</th>
-                                <th className="text-left py-2 px-4 font-medium text-axium-gray-600">Time</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {valuation.marketMovers.map((mover, index) => (
-                                <tr key={index} className="border-b border-axium-gray-200/50">
-                                  <td className="py-3 px-4">{mover.factor}</td>
-                                  <td className="py-3 px-4">
-                                    <span className={`flex items-center ${mover.impact >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                      {mover.impact >= 0 ? (
-                                        <TrendingUp className="h-4 w-4 mr-1" />
-                                      ) : (
-                                        <TrendingDown className="h-4 w-4 mr-1" />
-                                      )}
-                                      {Math.abs(mover.impact).toFixed(2)}%
-                                    </span>
-                                  </td>
-                                  <td className="py-3 px-4">{mover.description}</td>
-                                  <td className="py-3 px-4 text-axium-gray-500">
-                                    {formatDate(new Date(mover.timestamp))}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </GlassCard>
-                    </div>
-                  </TabsContent>
-                </>
-              )}
-            </>
-          )}
-        </div>
-      </main>
-      
-      <Footer />
+                </div>
+              </Card>
+            </div>
+            
+            {/* Right column - metrics, market movers */}
+            <div className="space-y-6">
+              <MetricsPanel 
+                creatorId={selectedCreator} 
+                marketScore={marketScore}
+                isLoading={scoreLoading}
+              />
+              
+              <MarketMoversTable marketMovers={marketMovers} />
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-axium-gray-800 rounded-lg shadow-sm p-8 text-center">
+            <Brain className="h-12 w-12 mx-auto text-axium-gray-400 mb-4" />
+            <h3 className="text-xl font-medium mb-2">Select a Creator Asset</h3>
+            <p className="text-axium-gray-600 dark:text-axium-gray-400 mb-6">
+              Choose a creator asset from the dropdown above to view AI insights and analytics.
+            </p>
+            <Button onClick={() => setSelectedCreator(ipos[0]?.id)}>
+              Load First Creator
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

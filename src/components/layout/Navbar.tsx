@@ -27,7 +27,7 @@ import {
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { isAuthenticated, user, signOut } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
 
   // Track scroll position for navbar styling
@@ -100,7 +100,7 @@ const Navbar = () => {
                   <DropdownMenuTrigger asChild>
                     <button className="ml-4 flex items-center">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.avatarUrl || undefined} />
+                        <AvatarImage src={user?.profileImage || undefined} />
                         <AvatarFallback>{user?.name?.charAt(0) || user?.email?.charAt(0)}</AvatarFallback>
                       </Avatar>
                     </button>
@@ -111,7 +111,7 @@ const Navbar = () => {
                     <DropdownMenuItem>Profile</DropdownMenuItem>
                     <DropdownMenuItem>Settings</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={signOut}>Logout</DropdownMenuItem>
+                    <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
@@ -176,7 +176,7 @@ const Navbar = () => {
                   <div className="flex items-center px-5">
                     <div className="flex-shrink-0">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={user?.avatarUrl || undefined} />
+                        <AvatarImage src={user?.profileImage || undefined} />
                         <AvatarFallback>{user?.name?.charAt(0) || user?.email?.charAt(0)}</AvatarFallback>
                       </Avatar>
                     </div>
@@ -193,7 +193,7 @@ const Navbar = () => {
                       Settings
                     </button>
                     <button
-                      onClick={signOut}
+                      onClick={logout}
                       className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-axium-gray-700 dark:text-axium-gray-200 hover:bg-axium-gray-100 dark:hover:bg-axium-gray-800"
                     >
                       Logout
