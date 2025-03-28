@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +13,12 @@ import {
   History,
   Settings,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  LayoutGrid,
+  Monitor,
+  Grid,
+  Info,
+  Infinity
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import TradeForm from "@/components/trading/TradeForm";
@@ -37,6 +43,7 @@ import {
   ChartSkeleton,
   TradeFormSkeleton
 } from "@/components/ui/skeleton-components";
+import AITrendPrediction from "@/components/trading/AITrendPrediction";
 
 const formatDate = (timestamp: number): string => {
   const date = new Date(timestamp);
@@ -58,6 +65,7 @@ const Trading = () => {
   const [selectedIPO, setSelectedIPO] = useState(ipos[0] || null);
   const [timeframe, setTimeframe] = useState("1D");
   const [chartType, setChartType] = useState<"candlestick" | "line">("candlestick");
+  const [layoutMode, setLayoutMode] = useState<"standard" | "advanced" | "compact">("standard");
   const [showIndicators, setShowIndicators] = useState({
     volume: true,
     sma7: false,
@@ -148,28 +156,76 @@ const Trading = () => {
   }
 
   return (
-    <div className="bg-axium-gray-100/30 min-h-screen">
-      <div className="container max-w-7xl mx-auto px-4 py-6">
+    <div className="bg-gradient-to-br from-axium-gray-100/10 to-axium-gray-100/30 dark:from-axium-gray-800/20 dark:to-axium-gray-900/40 min-h-screen">
+      <div className="container max-w-[1920px] mx-auto px-4 py-4">
         <TradingHeader 
-          title="Trading Dashboard"
+          title="Advanced Trading Terminal"
           isConnected={isConnected}
         />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <AssetSelector 
-              ipos={ipos}
-              selectedIPO={selectedIPO}
-              onSelectIPO={handleIPOChange}
-            />
+        <div className="flex items-center justify-between mb-4">
+          <AssetSelector 
+            ipos={ipos}
+            selectedIPO={selectedIPO}
+            onSelectIPO={handleIPOChange}
+          />
+          
+          <div className="flex items-center gap-3">
+            <div className="flex items-center space-x-1 rounded-md border border-axium-gray-200 bg-white dark:bg-axium-gray-800 dark:border-axium-gray-700 p-1">
+              <Button
+                variant={layoutMode === "standard" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setLayoutMode("standard")}
+                className="h-8 gap-1"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                <span className="hidden sm:inline">Standard</span>
+              </Button>
+              <Button
+                variant={layoutMode === "advanced" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setLayoutMode("advanced")}
+                className="h-8 gap-1"
+              >
+                <Monitor className="h-4 w-4" />
+                <span className="hidden sm:inline">Advanced</span>
+              </Button>
+              <Button
+                variant={layoutMode === "compact" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setLayoutMode("compact")}
+                className="h-8 gap-1"
+              >
+                <Grid className="h-4 w-4" />
+                <span className="hidden sm:inline">Compact</span>
+              </Button>
+            </div>
             
-            <PriceHeader 
-              symbol={selectedIPO.symbol}
-              name={selectedIPO.creatorName}
-              currentPrice={selectedIPO.currentPrice}
-              priceChangePercent={priceChangePercent}
-            />
+            <Button variant="outline" size="sm" className="h-8">
+              <Infinity className="h-4 w-4 mr-1" />
+              AI Assist
+            </Button>
+          </div>
+        </div>
+        
+        <PriceHeader 
+          symbol={selectedIPO.symbol}
+          name={selectedIPO.creatorName}
+          currentPrice={selectedIPO.currentPrice}
+          priceChangePercent={priceChangePercent}
+        />
             
+        <div className={`grid gap-4 ${
+          layoutMode === "standard" ? "grid-cols-1 lg:grid-cols-3" : 
+          layoutMode === "advanced" ? "grid-cols-1 xl:grid-cols-4" : 
+          "grid-cols-1 lg:grid-cols-2 xl:grid-cols-6"
+        }`}>
+          {/* Main chart section */}
+          <div className={`${
+            layoutMode === "standard" ? "lg:col-span-2" : 
+            layoutMode === "advanced" ? "xl:col-span-3" : 
+            "xl:col-span-4"
+          } space-y-4`}>
             <GlassCard className="p-4">
               <ChartControls 
                 chartType={chartType}
@@ -178,7 +234,7 @@ const Trading = () => {
                 onTimeframeChange={tf => setTimeframe(tf)}
               />
               
-              <div className="h-[400px]">
+              <div className="h-[500px]">
                 {marketDataLoading ? (
                   <ChartSkeleton height="100%" />
                 ) : chartType === "candlestick" ? (
@@ -207,43 +263,57 @@ const Trading = () => {
               />
             </GlassCard>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <GlassCard className="p-4">
-                <h3 className="text-lg font-semibold mb-2">Order Book</h3>
+                <h3 className="text-lg font-semibold mb-2 flex items-center">
+                  <BookOpen className="h-4 w-4 mr-2 text-axium-blue" />
+                  Order Book
+                </h3>
                 <VirtualizedOrderBook 
                   symbol={selectedIPO.symbol}
                   currentPrice={selectedIPO.currentPrice}
                   ipoId={selectedIPO.id}
+                  maxHeight={300}
                 />
               </GlassCard>
               
               <GlassCard className="p-4">
-                <h3 className="text-lg font-semibold mb-2">Recent Trades</h3>
+                <h3 className="text-lg font-semibold mb-2 flex items-center">
+                  <History className="h-4 w-4 mr-2 text-axium-blue" />
+                  Recent Trades
+                </h3>
                 <VirtualizedTradeHistory 
                   ipoId={selectedIPO.id} 
-                  symbol={selectedIPO.symbol} 
+                  symbol={selectedIPO.symbol}
                 />
               </GlassCard>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SentimentInsights ipoId={selectedIPO?.id || ''} className="col-span-12 md:col-span-6 lg:col-span-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <SentimentInsights ipoId={selectedIPO?.id || ''} className="h-full" />
               <ExternalMetricsCard creatorId={selectedIPO.id} className="h-full" />
             </div>
             
-            {user && (user.role === 'admin' || user.role === 'investor') && (
-              <InstitutionalTrading />
+            {(layoutMode === "advanced" || layoutMode === "standard") && (
+              <>
+                {user && (user.role === 'admin' || user.role === 'investor') && (
+                  <InstitutionalTrading />
+                )}
+                
+                <LiquidityPoolInfo symbol={selectedIPO.symbol} />
+              </>
             )}
-            
-            <LiquidityPoolInfo symbol={selectedIPO.symbol} />
           </div>
           
-          <div className="space-y-6">
+          {/* Sidebar with trading panel and other tools */}
+          <div className={`${layoutMode === "compact" ? "xl:col-span-2" : ""} space-y-4`}>
             {tradingLoading ? (
               <TradeFormSkeleton />
             ) : (
               <TradeForm ipo={selectedIPO} />
             )}
+            
+            <AITrendPrediction ipoId={selectedIPO.id} />
             
             <Tabs defaultValue="standard" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
@@ -274,16 +344,16 @@ const Trading = () => {
             <GlassCard className="p-4">
               <Tabs defaultValue="orders">
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="orders">
-                    <BookOpen className="h-4 w-4 mr-2" />
+                  <TabsTrigger value="orders" className="text-xs">
+                    <BookOpen className="h-3.5 w-3.5 mr-1" />
                     Orders
                   </TabsTrigger>
-                  <TabsTrigger value="positions">
-                    <TrendingUp className="h-4 w-4 mr-2" />
+                  <TabsTrigger value="positions" className="text-xs">
+                    <TrendingUp className="h-3.5 w-3.5 mr-1" />
                     Positions
                   </TabsTrigger>
-                  <TabsTrigger value="history">
-                    <History className="h-4 w-4 mr-2" />
+                  <TabsTrigger value="history" className="text-xs">
+                    <History className="h-3.5 w-3.5 mr-1" />
                     History
                   </TabsTrigger>
                 </TabsList>
@@ -307,28 +377,30 @@ const Trading = () => {
             
             <GlassCard className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Trading Settings</h3>
+                <h3 className="text-lg font-semibold flex items-center">
+                  <Settings className="h-4 w-4 mr-2 text-axium-blue" />
+                  Trading Settings
+                </h3>
                 <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
                   Configure
                 </Button>
               </div>
-              <div className="space-y-2 text-sm text-axium-gray-600">
-                <div className="flex justify-between">
-                  <span>Execution Mode</span>
-                  <span className="font-medium">Standard</span>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-axium-gray-100/50 dark:bg-axium-gray-800/50 p-2 rounded">
+                  <div className="text-axium-gray-500 text-xs">Execution Mode</div>
+                  <div className="font-medium">Standard</div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Default Order Type</span>
-                  <span className="font-medium">Limit</span>
+                <div className="bg-axium-gray-100/50 dark:bg-axium-gray-800/50 p-2 rounded">
+                  <div className="text-axium-gray-500 text-xs">Default Order</div>
+                  <div className="font-medium">Limit</div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Confirmation</span>
-                  <span className="font-medium">Required</span>
+                <div className="bg-axium-gray-100/50 dark:bg-axium-gray-800/50 p-2 rounded">
+                  <div className="text-axium-gray-500 text-xs">Confirmation</div>
+                  <div className="font-medium">Required</div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Price Alerts</span>
-                  <span className="font-medium">Enabled</span>
+                <div className="bg-axium-gray-100/50 dark:bg-axium-gray-800/50 p-2 rounded">
+                  <div className="text-axium-gray-500 text-xs">Price Alerts</div>
+                  <div className="font-medium">Enabled</div>
                 </div>
               </div>
             </GlassCard>
