@@ -237,29 +237,7 @@ export class MockAIValuationAPI {
     const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
     
-    const result = getSocialSentimentUtil(ipo);
-    
-    return {
-      overall: result.overall,
-      metrics: {
-        twitter: {
-          score: Number(result.metrics.twitter.score),
-          trend: result.metrics.twitter.trend,
-          volume: Number(result.metrics.twitter.volume)
-        },
-        instagram: {
-          score: Number(result.metrics.instagram.score),
-          trend: result.metrics.instagram.trend,
-          volume: Number(result.metrics.instagram.volume)
-        },
-        youtube: {
-          score: Number(result.metrics.youtube.score),
-          trend: result.metrics.youtube.trend,
-          volume: Number(result.metrics.youtube.volume)
-        }
-      },
-      keywords: result.keywords
-    };
+    return getSocialSentimentUtil(ipo);
   }
 
   // Market depth analysis
