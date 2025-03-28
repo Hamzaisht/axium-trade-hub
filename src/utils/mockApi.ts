@@ -1,4 +1,3 @@
-
 import { mockIPOs, delay } from './data';
 import { getSocialSentiment as getSocialSentimentUtil } from './socialSentimentUtil';
 import { 
@@ -473,7 +472,7 @@ export class MockAIValuationAPI {
   }
 
   // For testing the new sentiment analysis service
-  async getSentimentAnalysis(creatorId: string) {
+  async getSentimentAnalysis() {
     await delay(500);
     return {
       sentimentScore: Math.round(Math.random() * 100),

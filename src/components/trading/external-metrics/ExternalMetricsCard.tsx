@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useExternalData } from '@/hooks/useExternalData';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -51,20 +50,19 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
     enabled: !!creatorId
   });
   
-  // Format social metrics for chart - assuming metrics.social is an array
   const formatSocialData = () => {
     if (!metrics?.social || !Array.isArray(metrics.social)) return [];
     
     const socialData = [];
     const platforms = ['youtube', 'instagram', 'twitter', 'tiktok'];
     
-    platforms.forEach(platform => {
-      const platformData = metrics.social.find(p => p.name.toLowerCase() === platform);
+    platforms.forEach(platformName => {
+      const platformData = metrics.social.find(p => p.platform.toLowerCase() === platformName);
       if (platformData) {
         socialData.push({
-          name: platformData.name,
+          name: platformData.platform,
           value: platformData.followers,
-          color: getPlatformColor(platform),
+          color: getPlatformColor(platformName),
           change: platformData.growth
         });
       }
@@ -73,7 +71,6 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
     return socialData;
   };
   
-  // Get color for platforms
   const getPlatformColor = (platform: string): string => {
     switch (platform.toLowerCase()) {
       case 'youtube': return '#ff0000';
@@ -84,20 +81,19 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
     }
   };
   
-  // Format engagement metrics for chart
   const formatEngagementData = () => {
     if (!metrics?.social || !Array.isArray(metrics.social)) return [];
     
     const engagementData = [];
     const platforms = ['youtube', 'instagram', 'twitter', 'tiktok'];
     
-    platforms.forEach(platform => {
-      const platformData = metrics.social.find(p => p.name.toLowerCase() === platform);
+    platforms.forEach(platformName => {
+      const platformData = metrics.social.find(p => p.platform.toLowerCase() === platformName);
       if (platformData) {
         engagementData.push({
-          name: platformData.name,
+          name: platformData.platform,
           value: platformData.engagement * 100,
-          color: getPlatformColor(platform)
+          color: getPlatformColor(platformName)
         });
       }
     });
@@ -105,11 +101,9 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
     return engagementData;
   };
   
-  // Format revenue data for chart
   const formatRevenueData = () => {
     if (!metrics || !metrics.revenue) return [];
     
-    // Mock revenue data structure
     const revenueData = [
       { 
         name: 'Content', 
@@ -133,14 +127,11 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
       }
     ];
     
-    // Sort by value descending
     return revenueData.sort((a, b) => b.value - a.value);
   };
   
-  // Format revenue history for chart
   const formatRevenueHistory = () => {
     if (!metrics || !metrics.revenueHistory) {
-      // Provide mock data if revenueHistory is not available
       return [
         { name: 'Q1 2022', value: 500000 },
         { name: 'Q2 2022', value: 600000 },
@@ -164,10 +155,8 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
     });
   };
   
-  // Format brand deals for display - mock data if needed
   const formatBrandDeals = () => {
     if (!metrics?.brandDeals) {
-      // Provide mock data if brandDeals is not available
       return [
         { name: 'Nike', value: 150000, startDate: '01/01/2023', endDate: '12/31/2023', engagement: 4.2 },
         { name: 'Adidas', value: 120000, startDate: '03/15/2023', endDate: '09/15/2023', engagement: 3.8 },
@@ -229,7 +218,6 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
         </div>
       ) : (
         <>
-          {/* Aggregated Metrics Summary */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
             <div className="bg-axium-gray-100/50 rounded-md p-2 text-center">
               <div className="flex justify-center mb-1">
@@ -272,7 +260,6 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
             </div>
           </div>
           
-          {/* Tabs for different metric categories */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="social">
@@ -289,7 +276,6 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
               </TabsTrigger>
             </TabsList>
             
-            {/* Social Media Tab */}
             <TabsContent value="social" className="pt-2">
               <Tabs defaultValue="followers">
                 <TabsList className="w-full grid grid-cols-2">
@@ -358,7 +344,6 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
               </Tabs>
             </TabsContent>
             
-            {/* Revenue Tab */}
             <TabsContent value="revenue" className="pt-2">
               <Tabs defaultValue="breakdown">
                 <TabsList className="w-full grid grid-cols-2">
@@ -430,7 +415,6 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
               </Tabs>
             </TabsContent>
             
-            {/* Brands Tab */}
             <TabsContent value="brands" className="pt-2">
               <div className="h-[180px] overflow-auto pr-2">
                 <table className="w-full text-sm">
@@ -460,7 +444,6 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
             </TabsContent>
           </Tabs>
           
-          {/* Last updated timestamp */}
           <div className="mt-2 pt-2 border-t border-axium-gray-200 text-xs text-axium-gray-600">
             Last updated: {new Date(metrics.lastUpdated).toLocaleTimeString()}
           </div>

@@ -1,448 +1,569 @@
-
-import { useState, useEffect } from 'react';
-import { useIPO } from '@/contexts/IPOContext';
+import React, { useState, useEffect } from 'react';
 import { useAIValuation } from '@/hooks/ai/useAIValuation';
+import { useExternalData } from '@/hooks/useExternalData';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Zap, 
-  BarChart4, 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend 
+} from 'recharts';
+import { formatCompactNumber } from '@/utils/formatters';
+import { 
+  TrendingUp, 
   RefreshCw, 
-  BrainCircuit,
-  TrendingUp,
-  Gift,
+  Zap, 
+  DollarSign, 
+  Users, 
+  MessageSquare, 
   AlertTriangle,
-  Layers
+  Globe,
+  LayoutDashboard
 } from 'lucide-react';
-import CreatorMarketScoreCard from '@/components/trading/CreatorMarketScoreCard';
-import { ExternalMetricsCard } from '@/components/trading/external-metrics';
-import SentimentInsights from '@/components/trading/SentimentInsights';
-import { Separator } from '@/components/ui/separator';
-import { showNotification } from '@/components/notifications/ToastContainer';
+import { cn } from '@/lib/utils';
 
-const AIValuation = () => {
-  const { ipos, isLoading: iposLoading } = useIPO();
-  const [selectedIPO, setSelectedIPO] = useState<string | undefined>(undefined);
+interface AIValuationProps {
+  ipoId?: string;
+  className?: string;
+}
+
+const AIValuation = ({ ipoId, className }: AIValuationProps) => {
+  const [activeTab, setActiveTab] = useState('overview');
   const [autoRefresh, setAutoRefresh] = useState(false);
   
-  const { 
-    isLoading,
-    creatorMarketScore,
-    externalMetrics,
-    sentimentData,
+  const {
+    valuationFactors,
     pricePrediction,
+    socialSentiment,
+    marketDepth,
     anomalyData,
-    setAutoRefresh: setAIAutoRefresh,
-    refetchAll
-  } = useAIValuation({
-    ipoId: selectedIPO
-  });
+    isLoading,
+    isError,
+    refetch
+  } = useAIValuation({ ipoId });
   
-  // Set the first IPO as selected when data loads
+  const { 
+    metrics: externalMetrics,
+    aggregatedMetrics,
+    isLoading: isExternalMetricsLoading,
+    isError: isExternalMetricsError,
+    refetch: refetchExternalMetrics
+  } = useExternalData({ creatorId: ipoId });
+  
+  // Auto-refresh mechanism
   useEffect(() => {
-    if (ipos.length > 0 && !selectedIPO) {
-      setSelectedIPO(ipos[0].id);
+    let intervalId: ReturnType<typeof setInterval>;
+    
+    if (autoRefresh && ipoId) {
+      intervalId = setInterval(() => {
+        refetch();
+        refetchExternalMetrics();
+      }, 15000); // Refresh every 15 seconds
     }
-  }, [ipos, selectedIPO]);
+    
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [autoRefresh, ipoId, refetch, refetchExternalMetrics]);
   
-  // Handle auto-refresh toggle
-  useEffect(() => {
-    setAIAutoRefresh(autoRefresh);
-  }, [autoRefresh, setAIAutoRefresh]);
-  
-  const handleRefresh = () => {
-    refetchAll();
-    toast.success('Valuation data refreshed');
+  // Toggle auto-refresh
+  const toggleAutoRefresh = () => {
+    setAutoRefresh(prev => {
+      const newState = !prev;
+      return newState;
+    });
   };
   
-  const handleIPOChange = (ipoId: string) => {
-    setSelectedIPO(ipoId);
-    showNotification.info(`Switched to ${ipos.find(ipo => ipo.id === ipoId)?.creatorName || 'New Creator'}`);
+  // Format score data for pie chart
+  const getPieChartData = () => {
+    if (!valuationFactors) return [];
+    
+    return [
+      { 
+        name: 'Social', 
+        value: valuationFactors.socialEngagement.score * valuationFactors.socialEngagement.weight, 
+        fullValue: valuationFactors.socialEngagement.score,
+        weight: valuationFactors.socialEngagement.weight,
+        color: '#3b82f6' 
+      },
+      { 
+        name: 'Content', 
+        value: valuationFactors.contentQuality.score * valuationFactors.contentQuality.weight, 
+        fullValue: valuationFactors.contentQuality.score,
+        weight: valuationFactors.contentQuality.weight,
+        color: '#8b5cf6' 
+      },
+      { 
+        name: 'Revenue', 
+        value: valuationFactors.revenueStreams.score * valuationFactors.revenueStreams.weight, 
+        fullValue: valuationFactors.revenueStreams.score,
+        weight: valuationFactors.revenueStreams.weight,
+        color: '#10b981' 
+      }
+    ];
   };
   
-  // Get current creator details
-  const currentCreator = ipos.find(ipo => ipo.id === selectedIPO);
+  // Format data for factor breakdown
+  const getFactorData = (type: 'social' | 'content' | 'revenue') => {
+    if (!valuationFactors) return [];
+    
+    let factors;
+    
+    switch (type) {
+      case 'social':
+        factors = valuationFactors.socialEngagement.breakdown;
+        break;
+      case 'content':
+        factors = valuationFactors.contentQuality.breakdown;
+        break;
+      case 'revenue':
+        factors = valuationFactors.revenueStreams.breakdown;
+        break;
+    }
+    
+    return Object.entries(factors).map(([name, value]) => ({
+      name,
+      value: Math.round(value),
+      description: ''
+    }));
+  };
   
-  if (iposLoading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  }
-
+  // Get color based on score
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-500';
+    if (score >= 60) return 'text-blue-500';
+    if (score >= 40) return 'text-yellow-500';
+    if (score >= 20) return 'text-orange-500';
+    return 'text-red-500';
+  };
+  
   return (
-    <div className="bg-axium-gray-100/30 min-h-screen">
-      <div className="container max-w-7xl mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center">
-              <BrainCircuit className="h-6 w-6 mr-2 text-blue-500" />
-              AI Valuation System
-            </h1>
-            <p className="text-axium-gray-600">
-              Real-time creator valuation metrics powered by AI
-            </p>
-          </div>
-          
-          <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-            <div className="flex items-center space-x-2">
-              <Switch 
-                id="auto-refresh" 
-                checked={autoRefresh}
-                onCheckedChange={setAutoRefresh}
-              />
-              <Label htmlFor="auto-refresh" className="cursor-pointer">
-                Live Updates (15s)
-              </Label>
-            </div>
-            
-            <Button
-              variant="outline"
-              onClick={handleRefresh}
-              disabled={isLoading}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          </div>
-        </div>
-        
-        {/* Creator Selector */}
-        <GlassCard className="mb-6 p-4">
-          <h2 className="text-lg font-medium mb-4">Select Creator</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {ipos.map(ipo => (
-              <Button
-                key={ipo.id}
-                variant={selectedIPO === ipo.id ? "default" : "outline"}
-                className="flex flex-col items-center p-2 h-auto"
-                onClick={() => handleIPOChange(ipo.id)}
-              >
-                <div 
-                  className="w-12 h-12 rounded-full bg-axium-gray-200 mb-1 overflow-hidden"
-                  style={{
-                    backgroundImage: `url(${ipo.logoUrl})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                  }}
-                />
-                <span className="text-sm font-medium">{ipo.symbol}</span>
-                <span className="text-xs text-axium-gray-600 truncate w-full text-center">
-                  {ipo.creatorName}
-                </span>
-              </Button>
-            ))}
-          </div>
-        </GlassCard>
-        
-        {/* Selected Creator Info */}
-        {currentCreator && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-            <div className="flex items-center">
-              <div 
-                className="w-16 h-16 rounded-full bg-axium-gray-200 mr-4 overflow-hidden"
-                style={{
-                  backgroundImage: `url(${currentCreator.logoUrl})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              />
-              <div>
-                <h2 className="text-xl font-bold">{currentCreator.creatorName}</h2>
-                <div className="flex items-center">
-                  <span className="bg-axium-gray-200 text-axium-gray-700 px-2 py-0.5 rounded text-sm mr-2">
-                    ${currentCreator.symbol}
-                  </span>
-                  <span className="text-axium-gray-600">
-                    Current: ${currentCreator.currentPrice.toFixed(2)}
-                  </span>
-                </div>
+    <div className="container max-w-7xl mx-auto px-4 py-16">
+      <h1 className="text-4xl font-bold mb-6">AI Valuation Dashboard</h1>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Valuation Factors */}
+        <div className="lg:col-span-2 space-y-6">
+          <GlassCard className="p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold flex items-center">
+                <Zap className="h-5 w-5 mr-2 text-yellow-500" />
+                Valuation Factors
+              </h3>
+              
+              <div className="flex space-x-2">
+                <Button
+                  variant={autoRefresh ? "default" : "outline"}
+                  size="sm"
+                  onClick={toggleAutoRefresh}
+                  className={autoRefresh ? "bg-green-500 hover:bg-green-600" : ""}
+                >
+                  <RefreshCw className={cn(
+                    "h-4 w-4 mr-1",
+                    autoRefresh && "animate-spin"
+                  )} />
+                  {autoRefresh ? "Live" : "15s"}
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetch()}
+                  disabled={isLoading}
+                >
+                  <RefreshCw className={cn(
+                    "h-4 w-4 mr-1",
+                    isLoading && "animate-spin"
+                  )} />
+                  Refresh
+                </Button>
               </div>
             </div>
             
-            <div className="bg-axium-gray-100 p-2 rounded-md">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-xs text-axium-gray-600">CMS</div>
-                  <div className="font-semibold">
-                    {isLoading ? '-' : creatorMarketScore?.totalScore || '-'}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-axium-gray-600">Target</div>
-                  <div className="font-semibold">
-                    {isLoading ? '-' : creatorMarketScore?.priceImpact?.recommendedPrice 
-                      ? `$${creatorMarketScore.priceImpact.recommendedPrice}` 
-                      : '-'
-                    }
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-axium-gray-600">Confidence</div>
-                  <div className="font-semibold">
-                    {isLoading ? '-' : creatorMarketScore?.priceImpact?.confidence 
-                      ? `${creatorMarketScore.priceImpact.confidence}%` 
-                      : '-'
-                    }
-                  </div>
-                </div>
+            {isError ? (
+              <div className="text-center py-6">
+                <AlertTriangle className="h-8 w-8 text-axium-error mx-auto mb-2" />
+                <h4 className="text-axium-error font-medium mb-1">Failed to load valuation data</h4>
+                <p className="text-sm text-axium-gray-600 mb-4">
+                  There was an error analyzing creator market performance
+                </p>
+                <Button variant="outline" size="sm" onClick={() => refetch()}>
+                  Retry
+                </Button>
               </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Main Metrics Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Left Column - Creator Market Score */}
-          <div className="md:col-span-2 space-y-6">
-            <CreatorMarketScoreCard ipoId={selectedIPO} />
-            
-            <Tabs defaultValue="metrics">
-              <TabsList className="w-full">
-                <TabsTrigger value="metrics">
-                  <BarChart4 className="h-4 w-4 mr-2" />
-                  External Metrics
-                </TabsTrigger>
-                <TabsTrigger value="sentiment">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Sentiment Analysis
-                </TabsTrigger>
-                <TabsTrigger value="alerts">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  Alerts & Anomalies
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="metrics">
-                <ExternalMetricsCard creatorId={selectedIPO} />
-              </TabsContent>
-              
-              <TabsContent value="sentiment">
-                <SentimentInsights creatorId={selectedIPO} />
-              </TabsContent>
-              
-              <TabsContent value="alerts">
-                <GlassCard className="p-4">
-                  <h3 className="text-lg font-semibold mb-4">Anomaly Detection</h3>
+            ) : isLoading || !valuationFactors ? (
+              <div className="animate-pulse space-y-4 py-4">
+                <div className="h-12 rounded-md bg-axium-gray-200/50 w-1/2 mx-auto"></div>
+                <div className="h-24 rounded-md bg-axium-gray-200/50 w-full"></div>
+                <div className="h-32 rounded-md bg-axium-gray-200/50 w-full"></div>
+              </div>
+            ) : (
+              <>
+                {/* Score Display */}
+                <div className="flex flex-col items-center mb-4">
+                  <div className={cn(
+                    "text-4xl font-bold",
+                    getScoreColor(valuationFactors.socialEngagement.score)
+                  )}>
+                    {valuationFactors.socialEngagement.score}
+                  </div>
+                  <p className="text-xs text-axium-gray-600 mt-1">
+                    Confidence: 85%
+                  </p>
+                </div>
+                
+                {/* Tabs for different views */}
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className="grid grid-cols-3">
+                    <TabsTrigger value="overview">
+                      <TrendingUp className="h-4 w-4 mr-1" />
+                      <span className="hidden sm:inline">Overview</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="breakdown">
+                      <DollarSign className="h-4 w-4 mr-1" />
+                      <span className="hidden sm:inline">Breakdown</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="factors">
+                      <Users className="h-4 w-4 mr-1" />
+                      <span className="hidden sm:inline">Factors</span>
+                    </TabsTrigger>
+                  </TabsList>
                   
-                  {anomalyData?.detected ? (
-                    <div>
-                      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                        <div className="flex items-center">
-                          <AlertTriangle className="h-5 w-5 mr-2" />
-                          <span className="font-semibold">Anomalies Detected</span>
+                  {/* Score Tab - Pie Chart */}
+                  <TabsContent value="overview" className="pt-2">
+                    <div className="h-[180px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={getPieChartData()}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={40}
+                            outerRadius={80}
+                            paddingAngle={2}
+                            dataKey="value"
+                            label={({ name, fullValue }) => `${name}: ${fullValue}`}
+                            labelLine={false}
+                          >
+                            {getPieChartData().map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            formatter={(value, name, props) => [`${props.payload.fullValue}`, name]}
+                            separator=": "
+                          />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mt-2 text-center text-sm">
+                      <div>
+                        <div className={getScoreColor(valuationFactors.socialEngagement.score)}>
+                          {valuationFactors.socialEngagement.score}
                         </div>
-                        <p className="text-sm mt-1">
-                          Our AI has detected unusual patterns in this creator's data.
-                          Risk Score: {anomalyData.riskScore}/100
-                        </p>
+                        <div className="text-xs text-axium-gray-600">Social</div>
                       </div>
-                      
-                      <div className="space-y-3">
-                        {anomalyData.anomalies.map((anomaly: any, index: number) => (
-                          <div key={index} className="border border-axium-gray-200 rounded-md p-3">
-                            <div className="font-medium">{anomaly.type.replace(/_/g, ' ')}</div>
-                            <div className="text-sm text-axium-gray-600">{anomaly.description}</div>
-                            <div className="flex justify-between mt-1 text-xs">
-                              <span>Confidence: {anomaly.confidence}%</span>
-                              <span>Severity: {anomaly.severity}/10</span>
-                            </div>
+                      <div>
+                        <div className={getScoreColor(valuationFactors.contentQuality.score)}>
+                          {valuationFactors.contentQuality.score}
+                        </div>
+                        <div className="text-xs text-axium-gray-600">Content</div>
+                      </div>
+                      <div>
+                        <div className={getScoreColor(valuationFactors.revenueStreams.score)}>
+                          {valuationFactors.revenueStreams.score}
+                        </div>
+                        <div className="text-xs text-axium-gray-600">Revenue</div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  {/* Breakdown Tab - Bar Chart */}
+                  <TabsContent value="breakdown" className="pt-2">
+                    <div className="h-[200px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={getPieChartData()}
+                          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                        >
+                          <XAxis dataKey="name" />
+                          <YAxis 
+                            domain={[0, 100]} 
+                            label={{ value: 'Score', angle: -90, position: 'insideLeft' }} 
+                          />
+                          <Tooltip 
+                            formatter={(value, name, props) => [`${props.payload.fullValue}`, name]}
+                            separator=": "
+                          />
+                          <Bar dataKey="fullValue" radius={[4, 4, 0, 0]}>
+                            {getPieChartData().map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    
+                    <div className="mt-2 space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-axium-gray-600">Weight Distribution:</span>
+                      </div>
+                      <div className="flex h-2 rounded-full overflow-hidden">
+                        {getPieChartData().map((section, i) => (
+                          <div 
+                            key={i} 
+                            className="h-full" 
+                            style={{ 
+                              width: `${section.weight * 100}%`, 
+                              backgroundColor: section.color 
+                            }} 
+                          />
+                        ))}
+                      </div>
+                      <div className="flex justify-between text-xs pt-1">
+                        {getPieChartData().map((section, i) => (
+                          <div key={i}>
+                            {section.name}: {(section.weight * 100).toFixed(0)}%
                           </div>
                         ))}
                       </div>
+                    </div>
+                  </TabsContent>
+                  
+                  {/* Factors Tab */}
+                  <TabsContent value="factors" className="pt-2">
+                    <Tabs defaultValue="social" className="w-full">
+                      <TabsList className="w-full grid grid-cols-3">
+                        <TabsTrigger value="social">Social</TabsTrigger>
+                        <TabsTrigger value="content">Content</TabsTrigger>
+                        <TabsTrigger value="revenue">Revenue</TabsTrigger>
+                      </TabsList>
                       
-                      <div className="mt-4">
-                        <h4 className="font-semibold mb-2">Recommendations</h4>
-                        <ul className="list-disc pl-5 space-y-1 text-sm">
-                          {anomalyData.recommendations.map((rec: string, index: number) => (
-                            <li key={index}>{rec}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <div className="bg-green-100 text-green-800 rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-3">
-                        <Zap className="h-8 w-8" />
-                      </div>
-                      <h4 className="font-medium mb-1">No Anomalies Detected</h4>
-                      <p className="text-sm text-axium-gray-600">
-                        This creator's metrics and trading patterns appear normal.
-                      </p>
-                    </div>
-                  )}
-                </GlassCard>
-              </TabsContent>
-            </Tabs>
-          </div>
+                      <TabsContent value="social" className="pt-2">
+                        <div className="h-[160px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                              data={getFactorData('social')}
+                              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                              layout="vertical"
+                            >
+                              <XAxis type="number" domain={[0, 100]} />
+                              <YAxis dataKey="name" type="category" width={120} />
+                              <Tooltip />
+                              <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="content" className="pt-2">
+                        <div className="h-[160px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                              data={getFactorData('content')}
+                              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                              layout="vertical"
+                            >
+                              <XAxis type="number" domain={[0, 100]} />
+                              <YAxis dataKey="name" type="category" width={120} />
+                              <Tooltip />
+                              <Bar dataKey="value" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="revenue" className="pt-2">
+                        <div className="h-[160px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                              data={getFactorData('revenue')}
+                              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                              layout="vertical"
+                            >
+                              <XAxis type="number" domain={[0, 100]} />
+                              <YAxis dataKey="name" type="category" width={120} />
+                              <Tooltip />
+                              <Bar dataKey="value" fill="#10b981" radius={[0, 4, 4, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </TabsContent>
+                </Tabs>
+                
+                {/* Additional info */}
+                <div className="mt-2 pt-2 border-t border-axium-gray-200 text-xs text-axium-gray-600">
+                  Last updated: {new Date().toLocaleTimeString()}
+                  {autoRefresh && " • Live updates enabled"}
+                </div>
+              </>
+            )}
+          </GlassCard>
           
-          {/* Right Column - Additional Insights */}
-          <div className="space-y-6">
-            {/* Price Prediction */}
-            <GlassCard className="p-4">
-              <h3 className="text-lg font-semibold flex items-center mb-4">
-                <Layers className="h-5 w-5 mr-2 text-purple-500" />
-                Price Prediction
-              </h3>
-              
-              {isLoading || !pricePrediction ? (
-                <div className="animate-pulse space-y-4">
-                  <div className="h-8 bg-axium-gray-200/50 rounded w-1/2"></div>
-                  <div className="h-16 bg-axium-gray-200/50 rounded"></div>
-                  <div className="h-32 bg-axium-gray-200/50 rounded"></div>
-                </div>
-              ) : (
-                <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="text-lg font-medium">
-                      ${pricePrediction.targetPrice.toFixed(2)}
-                    </div>
-                    <div className={`px-2 py-1 rounded text-sm font-medium ${
-                      pricePrediction.prediction === 'up' || pricePrediction.prediction === 'strong_up' 
-                        ? 'bg-green-100 text-green-800' 
-                        : pricePrediction.prediction === 'down' || pricePrediction.prediction === 'strong_down'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {pricePrediction.prediction.replace('_', ' ')}
-                    </div>
-                  </div>
-                  
-                  <div className="bg-axium-gray-100 rounded-md p-3 mb-4">
-                    <div className="text-sm font-medium mb-1">Confidence: {pricePrediction.confidence}%</div>
-                    <div className="w-full bg-axium-gray-300 rounded-full h-2">
-                      <div 
-                        className="bg-blue-500 h-2 rounded-full" 
-                        style={{ width: `${pricePrediction.confidence}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium mb-2">Key Factors</h4>
-                    <ul className="space-y-2">
-                      {pricePrediction.factors.map((factor: string, index: number) => (
-                        <li key={index} className="flex items-start">
-                          <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 text-xs mr-2 mt-0.5">
-                            {index + 1}
-                          </div>
-                          <span className="text-sm">{factor}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-            </GlassCard>
+          {/* Price Prediction */}
+          <GlassCard className="p-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <TrendingUp className="h-5 w-5 mr-2 text-green-500" />
+              Price Prediction
+            </h3>
             
-            {/* Key Metrics Overview */}
-            <GlassCard className="p-4">
-              <h3 className="text-lg font-semibold flex items-center mb-4">
-                <Gift className="h-5 w-5 mr-2 text-green-500" />
-                Key Metrics
-              </h3>
-              
-              {isLoading || !externalMetrics ? (
-                <div className="animate-pulse space-y-4">
-                  <div className="h-16 bg-axium-gray-200/50 rounded"></div>
-                  <div className="h-16 bg-axium-gray-200/50 rounded"></div>
+            {isLoading || !pricePrediction ? (
+              <div className="text-center py-6">
+                Loading price prediction...
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-semibold">
+                  {pricePrediction.trend === 'upward' ? (
+                    <span className="text-green-500">Upward Trend</span>
+                  ) : (
+                    <span className="text-red-500">Downward Trend</span>
+                  )}
                 </div>
-              ) : (
-                <div className="space-y-4">
+                <div className="text-sm text-axium-gray-500">
+                  Predicted price change in 24 hours: {pricePrediction.percentageChange}%
+                </div>
+              </>
+            )}
+          </GlassCard>
+          
+          {/* Social Sentiment Analysis */}
+          <GlassCard className="p-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <MessageSquare className="h-5 w-5 mr-2 text-blue-500" />
+              Social Sentiment Analysis
+            </h3>
+            
+            {isLoading || !socialSentiment ? (
+              <div className="text-center py-6">
+                Loading social sentiment data...
+              </div>
+            ) : (
+              <>
+                <div className="text-xl font-semibold">
+                  Overall Sentiment: {socialSentiment.overall}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>Twitter: <span className="font-medium">{socialSentiment.metrics.twitter.score}</span></div>
+                  <div>Instagram: <span className="font-medium">{socialSentiment.metrics.instagram.score}</span></div>
+                  <div>YouTube: <span className="font-medium">{socialSentiment.metrics.youtube.score}</span></div>
+                </div>
+              </>
+            )}
+          </GlassCard>
+        </div>
+        
+        {/* Right Column - External Metrics */}
+        <div className="space-y-6">
+          <GlassCard className="p-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <Globe className="h-5 w-5 mr-2 text-purple-500" />
+              External Metrics
+            </h3>
+            
+            {isExternalMetricsLoading || !externalMetrics ? (
+              <div className="text-center py-6">
+                Loading external metrics data...
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <h4 className="font-medium text-sm mb-2">Social Media Performance</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-axium-gray-100 rounded p-2">
-                        <div className="text-xs text-axium-gray-600">Followers</div>
-                        <div className="font-semibold">
-                          {externalMetrics.social ? new Intl.NumberFormat().format(
-                            externalMetrics.social.youtube.subscribers +
-                            externalMetrics.social.instagram.followers +
-                            externalMetrics.social.twitter.followers +
-                            externalMetrics.social.tiktok.followers
-                          ) : '-'}
-                        </div>
-                      </div>
-                      <div className="bg-axium-gray-100 rounded p-2">
-                        <div className="text-xs text-axium-gray-600">Avg. Engagement</div>
-                        <div className="font-semibold">
-                          {externalMetrics.social ? (
-                            (((
-                              externalMetrics.social.youtube.engagement +
-                              externalMetrics.social.instagram.engagement +
-                              externalMetrics.social.twitter.engagement +
-                              externalMetrics.social.tiktok.engagement
-                            ) / 4) * 100).toFixed(1) + '%'
-                          ) : '-'}
-                        </div>
-                      </div>
-                    </div>
+                    YouTube: <span className="font-medium">{formatCompactNumber(youtubeData?.followers || 0)}</span>
                   </div>
-                  
-                  <Separator />
-                  
                   <div>
-                    <h4 className="font-medium text-sm mb-2">Revenue Streams</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-axium-gray-100 rounded p-2">
-                        <div className="text-xs text-axium-gray-600">Annual Revenue</div>
-                        <div className="font-semibold">
-                          {externalMetrics.revenue ? 
-                            `$${new Intl.NumberFormat().format(externalMetrics.revenue.totalRevenue)}` : '-'}
-                        </div>
-                      </div>
-                      <div className="bg-axium-gray-100 rounded p-2">
-                        <div className="text-xs text-axium-gray-600">Revenue Growth</div>
-                        <div className={`font-semibold ${
-                          externalMetrics.revenue && externalMetrics.revenue.growthRate >= 0 
-                            ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {externalMetrics.revenue ? 
-                            `${externalMetrics.revenue.growthRate > 0 ? '+' : ''}${externalMetrics.revenue.growthRate}%` 
-                            : '-'}
-                        </div>
-                      </div>
-                    </div>
+                    Instagram: <span className="font-medium">{formatCompactNumber(instagramData?.followers || 0)}</span>
                   </div>
-                  
-                  <Separator />
-                  
                   <div>
-                    <h4 className="font-medium text-sm mb-2">Sentiment Analysis</h4>
-                    <div className="bg-axium-gray-100 rounded p-2">
-                      <div className="flex justify-between">
-                        <div className="text-xs text-axium-gray-600">Overall Sentiment</div>
-                        <div className={`text-xs font-medium px-2 rounded ${
-                          sentimentData?.summary.overallScore >= 75 ? 'bg-green-100 text-green-800' :
-                          sentimentData?.summary.overallScore >= 50 ? 'bg-blue-100 text-blue-800' :
-                          sentimentData?.summary.overallScore >= 25 ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {sentimentData?.summary.overallScore 
-                            ? `${sentimentData.summary.overallScore}%` 
-                            : '-'}
-                        </div>
-                      </div>
-                      
-                      <div className="mt-2 w-full bg-axium-gray-300 rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full ${
-                            sentimentData?.summary.overallScore >= 75 ? 'bg-green-500' :
-                            sentimentData?.summary.overallScore >= 50 ? 'bg-blue-500' :
-                            sentimentData?.summary.overallScore >= 25 ? 'bg-yellow-500' :
-                            'bg-red-500'
-                          }`}
-                          style={{ width: `${sentimentData?.summary.overallScore || 0}%` }}
-                        ></div>
-                      </div>
-                    </div>
+                    Twitter: <span className="font-medium">{formatCompactNumber(twitterData?.followers || 0)}</span>
+                  </div>
+                  <div>
+                    TikTok: <span className="font-medium">{formatCompactNumber(tiktokData?.followers || 0)}</span>
                   </div>
                 </div>
-              )}
-            </GlassCard>
-          </div>
+                <div className="text-xl font-semibold">
+                  ${formatCompactNumber(externalMetrics?.revenue?.totalRevenue || 0)}
+                </div>
+                <div className="text-sm text-axium-gray-500">{(externalMetrics?.revenue?.growthRate || 0) > 0 ? '+' : ''}{externalMetrics?.revenue?.growthRate || 0}% YoY</div>
+                
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div className="col-span-2 sm:col-span-1">
+                    <h4 className="font-medium">Content Revenue</h4>
+                    <div className="text-lg">${formatCompactNumber(externalMetrics?.revenue?.contentRevenue || 0)}</div>
+                  </div>
+                  
+                  <div className="col-span-2 sm:col-span-1">
+                    <h4 className="font-medium">Sponsorships</h4>
+                    <div className="text-lg">${formatCompactNumber(externalMetrics?.revenue?.sponsorshipRevenue || 0)}</div>
+                  </div>
+                  
+                  <div className="col-span-2 sm:col-span-1">
+                    <h4 className="font-medium">Merchandise</h4>
+                    <div className="text-lg">${formatCompactNumber(externalMetrics?.revenue?.merchandiseRevenue || 0)}</div>
+                  </div>
+                  
+                  <div className="col-span-2 sm:col-span-1">
+                    <h4 className="font-medium">Live Events</h4>
+                    <div className="text-lg">${formatCompactNumber(externalMetrics?.revenue?.liveEventsRevenue || 0)}</div>
+                  </div>
+                </div>
+              </>
+            )}
+          </GlassCard>
+          
+          {/* Market Depth Analysis */}
+          <GlassCard className="p-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <LayoutDashboard className="h-5 w-5 mr-2 text-orange-500" />
+              Market Depth Analysis
+            </h3>
+            
+            {isLoading || !marketDepth ? (
+              <div className="text-center py-6">
+                Loading market depth data...
+              </div>
+            ) : (
+              <>
+                <div>Buy Wall Strength: {marketDepth.buyWallStrength}</div>
+                <div>Sell Wall Strength: {marketDepth.sellWallStrength}</div>
+                <div>Current Spread: {marketDepth.currentSpread}</div>
+              </>
+            )}
+          </GlassCard>
+          
+          {/* Anomaly Detection */}
+          <GlassCard className="p-4">
+            <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <AlertTriangle className="h-5 w-5 mr-2 text-red-500" />
+              Anomaly Detection
+            </h3>
+            
+            {isLoading || !anomalyData ? (
+              <div className="text-center py-6">
+                Loading anomaly detection data...
+              </div>
+            ) : (
+              <>
+                {anomalyData.hasAnomalies ? (
+                  <div className="text-red-500">Anomalies Detected!</div>
+                ) : (
+                  <div className="text-green-500">No Anomalies Detected</div>
+                )}
+              </>
+            )}
+          </GlassCard>
         </div>
       </div>
     </div>

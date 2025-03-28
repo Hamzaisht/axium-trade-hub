@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useAIValuation } from '@/hooks/useAIValuation';
@@ -21,53 +20,40 @@ export const MarketDepthChart = ({
   const { marketDepth, isMarketDepthLoading } = useAIValuation({ ipoId });
   const [depthData, setDepthData] = useState<any[]>([]);
   
-  // Generate chart data whenever marketDepth changes
   useEffect(() => {
     if (!marketDepth || !currentPrice) {
       setDepthData([]);
       return;
     }
     
-    // We'll create price points around the current price
     const { supportLevels, resistanceLevels } = marketDepth;
     const priceLevels = [...supportLevels, currentPrice, ...resistanceLevels].sort((a, b) => a - b);
     
-    // Calculate price range (min to max with some padding)
     const minPrice = Math.min(...priceLevels) * 0.9;
     const maxPrice = Math.max(...priceLevels) * 1.1;
     
-    // Generate price points across the range
     const pricePoints = [];
-    const step = (maxPrice - minPrice) / 40; // 40 data points
+    const step = (maxPrice - minPrice) / 40;
     
     for (let price = minPrice; price <= maxPrice; price += step) {
       pricePoints.push(parseFloat(price.toFixed(2)));
     }
     
-    // Generate market depth data
     const data = pricePoints.map(price => {
       let buyVolume = 0;
       let sellVolume = 0;
       
-      // Buy volume is higher at lower prices
       if (price <= currentPrice) {
-        // Calculate distance from current price as a percentage
         const distance = (currentPrice - price) / currentPrice;
-        // More volume near support levels
         const nearSupport = supportLevels.some(support => Math.abs(price - support) < step * 2);
         
-        // Higher buy volumes at support levels and further from current price
         buyVolume = marketDepth.buyWallStrength * 1000 * (1 + distance * 5) * (nearSupport ? 1.5 : 1);
       }
       
-      // Sell volume is higher at higher prices
       if (price >= currentPrice) {
-        // Calculate distance from current price as a percentage
         const distance = (price - currentPrice) / currentPrice;
-        // More volume near resistance levels
         const nearResistance = resistanceLevels.some(resistance => Math.abs(price - resistance) < step * 2);
         
-        // Higher sell volumes at resistance levels and further from current price
         sellVolume = marketDepth.sellWallStrength * 1000 * (1 + distance * 4) * (nearResistance ? 1.4 : 1);
       }
       
@@ -81,7 +67,6 @@ export const MarketDepthChart = ({
     setDepthData(data);
   }, [marketDepth, currentPrice]);
   
-  // Custom tooltip for the chart
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const price = payload[0].payload.price;
@@ -216,9 +201,13 @@ export const MarketDepthChart = ({
                 Current Spread
               </Badge>
               <div className="text-xs text-axium-gray-600">
-                Bid: <span className="text-axium-success font-medium">${marketDepth.currentSpread.bid}</span> 
+                Bid: <span className="text-axium-success font-medium">
+                  ${typeof marketDepth.currentSpread === 'object' ? marketDepth.currentSpread.bid : (marketDepth.currentSpread || 0).toFixed(2)}
+                </span> 
                 <span className="mx-1">|</span> 
-                Ask: <span className="text-axium-error font-medium">${marketDepth.currentSpread.ask}</span>
+                Ask: <span className="text-axium-error font-medium">
+                  ${typeof marketDepth.currentSpread === 'object' ? marketDepth.currentSpread.ask : ((marketDepth.currentSpread || 0) + 0.5).toFixed(2)}
+                </span>
               </div>
             </div>
           </div>

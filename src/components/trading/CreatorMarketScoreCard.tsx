@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useCreatorMarketScore } from '@/hooks/ai/useCreatorMarketScore';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -42,25 +41,23 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
     creatorMarketScore,
     isLoading,
     isError,
-    refetchCreatorMarketScore
+    refetch
   } = useCreatorMarketScore({ ipoId });
   
-  // Auto-refresh mechanism
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval>;
     
     if (autoRefresh && ipoId) {
       intervalId = setInterval(() => {
-        refetchCreatorMarketScore();
-      }, 15000); // Refresh every 15 seconds
+        refetch();
+      }, 15000);
     }
     
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [autoRefresh, ipoId, refetchCreatorMarketScore]);
+  }, [autoRefresh, ipoId, refetch]);
   
-  // Toggle auto-refresh
   const toggleAutoRefresh = () => {
     setAutoRefresh(prev => {
       const newState = !prev;
@@ -73,7 +70,6 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
     });
   };
   
-  // Format score data for pie chart
   const getPieChartData = () => {
     if (!creatorMarketScore) return [];
     
@@ -102,7 +98,6 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
     ];
   };
   
-  // Format data for factor breakdown
   const getFactorData = (type: 'revenue' | 'social' | 'sentiment') => {
     if (!creatorMarketScore) return [];
     
@@ -127,7 +122,6 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
     }));
   };
   
-  // Get color based on score
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-500';
     if (score >= 60) return 'text-blue-500';
@@ -136,7 +130,6 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
     return 'text-red-500';
   };
   
-  // Get badge for price recommendation
   const getPriceBadge = () => {
     if (!creatorMarketScore?.priceImpact) return null;
     
@@ -180,7 +173,7 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetchCreatorMarketScore()}
+            onClick={() => refetch()}
             disabled={isLoading}
           >
             <RefreshCw className={cn(
@@ -199,7 +192,7 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
           <p className="text-sm text-axium-gray-600 mb-4">
             There was an error analyzing creator market performance
           </p>
-          <Button variant="outline" size="sm" onClick={() => refetchCreatorMarketScore()}>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
             Retry
           </Button>
         </div>
@@ -211,7 +204,6 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
         </div>
       ) : (
         <>
-          {/* Score Display */}
           <div className="flex flex-col items-center mb-4">
             <div className={cn(
               "text-4xl font-bold",
@@ -229,7 +221,6 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
             </p>
           </div>
           
-          {/* Tabs for different views */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid grid-cols-3">
               <TabsTrigger value="score">
@@ -246,7 +237,6 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
               </TabsTrigger>
             </TabsList>
             
-            {/* Score Tab - Pie Chart */}
             <TabsContent value="score" className="pt-2">
               <div className="h-[180px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -296,7 +286,6 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
               </div>
             </TabsContent>
             
-            {/* Breakdown Tab - Bar Chart */}
             <TabsContent value="breakdown" className="pt-2">
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
@@ -348,7 +337,6 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
               </div>
             </TabsContent>
             
-            {/* Factors Tab */}
             <TabsContent value="factors" className="pt-2">
               <Tabs defaultValue="revenue" className="w-full">
                 <TabsList className="w-full grid grid-cols-3">
@@ -411,7 +399,6 @@ export function CreatorMarketScoreCard({ ipoId, className }: CreatorMarketScoreC
             </TabsContent>
           </Tabs>
           
-          {/* Additional info */}
           <div className="mt-2 pt-2 border-t border-axium-gray-200 text-xs text-axium-gray-600">
             Last updated: {new Date(creatorMarketScore.lastUpdated).toLocaleTimeString()}
             {autoRefresh && " • Live updates enabled"}

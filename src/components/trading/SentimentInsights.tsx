@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +35,7 @@ const SentimentInsights = ({ creatorId, className }: SentimentInsightsProps) => 
     sentimentData, 
     isLoading, 
     isError, 
-    refreshSentiment 
+    refetch 
   } = useSentimentAnalysis({ creatorId });
   
   // Format the sentiment history for the chart - using summary history data if available
@@ -84,7 +83,7 @@ const SentimentInsights = ({ creatorId, className }: SentimentInsightsProps) => 
         <Button
           variant="outline"
           size="sm"
-          onClick={refreshSentiment}
+          onClick={refetch}
           disabled={isLoading}
         >
           <RefreshCw className={cn(
@@ -105,7 +104,7 @@ const SentimentInsights = ({ creatorId, className }: SentimentInsightsProps) => 
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={refreshSentiment}
+            onClick={refetch}
           >
             Retry
           </Button>

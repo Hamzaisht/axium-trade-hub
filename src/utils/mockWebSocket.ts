@@ -1,4 +1,3 @@
-
 // Mock WebSocket implementation
 import { faker } from '@faker-js/faker';
 import { IPO, Trade, Order } from './mockApi';
@@ -13,7 +12,8 @@ export enum WSEvents {
   CONNECTION = 'connection',
   PRICE_UPDATE = 'price-update',
   ORDERBOOK_UPDATE = 'orderbook-update',
-  TRADE_EXECUTED = 'trade-executed'
+  TRADE_EXECUTED = 'trade-executed',
+  ORDER_UPDATED = 'order-updated'
 }
 
 // Mock WebSocket class
@@ -69,8 +69,8 @@ class MockWebSocket {
     this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
   }
   
-  // Emit an event
-  private emit(event: string, data: any) {
+  // Emit an event - making this public
+  emit(event: string, data: any) {
     if (!this.listeners[event]) return;
     this.listeners[event].forEach(callback => callback(data));
   }
@@ -157,7 +157,7 @@ class MockWebSocket {
     }, faker.number.int({ min: 5000, max: 10000 })); // Every 5-10 seconds
   }
   
-  // Start trade execution interval
+  // Start trade executions
   private startTradeExecutions() {
     this.intervals.trades = setInterval(() => {
       if (!this.isConnected) return;
@@ -191,4 +191,5 @@ class MockWebSocket {
   }
 }
 
+// Create and export a single instance of the mock WebSocket
 export const mockWebSocket = new MockWebSocket();
