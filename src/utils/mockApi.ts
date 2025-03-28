@@ -1,4 +1,3 @@
-
 import { mockIPOs, delay, mockOrders, mockTrades } from './data';
 import { getSocialSentiment as getSocialSentimentUtil } from './socialSentimentUtil';
 
@@ -205,7 +204,7 @@ export class MockTradingAPI {
     keywords: string[];
   }> {
     await delay(300);
-    const ipo = await this.getIPO(ipoId);
+    const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
 
     // Get the result from the utility function
