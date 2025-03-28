@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,11 +56,11 @@ export const AdminPlatformControls = () => {
       newIPOsEnabled: platformStatus.emergencyLock // Enable if we're unlocking
     });
     
-    toast({
-      description: platformStatus.emergencyLock
-        ? "Platform emergency lockdown lifted. All platform operations have been resumed."
-        : "EMERGENCY LOCKDOWN ACTIVATED. All trading, withdrawals, and IPO launches have been suspended."
-    });
+    if (platformStatus.emergencyLock) {
+      toast.success("Platform emergency lockdown lifted. All platform operations have been resumed.");
+    } else {
+      toast.error("EMERGENCY LOCKDOWN ACTIVATED. All trading, withdrawals, and IPO launches have been suspended.");
+    }
   };
 
   return (
@@ -443,4 +442,3 @@ export const AdminPlatformControls = () => {
     </div>
   );
 };
-
