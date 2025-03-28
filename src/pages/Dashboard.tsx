@@ -1,191 +1,380 @@
-
-import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useIPO } from "@/contexts/IPOContext";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import { DashboardTabs } from "@/components/dashboard";
-import { MetricCard } from "@/components/dashboard/MetricCard";
-import CreatorsList from "@/components/dashboard/CreatorsList";
-import PortfolioOverview from "@/components/portfolio/PortfolioOverview";
-import PortfolioBreakdown from "@/components/portfolio/PortfolioBreakdown";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { SearchBar } from "@/components/dashboard/SearchBar";
-import { Activity, TrendingUp, Users } from "lucide-react";
+import PriceChart from "@/components/dashboard/PriceChart";
+import VirtualizedOrderBook from "@/components/dashboard/VirtualizedOrderBook";
+import AITrendPrediction from "@/components/trading/AITrendPrediction";
+import MarketDepthChart from "@/components/trading/MarketDepthChart";
+import DividendAndVesting from "@/components/trading/DividendAndVesting";
+import VirtualizedTradeHistory from "@/components/trading/VirtualizedTradeHistory";
+import SentimentInsights from "@/components/trading/SentimentInsights";
+import { ExternalMetricsCard } from "@/components/trading/external-metrics";
+import SentimentScoreBadge from "@/components/trading/SentimentScoreBadge";
+import RiskAnomalyCenter from "@/components/risk/RiskAnomalyCenter";
+import AnomalyWarningBanner from "@/components/risk/AnomalyWarningBanner";
+import { useAnomalyDetection, useAnomalyAlerts } from "@/hooks/ai/useAnomalyDetection";
+import { 
+  TrendingUp, 
+  BarChart, 
+  Sparkles,
+  AlertCircle
+} from "lucide-react";
+import { mockIPOAPI } from "@/utils/mockApi";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { 
+  SearchBar,
+  CreatorsList,
+  MetricCard,
+  DashboardTabs
+} from "@/components/dashboard";
+import { 
+  ChartSkeleton,
+  MetricCardSkeleton,
+  SentimentInsightsSkeleton
+} from "@/components/ui/skeleton-components";
+import { Button } from "@/components/ui/button";
+import { showNotification } from "@/components/notifications/ToastContainer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Dashboard = () => {
-  const { user } = useAuth();
-  const { ipos, isLoading } = useIPO();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTab, setSelectedTab] = useState("trading");
-
-  // Calculate market overview data
-  const marketOverview = {
-    totalMarketCap: 12500000,
-    marketCapChange: 3.7,
-    averagePrice: 27.82,
-    averagePriceChange: 1.9,
-    activeCreators: 125,
-    activeCreatorsChange: 5.3,
-    volume24h: 4620000,
-    volumeChange: 8.2
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTab, setSelectedTab] = useState<string>("trading");
+  
+  const { data: ipos = [], isLoading, error } = useQuery({
+    queryKey: ['ipos'],
+    queryFn: async () => {
+      try {
+        return await mockIPOAPI.getAllIPOs();
+      } catch (error) {
+        console.error("Error fetching IPOs:", error);
+        toast.error("Failed to load creators. Please try again.");
+        showNotification.error("Failed to load creators. Please try again.");
+        throw error;
+      }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+  
+  const [selectedCreator, setSelectedCreator] = useState<any>(null);
+  
+  useEffect(() => {
+    if (ipos.length > 0 && !selectedCreator) {
+      setSelectedCreator(ipos[0]);
+    }
+  }, [ipos, selectedCreator]);
+  
+  const handleCreatorSelect = (id: string) => {
+    const creator = ipos.find(ipo => ipo.id === id);
+    if (creator) {
+      setSelectedCreator(creator);
+      showNotification.info(`Selected ${creator.creatorName} ($${creator.symbol})`);
+    }
   };
+  
+  const filteredCreators = ipos.filter(ipo => 
+    ipo.creatorName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (ipo.symbol && ipo.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
-  // Calculate top performers and losers
-  const topPerformers = ipos.slice(0, 5).map(ipo => ({
-    id: ipo.id,
-    creatorName: ipo.creatorName,
-    symbol: ipo.symbol,
-    currentPrice: ipo.currentPrice,
-    priceChange: 5.2, // Mock price change (will be replaced with actual data once available)
-  }));
+  const { data: anomalyData } = useAnomalyDetection({
+    ipoId: selectedCreator?.id,
+    enabled: !!selectedCreator?.id
+  });
 
-  const topLosers = [...ipos].reverse().slice(0, 5).map(ipo => ({
-    id: ipo.id,
-    creatorName: ipo.creatorName,
-    symbol: ipo.symbol,
-    currentPrice: ipo.currentPrice,
-    priceChange: -Math.abs(3.8), // Mock price change (will be replaced with actual data once available)
-  }));
+  useAnomalyAlerts({
+    anomalyData,
+    enabled: true
+  });
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-axium-gray-100/30">
+        <Navbar />
+        <main className="pt-24 pb-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center py-12">
+              <AlertCircle className="mx-auto h-12 w-12 text-axium-error mb-4" />
+              <h2 className="text-2xl font-semibold text-axium-gray-900">Failed to load dashboard</h2>
+              <p className="mt-2 text-axium-gray-600">There was an error loading the dashboard data. Please try again later.</p>
+              <Button className="mt-4" onClick={() => window.location.reload()}>
+                Refresh Page
+              </Button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+  
   return (
     <div className="min-h-screen bg-axium-gray-100/30">
       <Navbar />
       
-      <main className="container max-w-7xl mx-auto px-4 py-8 mt-16">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-1">Dashboard</h1>
-            <p className="text-axium-gray-600">Welcome back, {user?.name || "User"}!</p>
+      <main className="pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row justify-between items-start mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-axium-gray-900">Trading Dashboard</h1>
+              <p className="text-axium-gray-600">Real-time creator token trading with AI-powered insights</p>
+            </div>
           </div>
           
-          <SearchBar 
-            value={searchTerm}
-            onChange={setSearchTerm}
-            className="md:w-64 lg:w-80"
-          />
-        </div>
-        
-        {/* Metrics Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-          <MetricCard
-            title="Market Cap"
-            value={`$${(marketOverview?.totalMarketCap || 0).toLocaleString()}`}
-            subtitle={`${marketOverview?.marketCapChange >= 0 ? '+' : ''}${marketOverview?.marketCapChange.toFixed(2)}% this month`}
-            icon={Activity}
-            change={marketOverview?.marketCapChange || 0}
-          />
-          <MetricCard
-            title="Avg. Creator Price"
-            value={`$${(marketOverview?.averagePrice || 0).toFixed(2)}`}
-            subtitle={`${marketOverview?.averagePriceChange >= 0 ? '+' : ''}${marketOverview?.averagePriceChange.toFixed(2)}% this month`}
-            icon={TrendingUp}
-            change={marketOverview?.averagePriceChange || 0}
-          />
-          <MetricCard
-            title="Active Creators"
-            value={marketOverview?.activeCreators.toString() || '0'}
-            subtitle={`${marketOverview?.activeCreatorsChange >= 0 ? '+' : ''}${marketOverview?.activeCreatorsChange.toFixed(2)}% this month`}
-            icon={Users}
-            change={marketOverview?.activeCreatorsChange || 0}
-          />
-          <MetricCard
-            title="24h Volume"
-            value={`$${(marketOverview?.volume24h || 0).toLocaleString()}`}
-            subtitle={`${marketOverview?.volumeChange >= 0 ? '+' : ''}${marketOverview?.volumeChange.toFixed(2)}% this month`}
-            icon={Activity}
-            change={marketOverview?.volumeChange || 0}
-          />
-        </div>
-        
-        {/* Portfolio Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-          <PortfolioOverview />
-          <PortfolioBreakdown />
-        </div>
-        
-        {/* Top Performers & Losers */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-          <GlassCard>
-            <div className="p-5">
-              <h2 className="text-xl font-semibold mb-6 flex items-center">
-                <TrendingUp size={20} className="mr-2 text-green-500" /> Top Performers
-              </h2>
-              <div className="space-y-5">
-                {topPerformers.map((performer) => (
-                  <div key={performer.id} className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div 
-                        className="w-10 h-10 mr-3 rounded bg-axium-blue/10 flex items-center justify-center text-axium-blue font-semibold"
-                      >
-                        {performer.creatorName.substring(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-medium">{performer.creatorName}</p>
-                        <p className="text-sm text-axium-gray-500">${performer.symbol}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">${performer.currentPrice.toFixed(2)}</p>
-                      <p className="text-green-500 text-sm flex items-center justify-end">
-                        <TrendingUp size={12} className="h-3 w-3 mr-1" />
-                        {performer.priceChange.toFixed(2)}%
-                      </p>
-                    </div>
-                  </div>
-                ))}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-1 space-y-6">
+              {/* Search Bar */}
+              <SearchBar 
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
+              
+              {/* Creators List */}
+              <CreatorsList 
+                creators={filteredCreators.map(creator => ({
+                  id: creator.id,
+                  name: creator.creatorName,
+                  symbol: `$${creator.symbol}`,
+                  image: `https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.creatorName}`,
+                  price: creator.currentPrice,
+                  change: ((creator.currentPrice - creator.initialPrice) / creator.initialPrice) * 100,
+                  marketCap: creator.currentPrice * (creator.totalSupply - creator.availableSupply),
+                  followers: "28.5M",
+                  engagement: creator.engagementScore,
+                  aiScore: creator.aiScore
+                }))}
+                selectedCreatorId={selectedCreator?.id}
+                onSelectCreator={handleCreatorSelect}
+                isLoading={isLoading}
+                searchQuery={searchQuery}
+              />
+              
+              <div className="space-y-4">
+                <VirtualizedTradeHistory 
+                  ipoId={selectedCreator?.id} 
+                  symbol={selectedCreator?.symbol}
+                  limit={5}
+                />
               </div>
             </div>
-          </GlassCard>
-          
-          <GlassCard>
-            <div className="p-5">
-              <h2 className="text-xl font-semibold mb-6 flex items-center">
-                <TrendingUp size={20} className="mr-2 text-red-500 transform rotate-180" /> Top Losers
-              </h2>
-              <div className="space-y-5">
-                {topLosers.map((loser) => (
-                  <div key={loser.id} className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div 
-                        className="w-10 h-10 mr-3 rounded bg-axium-gray-200 flex items-center justify-center text-axium-gray-600 font-semibold"
-                      >
-                        {loser.creatorName.substring(0, 2).toUpperCase()}
+            
+            <div className="lg:col-span-3 space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {isLoading ? (
+                  <>
+                    <MetricCardSkeleton />
+                    <MetricCardSkeleton />
+                    <MetricCardSkeleton />
+                  </>
+                ) : (
+                  <>
+                    <MetricCard
+                      title="Market Trend"
+                      value="+6.3%"
+                      subtitle="24h Change"
+                      icon={TrendingUp}
+                    />
+                    
+                    <MetricCard
+                      title="Market Volume"
+                      value="$24.8M"
+                      subtitle="24h Volume"
+                      icon={BarChart}
+                    />
+                    
+                    <GlassCard className="sm:col-span-1">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <div className="p-2 rounded-full bg-axium-blue/10">
+                          <Sparkles className="h-5 w-5 text-axium-blue" />
+                        </div>
+                        <h3 className="font-medium">AI Sentiment</h3>
                       </div>
-                      <div>
-                        <p className="font-medium">{loser.creatorName}</p>
-                        <p className="text-sm text-axium-gray-500">${loser.symbol}</p>
+                      <div className="flex items-center">
+                        {selectedCreator ? (
+                          <SentimentScoreBadge 
+                            creatorId={selectedCreator?.id} 
+                            size="lg" 
+                            className="mt-0.5 mb-0.5"
+                          />
+                        ) : (
+                          <p className="text-2xl font-semibold">Bullish</p>
+                        )}
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">${loser.currentPrice.toFixed(2)}</p>
-                      <p className="text-red-500 text-sm flex items-center justify-end">
-                        <TrendingUp size={12} className="h-3 w-3 mr-1 transform rotate-180" />
-                        {Math.abs(loser.priceChange).toFixed(2)}%
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                      <p className="text-axium-gray-600 text-sm">Overall Market</p>
+                    </GlassCard>
+                  </>
+                )}
               </div>
+              
+              {selectedCreator && (
+                <AnomalyWarningBanner ipoId={selectedCreator.id} />
+              )}
+              
+              <DashboardTabs
+                selectedTab={selectedTab}
+                onTabChange={setSelectedTab}
+              >
+                <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+                  <TabsList>
+                    <TabsTrigger value="trading">Trading</TabsTrigger>
+                    <TabsTrigger value="sentiment">Sentiment</TabsTrigger>
+                    <TabsTrigger value="ai">AI</TabsTrigger>
+                    <TabsTrigger value="risk">Risk</TabsTrigger>
+                    <TabsTrigger value="dividends">Dividends</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="trading" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 gap-6">
+                      {isLoading ? (
+                        <ChartSkeleton />
+                      ) : (
+                        <PriceChart 
+                          symbol={selectedCreator?.symbol}
+                          name={selectedCreator?.creatorName}
+                          currentPrice={selectedCreator?.currentPrice}
+                          ipoId={selectedCreator?.id}
+                        />
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {isLoading ? (
+                          <>
+                            <ChartSkeleton height="300px" />
+                            <ChartSkeleton height="300px" />
+                          </>
+                        ) : (
+                          <>
+                            <VirtualizedOrderBook 
+                              symbol={selectedCreator?.symbol}
+                              currentPrice={selectedCreator?.currentPrice}
+                              ipoId={selectedCreator?.id}
+                            />
+                            
+                            <div className="space-y-6">
+                              <MarketDepthChart 
+                                ipoId={selectedCreator?.id}
+                                symbol={selectedCreator?.symbol}
+                                currentPrice={selectedCreator?.currentPrice}
+                              />
+                              
+                              <VirtualizedTradeHistory 
+                                ipoId={selectedCreator?.id} 
+                                symbol={selectedCreator?.symbol}
+                                limit={10}
+                              />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="sentiment" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 gap-6">
+                      {isLoading ? (
+                        <SentimentInsightsSkeleton />
+                      ) : (
+                        <SentimentInsights creatorId={selectedCreator?.id} />
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {isLoading ? (
+                          <>
+                            <ChartSkeleton height="300px" />
+                            <ChartSkeleton height="300px" />
+                          </>
+                        ) : (
+                          <>
+                            <ExternalMetricsCard creatorId={selectedCreator?.id} />
+                            
+                            <VirtualizedTradeHistory 
+                              ipoId={selectedCreator?.id} 
+                              symbol={selectedCreator?.symbol}
+                            />
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="ai" className="mt-6 space-y-6">
+                    <div className="grid grid-cols-1 gap-6">
+                      {isLoading ? (
+                        <ChartSkeleton />
+                      ) : (
+                        <AITrendPrediction 
+                          ipoId={selectedCreator?.id}
+                          symbol={selectedCreator?.symbol}
+                          currentPrice={selectedCreator?.currentPrice}
+                        />
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {isLoading ? (
+                          <>
+                            <ChartSkeleton height="300px" />
+                            <ChartSkeleton height="300px" />
+                          </>
+                        ) : (
+                          <>
+                            <MarketDepthChart 
+                              ipoId={selectedCreator?.id}
+                              symbol={selectedCreator?.symbol}
+                              currentPrice={selectedCreator?.currentPrice}
+                            />
+                            
+                            <VirtualizedTradeHistory 
+                              ipoId={selectedCreator?.id} 
+                              symbol={selectedCreator?.symbol}
+                            />
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="risk" className="mt-6">
+                    <RiskAnomalyCenter />
+                  </TabsContent>
+                  
+                  <TabsContent value="dividends" className="mt-6 space-y-6">
+                    {isLoading ? (
+                      <>
+                        <ChartSkeleton />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <ChartSkeleton height="300px" />
+                          <ChartSkeleton height="300px" />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <DividendAndVesting 
+                          ipoId={selectedCreator?.id}
+                          symbol={selectedCreator?.symbol}
+                        />
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <PriceChart 
+                            symbol={selectedCreator?.symbol}
+                            name={selectedCreator?.creatorName}
+                            currentPrice={selectedCreator?.currentPrice}
+                            ipoId={selectedCreator?.id}
+                          />
+                          
+                          <AITrendPrediction 
+                            ipoId={selectedCreator?.id}
+                            symbol={selectedCreator?.symbol}
+                            currentPrice={selectedCreator?.currentPrice}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </DashboardTabs>
             </div>
-          </GlassCard>
-        </div>
-        
-        {/* Featured Creators */}
-        <CreatorsList />
-        
-        {/* Market Insights Tabs */}
-        <div className="mt-8">
-          <DashboardTabs 
-            selectedTab={selectedTab} 
-            onTabChange={setSelectedTab}
-          >
-            <div>Market insights content will go here</div>
-          </DashboardTabs>
+          </div>
         </div>
       </main>
-      
-      <Footer />
     </div>
   );
 };

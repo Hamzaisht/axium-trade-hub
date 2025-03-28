@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { IPO } from '@/utils/mockApi';
-import { ReactNode } from 'react';
-import { mockIPOAPI, mockAIValuationAPI } from '@/utils/mockApi';
+
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { mockIPOAPI, mockAIValuationAPI, IPO } from '@/utils/mockApi';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
 import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';

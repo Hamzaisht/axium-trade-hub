@@ -11,15 +11,16 @@ export const useDividendInfo = ({ ipoId, enabled = true }: UseDividendInfoProps)
   return useQuery({
     queryKey: ['dividend-info', ipoId],
     queryFn: async () => {
-      if (!ipoId) {
-        throw new Error('IPO ID is required');
+      if (!ipoId) return null;
+      try {
+        return await mockAIValuationAPI.getDividendInfo(ipoId);
+      } catch (error) {
+        console.error('Error fetching dividend info:', error);
+        throw error;
       }
-      
-      return mockAIValuationAPI.getDividendInfo(ipoId);
     },
     enabled: !!ipoId && enabled,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 30, // 30 minutes
+    refetchOnWindowFocus: false
   });
 };
-
-export default useDividendInfo;

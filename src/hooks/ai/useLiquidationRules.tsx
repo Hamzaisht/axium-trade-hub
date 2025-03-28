@@ -11,15 +11,16 @@ export const useLiquidationRules = ({ ipoId, enabled = true }: UseLiquidationRul
   return useQuery({
     queryKey: ['liquidation-rules', ipoId],
     queryFn: async () => {
-      if (!ipoId) {
-        throw new Error('IPO ID is required');
+      if (!ipoId) return null;
+      try {
+        return await mockAIValuationAPI.getLiquidationRules(ipoId);
+      } catch (error) {
+        console.error('Error fetching liquidation rules:', error);
+        throw error;
       }
-      
-      return mockAIValuationAPI.getLiquidationRules(ipoId);
     },
     enabled: !!ipoId && enabled,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 60, // 60 minutes
+    refetchOnWindowFocus: false
   });
 };
-
-export default useLiquidationRules;

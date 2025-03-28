@@ -10,7 +10,6 @@ interface MetricCardProps {
   icon: LucideIcon;
   iconBackground?: string;
   iconColor?: string;
-  change?: number;
 }
 
 export const MetricCard = ({ 
@@ -19,8 +18,7 @@ export const MetricCard = ({
   subtitle, 
   icon: Icon,
   iconBackground = "bg-axium-blue/10",
-  iconColor = "text-axium-blue",
-  change
+  iconColor = "text-axium-blue"
 }: MetricCardProps) => {
   return (
     <GlassCard className="sm:col-span-1">
@@ -32,13 +30,6 @@ export const MetricCard = ({
       </div>
       <p className="text-2xl font-semibold">{value}</p>
       <p className="text-axium-gray-600 text-sm">{subtitle}</p>
-      {change !== undefined && (
-        <p className={`text-sm mt-1 ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-          {change >= 0 ? '+' : ''}{change.toFixed(2)}%
-        </p>
-      )}
     </GlassCard>
   );
 };
-
-export default MetricCard;

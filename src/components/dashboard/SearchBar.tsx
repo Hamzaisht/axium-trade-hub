@@ -1,24 +1,21 @@
 
-import { useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { GlassCard } from "@/components/ui/GlassCard";
 
-export interface SearchBarProps {
+interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  className?: string;
 }
 
 export const SearchBar = ({ 
   value, 
   onChange, 
-  placeholder = "Search creators or symbols",
-  className
+  placeholder = "Search creators or symbols" 
 }: SearchBarProps) => {
   return (
-    <GlassCard className={`p-3 ${className || ''}`}>
+    <GlassCard className="p-3">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-axium-gray-500" />
         <Input 
@@ -31,5 +28,3 @@ export const SearchBar = ({
     </GlassCard>
   );
 };
-
-export default SearchBar;

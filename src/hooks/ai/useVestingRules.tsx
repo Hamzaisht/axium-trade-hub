@@ -1,25 +1,25 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { mockAIValuationAPI } from '@/utils/mockApi';
+import { toast } from 'sonner';
 
-interface UseVestingRulesProps {
-  ipoId?: string;
-  enabled?: boolean;
-}
-
-export const useVestingRules = ({ ipoId, enabled = true }: UseVestingRulesProps) => {
+export function useVestingRules({ ipoId }: { ipoId?: string }) {
   return useQuery({
-    queryKey: ['vesting-rules', ipoId],
+    queryKey: ['vesting', ipoId],
     queryFn: async () => {
       if (!ipoId) {
         throw new Error('IPO ID is required');
       }
       
-      return mockAIValuationAPI.getVestingRules(ipoId);
+      try {
+        return await mockAIValuationAPI.getVestingAndStakingRules(ipoId);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch vesting rules';
+        toast.error(errorMessage);
+        throw error;
+      }
     },
-    enabled: !!ipoId && enabled,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: !!ipoId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
-};
-
-export default useVestingRules;
+}

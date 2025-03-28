@@ -11,15 +11,16 @@ export const useMarketDepth = ({ ipoId, enabled = true }: UseMarketDepthProps) =
   return useQuery({
     queryKey: ['market-depth', ipoId],
     queryFn: async () => {
-      if (!ipoId) {
-        throw new Error('IPO ID is required');
+      if (!ipoId) return null;
+      try {
+        return await mockAIValuationAPI.getMarketDepth(ipoId);
+      } catch (error) {
+        console.error('Error fetching market depth:', error);
+        throw error;
       }
-      
-      return mockAIValuationAPI.getMarketDepth(ipoId);
     },
     enabled: !!ipoId && enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false
   });
 };
-
-export default useMarketDepth;

@@ -1,117 +1,129 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { mockAIValuationAPI } from '@/utils/mockApi';
-import { useSentimentAnalysis } from './useSentimentAnalysis';
+import { useExternalData } from '@/hooks/useExternalData';
+import { useSocialSentiment } from './useSocialSentiment';
+import { useAnomalyDetection } from './useAnomalyDetection';
 
-export interface MarketScoreFactors {
-  sentiment: number;
-  social: number;
-  brand: number;
-  content: number;
-  stability: number;
-  growth: number;
+interface CreatorMarketScoreParams {
+  ipoId?: string;
+  enabled?: boolean;
 }
 
 export interface CreatorMarketScore {
-  overall: number;
-  components: {
-    sentiment: number;
-    social: number;
-    brand: number;
-    content: number;
-    stability: number;
-    growth: number;
+  totalScore: number;
+  revenueInfluence: {
+    score: number;
+    weight: number;
+    rawScore: number;
+    factors: Array<{name: string, impact: number, description: string}>;
   };
-  recommendation: string;
-  riskLevel: 'low' | 'medium' | 'high';
-  potentialUpside: number;
-  insights: string[];
+  socialEngagementInfluence: {
+    score: number;
+    weight: number;
+    rawScore: number;
+    factors: Array<{name: string, impact: number, description: string}>;
+  };
+  aiSentimentScore: {
+    score: number;
+    weight: number;
+    rawScore: number;
+    factors: Array<{name: string, impact: number, description: string}>;
+  };
+  priceImpact: {
+    recommendedPrice: number;
+    priceChange: number;
+    priceChangePercent: number;
+    confidence: number;
+  };
+  anomalyDetection: {
+    hasAnomalies: boolean;
+    anomalyImpact: number;
+    adjustedPrice?: number;
+  };
   lastUpdated: string;
 }
 
-export interface UseCreatorMarketScoreProps {
-  creatorId?: string;
-}
-
-export const useCreatorMarketScore = ({ creatorId }: UseCreatorMarketScoreProps) => {
-  const { data: sentimentData, isLoading: sentimentLoading } = useSentimentAnalysis({ creatorId });
+/**
+ * Hook to fetch and calculate the Creator Market Score (CMS)
+ * CMS = (Revenue Influence * 50%) + (Social Engagement Influence * 30%) + (AI Sentiment Score * 20%)
+ */
+export const useCreatorMarketScore = ({ ipoId, enabled = true }: CreatorMarketScoreParams) => {
+  // Fetch external metrics data (for revenue information)
+  const { metrics: externalMetrics, aggregatedMetrics } = useExternalData({
+    creatorId: ipoId,
+    enabled: !!ipoId && enabled
+  });
   
-  return useQuery({
-    queryKey: ['creator-market-score', creatorId],
+  // Get social sentiment data
+  const socialSentimentQuery = useSocialSentiment({
+    ipoId,
+    enabled: !!ipoId && enabled
+  });
+  
+  // Get anomaly detection data
+  const anomalyDetectionQuery = useAnomalyDetection({
+    ipoId,
+    enabled: !!ipoId && enabled
+  });
+  
+  // The main CMS calculation query
+  const cmsQuery = useQuery({
+    queryKey: ['creator-market-score', ipoId, externalMetrics?.lastUpdated, socialSentimentQuery.data?.overall],
     queryFn: async () => {
-      if (!creatorId) {
-        throw new Error('Creator ID is required');
-      }
+      if (!ipoId) return null;
       
       try {
-        // Fetch market score data - using the correct method name
-        const marketScoreData = await mockAIValuationAPI.getCreatorMarketScore(creatorId);
+        // Get the raw CMS data from our API
+        const cmsData = await mockAIValuationAPI.getCreatorMarketScore(
+          ipoId, 
+          externalMetrics, 
+          socialSentimentQuery.data,
+          anomalyDetectionQuery.data
+        );
         
-        // Incorporate sentiment data if available
-        if (sentimentData) {
-          const sentimentImpact = (sentimentData.overallSentiment || 50) / 100;
+        // Apply anomaly adjustments if needed
+        if (anomalyDetectionQuery.data?.detected && anomalyDetectionQuery.data.riskScore > 50) {
+          // Calculate anomaly impact percentage (negative impact up to -30% for severe anomalies)
+          const anomalyImpact = -(anomalyDetectionQuery.data.riskScore / 100) * 0.3;
           
-          // Adjust overall score with sentiment data (weighted 30%)
-          const adjustedScore = Math.min(
-            100, 
-            Math.max(
-              0, 
-              marketScoreData.totalScore * 0.7 + sentimentImpact * 30
-            )
-          );
+          // Adjust the price based on detected anomalies
+          const adjustedPrice = cmsData.priceImpact.recommendedPrice * (1 + anomalyImpact);
           
-          // Return enhanced market score with sentiment influence
           return {
-            overall: Math.round(adjustedScore),
-            components: {
-              sentiment: sentimentData.overallSentiment || 50,
-              social: 75,  // Mock values
-              brand: 82,
-              content: 68,
-              stability: 77,
-              growth: 85
+            ...cmsData,
+            anomalyDetection: {
+              hasAnomalies: true,
+              anomalyImpact,
+              adjustedPrice
             },
-            recommendation: "Strong Hold",
-            riskLevel: "low" as const,
-            potentialUpside: 18.5,
-            insights: [
-              "Strong social media engagement trends",
-              "Growing audience demographics",
-              "Recent content performing above average",
-              `Score adjusted by ${sentimentImpact > 0.5 ? 'positive' : 'negative'} sentiment analysis.`
-            ],
-            lastUpdated: new Date().toISOString()
+            priceImpact: {
+              ...cmsData.priceImpact,
+              recommendedPrice: adjustedPrice
+            }
           };
         }
         
-        // Default return if no sentiment data available
-        return {
-          overall: marketScoreData.totalScore,
-          components: {
-            sentiment: 65,  // Mock values
-            social: 75,
-            brand: 80,
-            content: 70,
-            stability: 75,
-            growth: 82
-          },
-          recommendation: "Buy",
-          riskLevel: "low" as const,
-          potentialUpside: 15.5,
-          insights: [
-            "Strong social media presence",
-            "Consistent content schedule",
-            "Positive audience growth trends"
-          ],
-          lastUpdated: new Date().toISOString()
-        };
+        return cmsData;
       } catch (error) {
-        console.error('Error fetching creator market score:', error);
+        console.error('Error calculating Creator Market Score:', error);
         throw error;
       }
     },
-    enabled: !!creatorId && !sentimentLoading,
-    staleTime: 1000 * 60 * 15, // 15 minutes
-    refetchInterval: 1000 * 60 * 30, // 30 minutes
+    enabled: !!ipoId && enabled && !!externalMetrics && !!socialSentimentQuery.data,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false
   });
+  
+  return {
+    creatorMarketScore: cmsQuery.data,
+    isLoading: cmsQuery.isLoading || socialSentimentQuery.isLoading,
+    isError: cmsQuery.isError,
+    error: cmsQuery.error,
+    refetch: cmsQuery.refetch,
+    socialSentiment: socialSentimentQuery.data,
+    externalMetrics,
+    aggregatedMetrics,
+    anomalyData: anomalyDetectionQuery.data
+  };
 };
