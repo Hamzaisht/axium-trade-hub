@@ -204,11 +204,11 @@ export const MarketDepthChart = ({
               </Badge>
               <div className="text-xs text-axium-gray-600">
                 Bid: <span className="text-axium-success font-medium">
-                  ${marketDepth.currentSpread && typeof marketDepth.currentSpread === 'object' ? marketDepth.currentSpread.bid.toFixed(2) : '0.00'}
+                  ${marketDepth.currentSpread && typeof marketDepth.currentSpread === 'object' ? marketDepth.currentSpread?.bid?.toFixed(2) ?? '0.00' : '0.00'}
                 </span> 
                 <span className="mx-1">|</span> 
                 Ask: <span className="text-axium-error font-medium">
-                  ${marketDepth.currentSpread && typeof marketDepth.currentSpread === 'object' ? marketDepth.currentSpread.ask.toFixed(2) : '0.00'}
+                  ${marketDepth.currentSpread && typeof marketDepth.currentSpread === 'object' ? marketDepth.currentSpread?.ask?.toFixed(2) ?? '0.00' : '0.00'}
                 </span>
               </div>
             </div>

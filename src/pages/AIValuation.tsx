@@ -459,7 +459,7 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
           
           <GlassCard className="p-4">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <TrendingUp className="h-5 w-5 mr-2 text-green-500" />
+              <Zap className="h-5 w-5 mr-2 text-yellow-500" />
               Price Prediction
             </h3>
             
@@ -583,7 +583,7 @@ const AIValuation = ({ ipoId, className }: AIValuationProps) => {
                 <div>Buy Wall Strength: {marketDepth.buyWallStrength}</div>
                 <div>Sell Wall Strength: {marketDepth.sellWallStrength}</div>
                 <div>Current Spread: {marketDepth && marketDepth.currentSpread ? 
-                  `${marketDepth.currentSpread.bid} - ${marketDepth.currentSpread.ask}` : 'N/A'}</div>
+                  `${marketDepth.currentSpread?.bid ?? 0} - ${marketDepth.currentSpread?.ask ?? 0}` : 'N/A'}</div>
               </>
             )}
           </GlassCard>

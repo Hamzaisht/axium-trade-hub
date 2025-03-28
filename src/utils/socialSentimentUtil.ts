@@ -1,6 +1,6 @@
 
 // Adding or updating the getSocialSentiment function to accept an ipoId parameter
-export function getSocialSentiment(ipoId?: string) {
+export function getSocialSentiment(ipoId: string) {
   // Generate random sentiment data
   const overall = Math.random() > 0.3 ? 
     (Math.random() > 0.5 ? 'very_positive' : 'positive') : 
