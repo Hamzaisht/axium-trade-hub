@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useIPO } from "@/contexts/IPOContext";
@@ -27,7 +26,6 @@ const CreatorProfile = () => {
   const { isLoading: marketDataLoading, priceUpdates } = useMarketData(id);
   const { sentimentData, isLoading: sentimentLoading } = useSentimentAnalysis({ creatorId: id });
 
-  // Find the creator by ID
   useEffect(() => {
     if (!iposLoading && ipos.length > 0) {
       const foundCreator = ipos.find(ipo => ipo.id === id);
@@ -40,7 +38,6 @@ const CreatorProfile = () => {
     }
   }, [id, ipos, iposLoading, navigate]);
 
-  // Mock engagement data for charts
   const engagementData = [
     { date: "Jan", value: 65 },
     { date: "Feb", value: 72 },
@@ -50,7 +47,6 @@ const CreatorProfile = () => {
     { date: "Jun", value: 87 },
   ];
 
-  // Mock sentiment data for charts
   const sentimentChartData = [
     { date: "Jan", positive: 65, negative: 35 },
     { date: "Feb", positive: 72, negative: 28 },
@@ -60,7 +56,6 @@ const CreatorProfile = () => {
     { date: "Jun", positive: 77, negative: 23 },
   ];
 
-  // Loading state
   if (iposLoading || !creator) {
     return (
       <div className="min-h-screen bg-axium-gray-100/30">
@@ -80,7 +75,6 @@ const CreatorProfile = () => {
       <Navbar />
       
       <main className="container max-w-7xl mx-auto px-4 py-8 mt-16">
-        {/* Creator Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-4 mb-2">
@@ -116,7 +110,6 @@ const CreatorProfile = () => {
           </div>
         </div>
         
-        {/* Share Price & Trading Card */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <GlassCard className="lg:col-span-2">
             <div className="flex justify-between items-center mb-4">
@@ -200,7 +193,6 @@ const CreatorProfile = () => {
           </GlassCard>
         </div>
         
-        {/* Tabs for different metrics */}
         <Tabs defaultValue="engagement" className="mb-8">
           <TabsList className="grid w-full md:w-auto grid-cols-2 md:grid-cols-3 mb-6">
             <TabsTrigger value="engagement">
@@ -347,19 +339,35 @@ const CreatorProfile = () => {
                   <ul className="space-y-3">
                     <li className="flex justify-between items-center">
                       <span className="text-axium-gray-600">Content Subscriptions</span>
-                      <span className="font-medium">${(creator.revenueStreams?.subscriptions || 456000).toLocaleString()}</span>
+                      <span className="font-medium">${(
+                        typeof creator.revenueStreams === 'object' && 
+                        !Array.isArray(creator.revenueStreams) && 
+                        creator.revenueStreams?.subscriptions || 456000
+                      ).toLocaleString()}</span>
                     </li>
                     <li className="flex justify-between items-center">
                       <span className="text-axium-gray-600">Advertising</span>
-                      <span className="font-medium">${(creator.revenueStreams?.advertising || 325000).toLocaleString()}</span>
+                      <span className="font-medium">${(
+                        typeof creator.revenueStreams === 'object' && 
+                        !Array.isArray(creator.revenueStreams) && 
+                        creator.revenueStreams?.advertising || 325000
+                      ).toLocaleString()}</span>
                     </li>
                     <li className="flex justify-between items-center">
                       <span className="text-axium-gray-600">Merchandising</span>
-                      <span className="font-medium">${(creator.revenueStreams?.merchandise || 215000).toLocaleString()}</span>
+                      <span className="font-medium">${(
+                        typeof creator.revenueStreams === 'object' && 
+                        !Array.isArray(creator.revenueStreams) && 
+                        creator.revenueStreams?.merchandise || 215000
+                      ).toLocaleString()}</span>
                     </li>
                     <li className="flex justify-between items-center">
                       <span className="text-axium-gray-600">Sponsorships</span>
-                      <span className="font-medium">${(creator.revenueStreams?.sponsorships || 532000).toLocaleString()}</span>
+                      <span className="font-medium">${(
+                        typeof creator.revenueStreams === 'object' && 
+                        !Array.isArray(creator.revenueStreams) && 
+                        creator.revenueStreams?.sponsorships || 532000
+                      ).toLocaleString()}</span>
                     </li>
                     <li className="flex justify-between items-center border-t border-axium-gray-200 pt-2 mt-2">
                       <span className="font-medium">Total Annual Revenue</span>

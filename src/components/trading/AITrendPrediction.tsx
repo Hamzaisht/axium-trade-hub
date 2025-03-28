@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/badge';
@@ -193,7 +192,8 @@ export const AITrendPrediction = ({ ipoId, className }: AITrendPredictionProps) 
             <h3 className="font-medium">AI Price Prediction</h3>
           </div>
           
-          <Badge variant={prediction?.trend === 'up' ? 'success' : prediction?.trend === 'down' ? 'destructive' : 'outline'}>
+          <Badge variant={prediction?.trend === 'up' ? 'default' : prediction?.trend === 'down' ? 'destructive' : 'outline'} 
+            className={prediction?.trend === 'up' ? 'bg-green-500 text-white hover:bg-green-600' : ''}>
             {prediction?.trend === 'up' ? (
               <ArrowUp className="h-3 w-3 mr-1" />
             ) : prediction?.trend === 'down' ? (

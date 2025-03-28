@@ -2,16 +2,44 @@
 import { useState, useEffect } from "react";
 import { IPO } from "@/utils/mockApi";
 import useSentimentAnalysis from "./ai/useSentimentAnalysis";
+import { useMarketDepth } from "./ai/useMarketDepth";
+import { useDividendInfo } from "./ai/useDividendInfo";
+import { useVestingRules } from "./ai/useVestingRules";
+import { useLiquidationRules } from "./ai/useLiquidationRules";
 
 interface UseAIValuationProps {
   ipoId?: string;
 }
 
-const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
+export const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
   const [valuation, setValuation] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { sentimentData, isLoading: sentimentLoading, error: sentimentError } = useSentimentAnalysis({ creatorId: ipoId });
+  
+  // Add market depth data
+  const { 
+    data: marketDepth,
+    isLoading: isMarketDepthLoading
+  } = useMarketDepth({ ipoId });
+  
+  // Add dividend info data
+  const {
+    data: dividendInfo,
+    isLoading: isDividendInfoLoading
+  } = useDividendInfo({ ipoId });
+  
+  // Add vesting rules data
+  const {
+    data: vestingRules,
+    isLoading: isVestingRulesLoading
+  } = useVestingRules({ ipoId });
+  
+  // Add liquidation rules data
+  const {
+    data: liquidationRules,
+    isLoading: isLiquidationRulesLoading
+  } = useLiquidationRules({ ipoId });
 
   useEffect(() => {
     if (!ipoId) {
@@ -44,7 +72,19 @@ const useAIValuation = ({ ipoId }: UseAIValuationProps) => {
     error,
     sentimentData,
     sentimentLoading,
-    sentimentError
+    sentimentError,
+    // Return market depth data
+    marketDepth,
+    isMarketDepthLoading,
+    // Return dividend info data
+    dividendInfo,
+    isDividendInfoLoading,
+    // Return vesting rules data
+    vestingRules,
+    isVestingRulesLoading,
+    // Return liquidation rules data
+    liquidationRules,
+    isLiquidationRulesLoading
   };
 };
 

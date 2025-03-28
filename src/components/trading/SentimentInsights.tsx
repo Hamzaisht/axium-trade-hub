@@ -1,20 +1,18 @@
-import { useEffect, useState } from "react";
-import { IPO } from "@/utils/mockApi";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowUp, ArrowDown, Clock, BarChart4, Activity, TrendingUp, MessageSquare } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import SentimentScoreBadge from "@/components/trading/SentimentScoreBadge";
-import useSentimentAnalysis from "@/hooks/ai/useSentimentAnalysis";
+import React from 'react';
+import { GlassCard } from '@/components/ui/GlassCard';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { MessageSquare, TrendingUp, BarChart4, AlertCircle } from 'lucide-react';
+import useSentimentAnalysis from '@/hooks/ai/useSentimentAnalysis';
+import { cn } from '@/lib/utils';
 
 interface SentimentInsightsProps {
   ipoId: string;
+  className?: string;
 }
 
-const SentimentInsights = ({ ipoId }: SentimentInsightsProps) => {
+export const SentimentInsights = ({ ipoId, className }: SentimentInsightsProps) => {
   const { sentimentData, isLoading, error } = useSentimentAnalysis({ creatorId: ipoId });
   const [timeFrame, setTimeFrame] = useState("7d");
 
@@ -39,7 +37,7 @@ const SentimentInsights = ({ ipoId }: SentimentInsightsProps) => {
   ];
 
   return (
-    <GlassCard>
+    <GlassCard className={cn("flex flex-col", className)}>
       <Tabs defaultValue="overview" className="w-full">
         <div className="flex items-center justify-between p-4">
           <h3 className="text-lg font-semibold">Sentiment Insights</h3>

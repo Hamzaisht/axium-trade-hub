@@ -1,7 +1,8 @@
+
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/badge';
 import { CircleDollarSign, Lock, AlertTriangle } from 'lucide-react';
-import { useAIValuation } from '@/hooks/useAIValuation';
+import useAIValuation from '@/hooks/useAIValuation';
 import { useEffect } from 'react';
 
 interface DividendAndVestingProps {

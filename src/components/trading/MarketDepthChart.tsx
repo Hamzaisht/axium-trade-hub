@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { useAIValuation } from '@/hooks/useAIValuation';
+import useAIValuation from '@/hooks/useAIValuation';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
