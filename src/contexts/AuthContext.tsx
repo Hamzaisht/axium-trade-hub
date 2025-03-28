@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { toast } from 'sonner';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 // Define user roles
@@ -54,7 +53,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     // Set up auth state listener first
@@ -89,10 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const authenticatedUser = mapSupabaseUser(data.user);
       setUser(authenticatedUser);
       toast.success(`Welcome back, ${authenticatedUser?.name || 'User'}!`);
-      
-      // Use the location state to redirect if available, otherwise go to dashboard
-      const from = (location.state as any)?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+      navigate('/dashboard');
     } catch (error: any) {
       toast.error(error.message || 'Login failed');
       throw error;
@@ -124,7 +119,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const authenticatedUser = mapSupabaseUser(data.user);
       setUser(authenticatedUser);
       toast.success('Registration successful!');
-      navigate('/dashboard', { replace: true });
+      navigate('/dashboard');
     } catch (error: any) {
       toast.error(error.message || 'Registration failed');
       throw error;
@@ -142,7 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setSession(null);
       toast.success('You have been logged out');
-      navigate('/', { replace: true });
+      navigate('/');
     } catch (error: any) {
       toast.error(error.message || 'Logout failed');
     } finally {

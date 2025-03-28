@@ -1,163 +1,122 @@
 
-import { useState } from 'react';
-import { useExternalData } from '@/hooks/useExternalData';
+import { useEffect, useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useExternalData } from '@/hooks/useExternalData';
+import { useAPIConfiguration } from '@/hooks/useAPIConfiguration';
+import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Globe, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { MetricsHeader } from './MetricsHeader';
-import { MetricsSummary } from './MetricsSummary';
-import { SocialTab } from './SocialTab';
-import { RevenueTab } from './RevenueTab';
-import { BrandDealsTab } from './BrandDealsTab';
-import { SocialPlatformMetrics, CreatorMetrics } from '@/types/api';
+import { toast } from 'sonner';
+
+// Import our refactored components
+import { ApiStatusBadge } from './ApiStatusBadge';
+import { StatusAlerts } from './StatusAlerts';
+import { SummaryStats } from './SummaryStats';
+import { DataTabs } from './DataTabs';
+import { ErrorState } from './ErrorState';
+import { LoadingState } from './LoadingState';
+import { NoDataState } from './NoDataState';
 
 interface ExternalMetricsCardProps {
   creatorId?: string;
   className?: string;
 }
 
-// Helper function to map API service metrics to the expected format
-const mapServiceMetricsToApiTypes = (serviceMetrics: any): CreatorMetrics => {
-  if (!serviceMetrics) return null;
-  
-  // Map social metrics
-  const mappedSocial = serviceMetrics.social?.map(platform => ({
-    platform: platform.platform,
-    score: platform.engagement * 10 || 0,  // Convert engagement to score
-    trend: platform.growth > 0 ? 'positive' : 'negative',
-    volume: platform.posts * 100 || 0,      // Convert posts to volume
-    followers: platform.followers || 0,
-    engagement: platform.engagement || 0,
-    growth: platform.growth || 0,
-    isRealData: platform.isRealData || false
-  })) || [];
-  
-  // Create default revenue data if not present
-  const defaultRevenue = {
-    totalRevenue: 0,
-    contentRevenue: 0,
-    sponsorshipRevenue: 0,
-    merchandiseRevenue: 0,
-    liveEventsRevenue: 0,
-    growthRate: 0
-  };
-  
-  // Create default revenue history if not present
-  const defaultRevenueHistory = [
-    { period: 'Jan', revenue: 0 },
-    { period: 'Feb', revenue: 0 },
-    { period: 'Mar', revenue: 0 }
-  ];
-  
-  return {
-    social: mappedSocial as SocialPlatformMetrics[],
-    streaming: serviceMetrics.streaming || [],
-    brandDeals: serviceMetrics.brandDeals || [],
-    revenue: serviceMetrics.revenue || defaultRevenue,
-    revenueHistory: serviceMetrics.revenueHistory || defaultRevenueHistory,
-    lastUpdated: serviceMetrics.lastUpdated || new Date().toISOString()
-  };
-};
-
-export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCardProps) {
-  const [activeTab, setActiveTab] = useState('social');
-  
+export const ExternalMetricsCard = ({ creatorId, className }: ExternalMetricsCardProps) => {
   const { 
-    metrics: serviceMetrics, 
-    aggregatedMetrics, 
+    metrics, 
+    aggregatedMetrics,
     isLoading, 
     isError, 
-    refetch 
-  } = useExternalData({
-    creatorId,
-    enabled: !!creatorId
-  });
+    refetch,
+    dataSourceStats 
+  } = useExternalData({ creatorId });
   
-  // Convert service metrics to the expected format
-  const metrics = mapServiceMetricsToApiTypes(serviceMetrics);
+  const { apiServiceStatus, apiStatus, availablePlatforms } = useAPIConfiguration();
+  
+  // Handle refreshing data
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
+  
+  useEffect(() => {
+    // Show appropriate notifications based on API status
+    if (apiServiceStatus === 'mock') {
+      toast.info(
+        "Using mock data. Set API keys in environment variables to use real data.", 
+        { id: "api-mock-notice", duration: 5000 }
+      );
+    } else if (apiServiceStatus === 'mixed') {
+      toast.info(
+        `Using ${apiStatus.real} real APIs and ${apiStatus.mock} mock APIs.`,
+        { id: "api-mixed-notice", duration: 5000 }
+      );
+    }
+  }, [apiServiceStatus, apiStatus]);
+  
+  if (!creatorId) {
+    return null;
+  }
   
   return (
     <GlassCard className={cn("p-4", className)}>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold flex items-center">
-          <Globe className="h-5 w-5 mr-2 text-blue-500" />
-          External Metrics
-        </h3>
-        
+        <div className="flex items-center">
+          <h3 className="text-lg font-semibold">External Data</h3>
+          <ApiStatusBadge status={apiServiceStatus} />
+        </div>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => refetch()}
-          disabled={isLoading}
+          onClick={handleRefresh}
+          disabled={isLoading || isRefreshing}
         >
           <RefreshCw className={cn(
             "h-4 w-4 mr-1",
-            isLoading && "animate-spin"
+            (isLoading || isRefreshing) && "animate-spin"
           )} />
           Refresh
         </Button>
       </div>
       
+      <StatusAlerts 
+        apiServiceStatus={apiServiceStatus} 
+        availablePlatforms={availablePlatforms} 
+      />
+      
       {isError ? (
-        <div className="text-center py-6">
-          <p className="text-axium-gray-600">Failed to load external metrics</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => refetch()}
-            className="mt-2"
-          >
-            Retry
-          </Button>
-        </div>
-      ) : isLoading || !metrics ? (
-        <div className="animate-pulse space-y-4 py-4">
-          <div className="h-8 rounded-md bg-axium-gray-200/50 w-full"></div>
-          <div className="h-40 rounded-md bg-axium-gray-200/50 w-full"></div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="h-12 rounded-md bg-axium-gray-200/50"></div>
-            <div className="h-12 rounded-md bg-axium-gray-200/50"></div>
-          </div>
-        </div>
+        <ErrorState onRetry={handleRefresh} />
+      ) : isLoading ? (
+        <LoadingState />
+      ) : !metrics ? (
+        <NoDataState />
       ) : (
-        <>
-          <MetricsSummary aggregatedMetrics={aggregatedMetrics} />
+        <div className="space-y-4">
+          {/* Data source stats */}
+          {dataSourceStats.real > 0 && (
+            <div className="flex items-center justify-between px-2 py-1 bg-blue-50 rounded text-sm">
+              <span className="text-blue-700">
+                Using {dataSourceStats.real} real data source{dataSourceStats.real !== 1 ? 's' : ''}
+              </span>
+              <svg className="h-4 w-4 text-blue-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7.75 12.75L10 15.25L16.25 8.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+              </svg>
+            </div>
+          )}
           
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="social">
-                <MetricsHeader tabName="social" />
-              </TabsTrigger>
-              <TabsTrigger value="revenue">
-                <MetricsHeader tabName="revenue" />
-              </TabsTrigger>
-              <TabsTrigger value="brands">
-                <MetricsHeader tabName="brands" />
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="social" className="pt-2">
-              <SocialTab social={metrics.social} />
-            </TabsContent>
-            
-            <TabsContent value="revenue" className="pt-2">
-              <RevenueTab metrics={metrics} />
-            </TabsContent>
-            
-            <TabsContent value="brands" className="pt-2">
-              <BrandDealsTab brandDeals={metrics.brandDeals} />
-            </TabsContent>
-          </Tabs>
+          {/* Summary Stats */}
+          <SummaryStats aggregatedMetrics={aggregatedMetrics} />
           
-          <div className="mt-2 pt-2 border-t border-axium-gray-200 text-xs text-axium-gray-600">
-            Last updated: {new Date(metrics.lastUpdated).toLocaleTimeString()}
-          </div>
-        </>
+          {/* Detailed Tabs */}
+          <DataTabs metrics={metrics} />
+        </div>
       )}
     </GlassCard>
   );
-}
+};
 
 export default ExternalMetricsCard;

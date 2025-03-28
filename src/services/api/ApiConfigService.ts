@@ -6,9 +6,7 @@ import { BrandDealsApiService } from './BrandDealsApiService';
 import { SocialMediaApiService } from './SocialMediaApiService';
 import { StreamingApiService } from './StreamingApiService';
 import { APIKeysService } from './APIKeysService';
-import { SocialPlatformMetrics as ApiSocialPlatformMetrics, RevenuePeriod, RevenueData } from '@/types/api';
 
-// Service-specific types (will be mapped to main API types)
 export interface SocialPlatformMetrics {
   platform: string;
   followers: number;
@@ -41,8 +39,6 @@ export interface CreatorMetrics {
   social: SocialPlatformMetrics[];
   streaming: StreamingPlatformMetrics[];
   brandDeals: BrandDealMetrics[];
-  revenue?: RevenueData;
-  revenueHistory?: RevenuePeriod[];
   lastUpdated: string;
 }
 
@@ -114,26 +110,6 @@ class ApiConfigService {
     // Get brand deal metrics
     const brandDealMetrics = await this.brandDealsApi.getCreatorDeals(creatorId);
     
-    // Create mock revenue data
-    const mockRevenue: RevenueData = {
-      totalRevenue: 250000,
-      contentRevenue: 100000,
-      sponsorshipRevenue: 80000,
-      merchandiseRevenue: 50000,
-      liveEventsRevenue: 20000,
-      growthRate: 12
-    };
-    
-    // Create mock revenue history
-    const mockRevenueHistory: RevenuePeriod[] = [
-      { period: 'Jan', revenue: 20000 },
-      { period: 'Feb', revenue: 22000 },
-      { period: 'Mar', revenue: 25000 },
-      { period: 'Apr', revenue: 21000 },
-      { period: 'May', revenue: 24000 },
-      { period: 'Jun', revenue: 28000 }
-    ];
-    
     // Ensure isRealData property is present and convert types
     const normalizedSocialMetrics = socialMetrics.map(metric => ({
       ...metric,
@@ -150,8 +126,6 @@ class ApiConfigService {
       social: normalizedSocialMetrics,
       streaming: normalizedStreamingMetrics,
       brandDeals: brandDealMetrics,
-      revenue: mockRevenue,
-      revenueHistory: mockRevenueHistory,
       lastUpdated: new Date().toISOString()
     };
   }

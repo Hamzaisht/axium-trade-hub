@@ -4,7 +4,7 @@ import { mockAIValuationAPI } from '@/utils/mockApi';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { useMarketData } from '@/hooks/useMarketData';
-import { AnomalyType } from '@/utils/mockAIModels';
+import { AnomalyType, detectAnomalies } from '@/utils/mockAIModels';
 
 interface UseAnomalyDetectionProps {
   ipoId?: string;
@@ -29,8 +29,7 @@ export const useAnomalyDetection = ({
       if (!ipoId) return null;
       try {
         // Use the mockAPI for simulating AI detection
-        const result = await mockAIValuationAPI.detectAnomalies(ipoId, tradesToAnalyze);
-        return result;
+        return await mockAIValuationAPI.detectAnomalies(ipoId, tradesToAnalyze);
       } catch (error) {
         console.error('Error detecting anomalies:', error);
         throw error;
@@ -90,8 +89,8 @@ export const useMarketAnomalies = (ipoIds: string[] = []) => {
       try {
         // Fetch anomalies for all provided IPO IDs
         const anomalyPromises = ipoIds.map(id => 
-          // Pass an empty array as the second parameter for recentTrades
-          mockAIValuationAPI.detectAnomalies(id)
+          // Fix: Pass an empty array as the second parameter for recentTrades
+          mockAIValuationAPI.detectAnomalies(id, [])
         );
         
         const results = await Promise.all(anomalyPromises);

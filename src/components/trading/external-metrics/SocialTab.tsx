@@ -1,139 +1,71 @@
 
-import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  ResponsiveContainer,
-  Cell
-} from 'recharts';
-import { formatCompactNumber } from '@/utils/formatters';
-import { SocialPlatformMetrics } from '@/types/api';
+import { TrendingUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { formatNumber, formatPercentage } from './utils';
+
+interface SocialPlatform {
+  platform: string;
+  isRealData: boolean;
+  growth: number;
+  followers: number;
+  engagement: number;
+  posts: number;
+}
 
 interface SocialTabProps {
-  social: SocialPlatformMetrics[];
+  social: SocialPlatform[];
 }
 
-export function SocialTab({ social }: SocialTabProps) {
-  const formatSocialData = () => {
-    if (!social || !Array.isArray(social)) return [];
-    
-    const socialData = [];
-    const platforms = ['youtube', 'instagram', 'twitter', 'tiktok'];
-    
-    platforms.forEach(platformName => {
-      const platformData = social.find(p => p.platform.toLowerCase() === platformName);
-      if (platformData) {
-        socialData.push({
-          name: platformData.platform,
-          value: platformData.followers,
-          color: getPlatformColor(platformName),
-          change: platformData.growth
-        });
-      }
-    });
-    
-    return socialData;
-  };
-  
-  const getPlatformColor = (platform: string): string => {
-    switch (platform.toLowerCase()) {
-      case 'youtube': return '#ff0000';
-      case 'instagram': return '#E1306C';
-      case 'twitter': return '#1DA1F2';
-      case 'tiktok': return '#000000';
-      default: return '#6E7191';
-    }
-  };
-  
-  const formatEngagementData = () => {
-    if (!social || !Array.isArray(social)) return [];
-    
-    const engagementData = [];
-    const platforms = ['youtube', 'instagram', 'twitter', 'tiktok'];
-    
-    platforms.forEach(platformName => {
-      const platformData = social.find(p => p.platform.toLowerCase() === platformName);
-      if (platformData) {
-        engagementData.push({
-          name: platformData.platform,
-          value: platformData.engagement ? platformData.engagement * 100 : 0,
-          color: getPlatformColor(platformName)
-        });
-      }
-    });
-    
-    return engagementData;
-  };
+export const SocialTab = ({ social }: SocialTabProps) => {
+  if (social.length === 0) {
+    return (
+      <div className="py-6 text-center text-axium-gray-500">
+        <p>No social media data available</p>
+      </div>
+    );
+  }
 
   return (
-    <Tabs defaultValue="followers">
-      <TabsList className="w-full grid grid-cols-2">
-        <TabsTrigger value="followers">Followers</TabsTrigger>
-        <TabsTrigger value="engagement">Engagement</TabsTrigger>
-      </TabsList>
-      
-      <TabsContent value="followers">
-        <div className="h-[180px] mt-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={formatSocialData()}
-              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-            >
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip 
-                formatter={(value) => [formatCompactNumber(value as number), 'Followers']}
-              />
-              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                {formatSocialData().map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        
-        <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-          {formatSocialData().map((platform, index) => (
-            <div key={index} className="flex justify-between items-center p-1 border border-axium-gray-200 rounded">
-              <span>{platform.name}</span>
-              <span className={platform.change >= 0 ? "text-green-500" : "text-red-500"}>
-                {platform.change > 0 ? '+' : ''}{platform.change}%
+    <div className="space-y-3">
+      {social.map((platform, index) => (
+        <div key={`${platform.platform}-${index}`} className="bg-white/50 p-3 rounded-lg">
+          <div className="flex justify-between items-center mb-2">
+            <div className="font-medium flex items-center">
+              {platform.platform}
+              {platform.isRealData && (
+                <span className="ml-2 text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full">
+                  Real
+                </span>
+              )}
+            </div>
+            <div className="flex items-center">
+              <TrendingUp className={cn(
+                "h-4 w-4 mr-1",
+                platform.growth > 0 ? "text-green-500" : "text-red-500"
+              )} />
+              <span className={cn(
+                platform.growth > 0 ? "text-green-500" : "text-red-500"
+              )}>
+                {formatPercentage(platform.growth)}
               </span>
             </div>
-          ))}
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-sm">
+            <div>
+              <p className="text-axium-gray-600">Followers</p>
+              <p className="font-semibold">{formatNumber(platform.followers)}</p>
+            </div>
+            <div>
+              <p className="text-axium-gray-600">Engagement</p>
+              <p className="font-semibold">{formatPercentage(platform.engagement)}</p>
+            </div>
+            <div>
+              <p className="text-axium-gray-600">Posts</p>
+              <p className="font-semibold">{platform.posts}</p>
+            </div>
+          </div>
         </div>
-      </TabsContent>
-      
-      <TabsContent value="engagement">
-        <div className="h-[180px] mt-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={formatEngagementData()}
-              margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-            >
-              <XAxis dataKey="name" />
-              <YAxis domain={[0, 10]} />
-              <Tooltip 
-                formatter={(value) => [`${value}%`, 'Engagement Rate']}
-              />
-              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                {formatEngagementData().map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        
-        <div className="text-xs text-axium-gray-600 mt-2">
-          Engagement rate is the percentage of followers who interact with content (likes, comments, shares).
-        </div>
-      </TabsContent>
-    </Tabs>
+      ))}
+    </div>
   );
-}
+};

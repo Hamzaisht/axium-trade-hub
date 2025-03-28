@@ -1,20 +1,8 @@
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/badge';
 import { CircleDollarSign, Lock, AlertTriangle } from 'lucide-react';
-import { useAIValuation } from '@/hooks/ai/useAIValuation';
+import { useAIValuation } from '@/hooks/useAIValuation';
 import { useEffect } from 'react';
-
-interface LiquidationRules {
-  inactivityThreshold: number;
-  engagementMinimum: number;
-  liquidationProcess: string;
-  tokenBuybackPrice: number;
-  warningThresholds?: {
-    severe: number;
-    moderate: number;
-    mild: number;
-  };
-}
 
 interface DividendAndVestingProps {
   ipoId?: string;
@@ -53,9 +41,9 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
         </div>
       );
     }
-
-    // Default values for missing properties
-    const nextPayoutDate = dividendInfo.nextPayoutDate ? new Date(dividendInfo.nextPayoutDate) : new Date();
+    
+    // Calculate time until next payout
+    const nextPayoutDate = new Date(dividendInfo.nextPayoutDate);
     const now = new Date();
     const daysUntilPayout = Math.ceil((nextPayoutDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     
@@ -72,7 +60,7 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
             </p>
           </div>
           <div className="text-right">
-            <div className="text-xl font-semibold">{dividendInfo.annualYieldPercent || 0}%</div>
+            <div className="text-xl font-semibold">{dividendInfo.annualYieldPercent}%</div>
             <div className="text-axium-gray-500 text-sm">Annual Yield</div>
           </div>
         </div>
@@ -95,10 +83,10 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
               Estimated Amount
             </Badge>
             <div className="text-sm text-axium-gray-600">
-              ${dividendInfo.nextEstimatedAmount || 0}M
+              ${dividendInfo.nextEstimatedAmount}M
             </div>
             <div className="text-sm text-axium-gray-600">
-              Payout Frequency: {dividendInfo.payoutFrequency || 'Quarterly'}
+              Payout Frequency: {dividendInfo.payoutFrequency}
             </div>
           </div>
         </div>
@@ -230,6 +218,30 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
       </div>
     );
   };
+  
+  // Generate token lockup schedule based on vesting rules
+  const generateTokenLockupSchedule = (vestingRules) => {
+    const { creatorVesting } = vestingRules;
+    const schedule = [];
+    
+    // Initial unlock
+    schedule.push({
+      month: 0,
+      unlockPercentage: creatorVesting.initialUnlock,
+      label: 'Initial'
+    });
+    
+    // Monthly unlocks
+    for (let i = 1; i <= 12; i++) {
+      schedule.push({
+        month: i,
+        unlockPercentage: creatorVesting.monthlyUnlock,
+        label: `Month ${i}`
+      });
+    }
+    
+    return schedule;
+  };
 
   const renderLiquidationSection = () => {
     if (isLiquidationRulesLoading) {
@@ -250,8 +262,8 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
       );
     }
     
-    // Handle missing warningThresholds safely with default values
-    const warningThresholds = (liquidationRules as LiquidationRules).warningThresholds || {
+    // Handle missing warningThresholds safely
+    const warningThresholds = liquidationRules.warningThresholds || {
       severe: 30,
       moderate: 60,
       mild: 90
@@ -274,7 +286,7 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
               Inactivity Threshold
             </Badge>
             <div className="text-sm text-axium-gray-600">
-              {(liquidationRules as LiquidationRules).inactivityThreshold || 180} days
+              {liquidationRules.inactivityThreshold} days
             </div>
             <div className="text-sm text-axium-gray-600">
               Days of inactivity before liquidation
@@ -286,7 +298,7 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
               Engagement Minimum
             </Badge>
             <div className="text-sm text-axium-gray-600">
-              {(liquidationRules as LiquidationRules).engagementMinimum || 10}
+              {liquidationRules.engagementMinimum}
             </div>
             <div className="text-sm text-axium-gray-600">
               Minimum engagement score
@@ -299,7 +311,7 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
             Token Buyback Price
           </Badge>
           <div className="text-sm text-axium-gray-600">
-            ${(liquidationRules as LiquidationRules).tokenBuybackPrice || 0}
+            ${liquidationRules.tokenBuybackPrice}
           </div>
           <div className="text-sm text-axium-gray-600">
             Price at which tokens will be bought back
@@ -309,34 +321,11 @@ export const DividendAndVesting = ({ ipoId, symbol = 'EMW' }: DividendAndVesting
         <div>
           <h4 className="text-sm font-semibold mb-2">Liquidation Process</h4>
           <p className="text-sm text-axium-gray-600">
-            {(liquidationRules as LiquidationRules).liquidationProcess || 'Standard liquidation process applies.'}
+            {liquidationRules.liquidationProcess}
           </p>
         </div>
       </div>
     );
-  };
-
-  const generateTokenLockupSchedule = (vestingRules) => {
-    const { creatorVesting } = vestingRules;
-    const schedule = [];
-    
-    // Initial unlock
-    schedule.push({
-      month: 0,
-      unlockPercentage: creatorVesting.initialUnlock,
-      label: 'Initial'
-    });
-    
-    // Monthly unlocks
-    for (let i = 1; i <= 12; i++) {
-      schedule.push({
-        month: i,
-        unlockPercentage: creatorVesting.monthlyUnlock,
-        label: `Month ${i}`
-      });
-    }
-    
-    return schedule;
   };
 
   return (

@@ -1,82 +1,158 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useAuth } from './AuthContext';
-import { mockPortfolioAPI, Portfolio } from '@/utils/mockPortfolioAPI';
+import { mockPortfolioAPI, Portfolio } from '@/utils/mockApi';
 import { toast } from 'sonner';
+import { useAuth } from './AuthContext';
+import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';
 
-// Context type
 interface PortfolioContextType {
   portfolio: Portfolio | null;
   isLoading: boolean;
-  error: Error | null;
-  refreshPortfolio: () => Promise<void>;
+  fetchPortfolio: () => Promise<void>;
+  isConnected: boolean;
+  portfolioHistory: {
+    date: string;
+    value: number;
+  }[];
 }
 
-// Create context
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
 
-// Provider component
-export function PortfolioProvider({ children }: { children: ReactNode }) {
-  const { user, isAuthenticated } = useAuth();
+export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
+  const { isAuthenticated, user } = useAuth();
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [portfolioHistory, setPortfolioHistory] = useState<{date: string; value: number}[]>([]);
 
-  // Fetch user portfolio
-  const fetchPortfolio = async () => {
+  const fetchPortfolio = async (): Promise<void> => {
     if (!isAuthenticated || !user) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
+
     try {
-      const data = await mockPortfolioAPI.getUserPortfolio(user.id);
-      setPortfolio(data);
-    } catch (err) {
-      console.error('Error fetching portfolio:', err);
-      setError(err instanceof Error ? err : new Error('Failed to fetch portfolio'));
-      toast.error('Failed to load portfolio data');
+      setIsLoading(true);
+      const userPortfolio = await mockPortfolioAPI.getPortfolio(user.id);
+      setPortfolio(userPortfolio);
+      if (userPortfolio.history) {
+        setPortfolioHistory(userPortfolio.history);
+      }
+    } catch (error) {
+      toast.error('Failed to fetch portfolio');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Initial fetch on auth change
+  // Connect to the mock WebSocket when the context is initialized
+  useEffect(() => {
+    mockWebSocket.connect();
+    
+    // Handle connection status
+    const connectionHandler = (data: { status: string }) => {
+      setIsConnected(data.status === 'connected');
+    };
+
+    // Handle price updates that affect the portfolio value
+    const priceUpdateHandler = (data: { ipoId: string, newPrice: number }) => {
+      if (!portfolio) return;
+      
+      // Check if this IPO is in the user's portfolio
+      const holdingIndex = portfolio.holdings.findIndex(h => h.ipoId === data.ipoId);
+      
+      if (holdingIndex >= 0) {
+        // Update the portfolio with the new price
+        const updatedPortfolio = { ...portfolio };
+        
+        // Update the current price of the holding
+        const updatedHolding = { ...updatedPortfolio.holdings[holdingIndex], currentPrice: data.newPrice };
+        updatedPortfolio.holdings[holdingIndex] = updatedHolding;
+        
+        // Recalculate total value
+        updatedPortfolio.totalValue = updatedPortfolio.cash + updatedPortfolio.holdings.reduce(
+          (sum, holding) => sum + holding.quantity * (holding.currentPrice || holding.averagePurchasePrice), 0
+        );
+        
+        // Add a new history point if the value has changed significantly
+        if (updatedPortfolio.history && updatedPortfolio.history.length > 0) {
+          const lastHistory = updatedPortfolio.history[updatedPortfolio.history.length - 1];
+          const valueDifference = Math.abs(lastHistory.value - updatedPortfolio.totalValue);
+          const percentChange = valueDifference / lastHistory.value;
+          
+          if (percentChange > 0.005) { // Only add history if value changed by more than 0.5%
+            const newHistory = [...updatedPortfolio.history, {
+              date: new Date().toISOString(),
+              value: updatedPortfolio.totalValue
+            }];
+            
+            updatedPortfolio.history = newHistory;
+            setPortfolioHistory(newHistory);
+          }
+        }
+        
+        setPortfolio(updatedPortfolio);
+      }
+    };
+
+    // Handle trades that affect the portfolio
+    const tradeHandler = (data: { 
+      buyerId: string, 
+      sellerId: string, 
+      ipoId: string,
+      creatorSymbol: string,
+      price: number,
+      quantity: number
+    }) => {
+      if (!user || !portfolio) return;
+      
+      // Check if this trade involves the current user
+      const isUserInvolved = data.buyerId === user.id || data.sellerId === user.id;
+      
+      if (isUserInvolved) {
+        // Portfolio should be updated after trade, so refetch
+        fetchPortfolio();
+      }
+    };
+
+    // Subscribe to WebSocket events
+    mockWebSocket.on(WSEvents.CONNECTION, connectionHandler);
+    mockWebSocket.on(WSEvents.PRICE_UPDATE, priceUpdateHandler);
+    mockWebSocket.on(WSEvents.TRADE_EXECUTED, tradeHandler);
+    mockWebSocket.on(WSEvents.PORTFOLIO_UPDATED, fetchPortfolio);
+
+    // Cleanup function
+    return () => {
+      mockWebSocket.off(WSEvents.CONNECTION, connectionHandler);
+      mockWebSocket.off(WSEvents.PRICE_UPDATE, priceUpdateHandler);
+      mockWebSocket.off(WSEvents.TRADE_EXECUTED, tradeHandler);
+      mockWebSocket.off(WSEvents.PORTFOLIO_UPDATED, fetchPortfolio);
+    };
+  }, [isAuthenticated, user, portfolio]);
+
+  // Fetch portfolio on mount if authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
       fetchPortfolio();
-    } else {
-      setPortfolio(null);
     }
   }, [isAuthenticated, user]);
 
-  // Refresh portfolio data
-  const refreshPortfolio = async () => {
-    await fetchPortfolio();
-  };
-
-  // Context value
-  const value = {
-    portfolio,
-    isLoading,
-    error,
-    refreshPortfolio
-  };
-
   return (
-    <PortfolioContext.Provider value={value}>
+    <PortfolioContext.Provider
+      value={{
+        portfolio,
+        isLoading,
+        fetchPortfolio,
+        isConnected,
+        portfolioHistory
+      }}
+    >
       {children}
     </PortfolioContext.Provider>
   );
-}
+};
 
-// Hook for using the portfolio context
-export function usePortfolio() {
+export const usePortfolio = () => {
   const context = useContext(PortfolioContext);
-  
   if (context === undefined) {
     throw new Error('usePortfolio must be used within a PortfolioProvider');
   }
-  
   return context;
-}
+};

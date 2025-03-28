@@ -1,452 +1,591 @@
 
-import { faker } from '@faker-js/faker';
-import { IPO } from './mockApi';
+/**
+ * Mock AI Models
+ * Simulates AI-driven analysis for creator valuations, market trends, and price predictions
+ */
 
-// Define AI model types
+import { IPO } from "./mockApi";
+
+// Valuation models influenced by different factors
 export enum AIModelType {
-  TECHNICAL = 'technical',
-  FUNDAMENTAL = 'fundamental',
-  SOCIAL = 'social',
-  HYBRID = 'hybrid',
-  STANDARD = 'standard',
-  ENGAGEMENT = 'engagement',
-  SENTIMENT = 'sentiment',
-  REVENUE_WEIGHTED = 'revenue_weighted',
-  SOCIAL_WEIGHTED = 'social_weighted'
+  ENGAGEMENT = "engagement",
+  SENTIMENT = "sentiment",
+  GROWTH = "growth",
+  CONSISTENCY = "consistency",
+  HYBRID = "hybrid",
+  REVENUE_WEIGHTED = "revenue_weighted",  // New model type focusing on revenue metrics
+  SOCIAL_WEIGHTED = "social_weighted",     // New model type focusing on social metrics
+  STANDARD = "standard"  // Add standard type to match existing code
 }
 
-// Define anomaly types for detection
+// Sentiment trends - represents market sentiment towards a creator
+export type SentimentTrend = "positive" | "neutral" | "negative" | "very_positive" | "very_negative";
+
+// Price movement predictions
+export type PriceMovement = "up" | "strong_up" | "down" | "strong_down" | "stable" | "volatile";
+
+// Timeframes for predictions
+export type PredictionTimeframe = "24h" | "7d" | "30d" | "90d" | "short_term"; // Add short_term to match existing code
+
+// Market depth model - simulates the order book depth
+export interface MarketDepthModel {
+  // How concentrated buy/sell orders are around the current price (0-1)
+  orderConcentration: number;
+  // Buy wall strength (0-1)
+  buyWallStrength: number;
+  // Sell wall strength (0-1)
+  sellWallStrength: number;
+  // Price levels where significant buy support exists
+  supportLevels: number[];
+  // Price levels where significant sell resistance exists
+  resistanceLevels: number[];
+  // Current spread
+  currentSpread: { bid: number, ask: number };
+}
+
+// Anomaly types for detecting unusual patterns
 export enum AnomalyType {
-  WASH_TRADING = 'wash_trading',
-  PUMP_AND_DUMP = 'pump_and_dump',
-  UNUSUAL_VOLUME = 'unusual_volume',
-  RAPID_PRICE_CHANGE = 'rapid_price_change',
-  CIRCULAR_TRADING = 'circular_trading',
-  SPOOFING = 'spoofing'
+  WASH_TRADING = "wash_trading",
+  PUMP_AND_DUMP = "pump_and_dump",
+  SPOOFING = "spoofing",
+  UNUSUAL_VOLUME = "unusual_volume",
+  RAPID_PRICE_CHANGE = "rapid_price_change",
+  CIRCULAR_TRADING = "circular_trading"
 }
 
-// Define prediction timeframes
-export type PredictionTimeframe = '1h' | '24h' | '7d' | '30d' | '90d';
+// Anomaly detection result
+export interface AnomalyDetectionResult {
+  detected: boolean;
+  anomalies: {
+    type: AnomalyType;
+    confidence: number;
+    severity: number; // 1-10 scale
+    description: string;
+    affectedMetrics: string[];
+    timestamp: string;
+  }[];
+  riskScore: number; // 0-100
+  recommendations: string[];
+}
 
-// Mock price prediction function
+// Function to calculate market depth model for an IPO
+export const calculateMarketDepth = (ipo: IPO): MarketDepthModel => {
+  // Calculate support levels (10-30% below current price)
+  const supportBase = ipo.currentPrice * 0.7;
+  const supportRange = ipo.currentPrice * 0.2;
+  const supportLevels = [
+    parseFloat((supportBase + supportRange * Math.random()).toFixed(2)),
+    parseFloat((supportBase + supportRange * Math.random() * 0.7).toFixed(2)),
+    parseFloat((supportBase + supportRange * Math.random() * 0.4).toFixed(2))
+  ].sort((a, b) => a - b);
+
+  // Calculate resistance levels (10-40% above current price)
+  const resistanceBase = ipo.currentPrice * 1.1;
+  const resistanceRange = ipo.currentPrice * 0.3;
+  const resistanceLevels = [
+    parseFloat((resistanceBase + resistanceRange * Math.random()).toFixed(2)),
+    parseFloat((resistanceBase + resistanceRange * Math.random() * 0.7).toFixed(2)),
+    parseFloat((resistanceBase + resistanceRange * Math.random() * 0.5).toFixed(2))
+  ].sort((a, b) => a - b);
+
+  // Calculate model parameters influenced by engagement and AI scores
+  const orderConcentration = 0.3 + (ipo.engagementScore / 200); // Higher engagement = tighter spread
+  const buyWallStrength = 0.2 + (ipo.aiScore / 150) + (Math.random() * 0.3); // Higher AI score = stronger buy walls
+  const sellWallStrength = 0.1 + ((100 - ipo.engagementScore) / 200) + (Math.random() * 0.3); // Lower engagement = stronger sell walls
+
+  // Calculate spread
+  const spreadResult = calculateSpread(ipo);
+
+  return {
+    orderConcentration: parseFloat(orderConcentration.toFixed(2)),
+    buyWallStrength: parseFloat(buyWallStrength.toFixed(2)),
+    sellWallStrength: parseFloat(sellWallStrength.toFixed(2)),
+    supportLevels,
+    resistanceLevels,
+    currentSpread: spreadResult
+  };
+};
+
+// Calculate spread based on market depth and trading activity
+export const calculateSpread = (ipo: IPO): { bid: number, ask: number } => {
+  // Improved spread calculation that takes engagement score into account
+  // Higher engagement scores tend to have more liquidity and tighter spreads
+  const engagementFactor = Math.max(0.5, Math.min(1.5, (100 - ipo.engagementScore) / 50));
+  
+  // Base spread percentage (improved algorithm with revenue consideration)
+  const baseSpreadPercentage = 0.01 * engagementFactor;
+  
+  // Apply revenue-based adjustments
+  // Higher revenue = tighter spreads
+  const revenueAdjustment = ipo.revenueUSD ? Math.max(0.5, Math.min(1.0, 100000 / ipo.revenueUSD)) : 1.0;
+  
+  // Calculate final spread percentage with randomness
+  const spreadPercentage = baseSpreadPercentage * revenueAdjustment * (0.9 + Math.random() * 0.2);
+  
+  // Calculate bid and ask prices
+  const spreadAmount = ipo.currentPrice * spreadPercentage;
+  const bid = parseFloat((ipo.currentPrice - spreadAmount).toFixed(2));
+  const ask = parseFloat((ipo.currentPrice + spreadAmount).toFixed(2));
+  
+  return { bid, ask };
+};
+
+// Predict price movement for a creator based on their metrics
 export const predictPriceMovement = (
   ipo: IPO, 
   timeframe: PredictionTimeframe = "24h",
   modelType: AIModelType = AIModelType.HYBRID
-) => {
-  const baseVolatility = {
-    '1h': 0.5,
-    '24h': 2,
-    '7d': 5,
-    '30d': 10,
-    '90d': 20
-  }[timeframe];
+): {
+  prediction: PriceMovement;
+  confidence: number;
+  targetPrice: number;
+  factors: string[];
+} => {
+  // Enhanced list of factors that influence the prediction
+  const baseFactors = [
+    'Recent social media engagement trends',
+    'Market sentiment analysis',
+    'Trading volume patterns',
+    'Similar creators performance correlation',
+    'Historical price support/resistance levels',
+    'Brand partnership announcements',
+    'Content release schedule',
+    'Fan growth rate',
+    'Revenue growth trajectory',
+    'Platform algorithm changes',
+    'Competitor creator performance',
+    'Seasonal engagement patterns',
+    'New content format adoption',
+    'Creator collaboration network',
+    'Merchandise sales velocity',
+    'Live event attendance',
+    'Subscription retention rates',
+    'Viral content probability'
+  ];
   
-  // Adjust volatility based on model type
-  let volatilityMultiplier = 1.0;
+  // Random selection of factors that influenced this prediction
+  const selectedFactors = baseFactors
+    .sort(() => Math.random() - 0.5)
+    .slice(0, Math.floor(Math.random() * 3) + 2);
+  
+  // Calculate a base prediction score (-1 to 1 scale)
+  let predictionScore = 0;
+  
+  // Different models emphasize different creator attributes with improved weighting
   switch (modelType) {
-    case AIModelType.TECHNICAL:
-      volatilityMultiplier = 1.2;
+    case AIModelType.ENGAGEMENT:
+      // Heavily influenced by engagement score
+      predictionScore = ((ipo.engagementScore - 50) / 50) * 0.8 + (Math.random() * 0.4 - 0.2);
       break;
-    case AIModelType.FUNDAMENTAL:
-      volatilityMultiplier = 0.8;
+      
+    case AIModelType.SENTIMENT:
+      // More random, simulating social sentiment which can be volatile
+      predictionScore = ((ipo.aiScore - 50) / 50) * 0.5 + (Math.random() * 0.8 - 0.4);
       break;
-    case AIModelType.SOCIAL:
-      volatilityMultiplier = 1.5;
+      
+    case AIModelType.GROWTH:
+      // Based on growth potential indicated by AI score
+      predictionScore = ((ipo.aiScore - 70) / 30) * 0.7 + (Math.random() * 0.4 - 0.2);
       break;
+      
+    case AIModelType.CONSISTENCY:
+      // More stable predictions, less extreme
+      predictionScore = ((ipo.engagementScore + ipo.aiScore - 100) / 100) * 0.4 + (Math.random() * 0.2 - 0.1);
+      break;
+      
+    case AIModelType.REVENUE_WEIGHTED:
+      // Heavily weighted towards revenue metrics
+      const revenueScore = ipo.revenueUSD ? Math.min(1, ipo.revenueUSD / 1000000) : 0.5;
+      predictionScore = (
+        (revenueScore * 0.7) + 
+        ((ipo.engagementScore - 50) / 50) * 0.2 + 
+        (Math.random() * 0.2 - 0.1)
+      );
+      break;
+      
+    case AIModelType.SOCIAL_WEIGHTED:
+      // Heavily weighted towards social engagement metrics
+      predictionScore = (
+        ((ipo.engagementScore - 40) / 60) * 0.8 + 
+        ((ipo.aiScore - 50) / 50) * 0.1 + 
+        (Math.random() * 0.2 - 0.1)
+      );
+      break;
+      
     case AIModelType.HYBRID:
     default:
-      volatilityMultiplier = 1.0;
-  }
-  
-  const volatility = baseVolatility * volatilityMultiplier;
-  
-  // Generate prediction
-  const uptrend = faker.datatype.boolean();
-  const changePercent = faker.number.float({
-    min: uptrend ? 0 : -volatility,
-    max: uptrend ? volatility : 0,
-    fractionDigits: 2
-  });
-  
-  // Higher confidence for shorter timeframes
-  const confidenceMultiplier = {
-    '1h': 0.85,
-    '24h': 0.75,
-    '7d': 0.65,
-    '30d': 0.5,
-    '90d': 0.35
-  }[timeframe];
-  
-  // Adjust confidence based on model
-  let confidenceBase = 0;
-  switch (modelType) {
-    case AIModelType.TECHNICAL:
-      confidenceBase = faker.number.int({ min: 65, max: 90 });
+      // Balanced approach using all factors with improved weighting
+      // Revenue gets higher weight for established creators, engagement for newer ones
+      const isEstablished = ipo.launchDate ? (new Date().getTime() - new Date(ipo.launchDate).getTime()) > 1000 * 60 * 60 * 24 * 90 : false;
+      
+      if (isEstablished) {
+        // For established creators, revenue and consistency matter more
+        const revenueScore = ipo.revenueUSD ? Math.min(1, ipo.revenueUSD / 1000000) : 0.5;
+        predictionScore = (
+          (revenueScore * 0.4) + 
+          ((ipo.engagementScore - 50) / 50) * 0.3 + 
+          ((ipo.aiScore - 50) / 50) * 0.2 + 
+          (Math.random() * 0.2 - 0.1)
+        );
+      } else {
+        // For newer creators, engagement and growth potential matter more
+        predictionScore = (
+          ((ipo.engagementScore - 40) / 60) * 0.5 + 
+          ((ipo.aiScore - 50) / 50) * 0.3 + 
+          (Math.random() * 0.4 - 0.2)
+        );
+      }
       break;
-    case AIModelType.FUNDAMENTAL:
-      confidenceBase = faker.number.int({ min: 70, max: 85 });
-      break;
-    case AIModelType.SOCIAL:
-      confidenceBase = faker.number.int({ min: 50, max: 95 });
-      break;
-    case AIModelType.HYBRID:
-    default:
-      confidenceBase = faker.number.int({ min: 60, max: 90 });
   }
   
-  const confidence = confidenceBase * confidenceMultiplier;
-  
-  // Calculate predicted price
-  const currentPrice = ipo.currentPrice;
-  const predictedPrice = currentPrice * (1 + changePercent / 100);
-  
-  // Generate prediction factors
-  const factors = [];
-  if (modelType === AIModelType.HYBRID || modelType === AIModelType.TECHNICAL) {
-    factors.push({
-      name: 'Technical Analysis',
-      impact: faker.number.float({ min: -5, max: 5, fractionDigits: 1 }),
-      description: uptrend ? 'Bullish chart patterns forming' : 'Bearish trend indicators'
-    });
+  // Adjust for timeframe - longer timeframes have more potential for larger moves
+  let timeframeMultiplier = 1;
+  switch (timeframe) {
+    case "24h": timeframeMultiplier = 1; break;
+    case "7d": timeframeMultiplier = 1.5; break;
+    case "30d": timeframeMultiplier = 2.2; break;
+    case "90d": timeframeMultiplier = 3; break;
+    default: timeframeMultiplier = 1;
   }
   
-  if (modelType === AIModelType.HYBRID || modelType === AIModelType.FUNDAMENTAL) {
-    factors.push({
-      name: 'Revenue Forecast',
-      impact: faker.number.float({ min: -5, max: 5, fractionDigits: 1 }),
-      description: faker.helpers.arrayElement([
-        'Strong growth in merchandise sales',
-        'Increasing sponsored content deals',
-        'Expanding into new revenue streams',
-        'Declining ad revenue on main platform'
-      ])
-    });
+  predictionScore = predictionScore * timeframeMultiplier;
+  
+  // Determine prediction category based on score
+  let prediction: PriceMovement;
+  if (predictionScore > 0.8) prediction = "strong_up";
+  else if (predictionScore > 0.3) prediction = "up";
+  else if (predictionScore < -0.8) prediction = "strong_down";
+  else if (predictionScore < -0.3) prediction = "down";
+  else if (Math.abs(predictionScore) < 0.15) prediction = "stable";
+  else prediction = "volatile";
+  
+  // Calculate target price based on prediction with improved precision
+  let priceChangePercent = 0;
+  switch (prediction) {
+    case "strong_up": priceChangePercent = 0.15 + (Math.random() * 0.25); break;
+    case "up": priceChangePercent = 0.05 + (Math.random() * 0.1); break;
+    case "strong_down": priceChangePercent = -0.15 - (Math.random() * 0.2); break;
+    case "down": priceChangePercent = -0.03 - (Math.random() * 0.07); break;
+    case "stable": priceChangePercent = -0.02 + (Math.random() * 0.04); break;
+    case "volatile": priceChangePercent = -0.07 + (Math.random() * 0.14); break;
+    default: priceChangePercent = 0;
   }
   
-  if (modelType === AIModelType.HYBRID || modelType === AIModelType.SOCIAL) {
-    factors.push({
-      name: 'Social Sentiment',
-      impact: faker.number.float({ min: -5, max: 5, fractionDigits: 1 }),
-      description: faker.helpers.arrayElement([
-        'Growing positive engagement',
-        'Recent viral content',
-        'Controversy affecting perception',
-        'Steady engagement metrics'
-      ])
-    });
-    
-    factors.push({
-      name: 'Platform Algorithm Changes',
-      impact: faker.number.float({ min: -3, max: 3, fractionDigits: 1 }),
-      description: faker.helpers.arrayElement([
-        'Favorable algorithm changes on key platform',
-        'Recent platform policy updates impacting reach',
-        'New monetization options available'
-      ])
-    });
+  // Apply timeframe multiplier to price change percent
+  priceChangePercent = priceChangePercent * timeframeMultiplier;
+  
+  const targetPrice = parseFloat((ipo.currentPrice * (1 + priceChangePercent)).toFixed(2));
+  
+  // Calculate confidence level (50-95%)
+  // Higher confidence for revenue-based models for established creators
+  let confidenceBoost = 0;
+  if (modelType === AIModelType.REVENUE_WEIGHTED && ipo.revenueUSD && ipo.revenueUSD > 500000) {
+    confidenceBoost = 10;
   }
+  
+  const confidence = Math.min(95, 50 + Math.floor(Math.abs(predictionScore) * 50) + confidenceBoost);
   
   return {
-    currentPrice,
-    predictedPrice,
-    changePercent,
-    timeframe,
+    prediction,
     confidence,
-    modelType,
-    factors,
-    timestamp: new Date().toISOString(),
-    prediction: uptrend ? 'bullish' : 'bearish',
-    targetPrice: predictedPrice
+    targetPrice,
+    factors: selectedFactors
   };
 };
 
-// Market depth analysis function
-export const calculateMarketDepth = (ipo: IPO) => {
-  // Generate buy orders (bids)
-  const bidCount = faker.number.int({ min: 5, max: 15 });
-  const bids = Array.from({ length: bidCount }, (_, i) => {
-    const priceDecrement = i * faker.number.float({ min: 0.1, max: 0.5 });
-    return {
-      price: Number((ipo.currentPrice - priceDecrement).toFixed(2)),
-      quantity: faker.number.int({ min: 10, max: 1000 }),
-      total: 0 // Will be calculated below
-    };
-  }).sort((a, b) => b.price - a.price); // Sort by price descending
+// Get simulated social sentiment metrics for a creator
+export const getSocialSentiment = (ipo: IPO): {
+  overall: SentimentTrend;
+  metrics: {
+    twitter: { score: number; trend: SentimentTrend; volume: number };
+    instagram: { score: number; trend: SentimentTrend; volume: number };
+    youtube: { score: number; trend: SentimentTrend; volume: number };
+  };
+  keywords: string[];
+} => {
+  // Base sentiment is influenced by engagement score
+  const baseSentiment = (ipo.engagementScore - 50) / 50;
   
-  // Generate sell orders (asks)
-  const askCount = faker.number.int({ min: 5, max: 15 });
-  const asks = Array.from({ length: askCount }, (_, i) => {
-    const priceIncrement = i * faker.number.float({ min: 0.1, max: 0.5 });
-    return {
-      price: Number((ipo.currentPrice + priceIncrement).toFixed(2)),
-      quantity: faker.number.int({ min: 10, max: 1000 }),
-      total: 0 // Will be calculated below
-    };
-  }).sort((a, b) => a.price - b.price); // Sort by price ascending
+  // Generate platform-specific metrics with some randomness
+  const twitterScore = Math.min(1, Math.max(-1, baseSentiment + (Math.random() * 0.6 - 0.3)));
+  const instagramScore = Math.min(1, Math.max(-1, baseSentiment + (Math.random() * 0.6 - 0.3)));
+  const youtubeScore = Math.min(1, Math.max(-1, baseSentiment + (Math.random() * 0.6 - 0.3)));
   
-  // Calculate total value for each level
-  bids.forEach(bid => {
-    bid.total = bid.price * bid.quantity;
-  });
+  // Convert scores to trend categories
+  const scoreToTrend = (score: number): SentimentTrend => {
+    if (score > 0.6) return "very_positive";
+    if (score > 0.2) return "positive";
+    if (score < -0.6) return "very_negative";
+    if (score < -0.2) return "negative";
+    return "neutral";
+  };
   
-  asks.forEach(ask => {
-    ask.total = ask.price * ask.quantity;
-  });
+  // Calculate overall trend (weighted average)
+  const overallScore = (twitterScore * 0.35) + (instagramScore * 0.4) + (youtubeScore * 0.25);
+  const overallTrend = scoreToTrend(overallScore);
   
-  // Calculate market depth metrics
-  const totalBidVolume = bids.reduce((sum, bid) => sum + bid.quantity, 0);
-  const totalAskVolume = asks.reduce((sum, ask) => sum + ask.quantity, 0);
-  const bidAskRatio = totalBidVolume / (totalAskVolume || 1);
+  // Generate random engagement volumes
+  const twitterVolume = Math.floor(10000 + Math.random() * 990000);
+  const instagramVolume = Math.floor(20000 + Math.random() * 1980000);
+  const youtubeVolume = Math.floor(5000 + Math.random() * 495000);
   
-  const spread = asks[0].price - bids[0].price;
-  const spreadPercentage = (spread / ipo.currentPrice) * 100;
+  // Generate trending keywords
+  const positiveKeywords = ['viral', 'trending', 'collaboration', 'launch', 'exclusive', 'partnership'];
+  const neutralKeywords = ['announcement', 'update', 'content', 'release', 'feature', 'interview'];
+  const negativeKeywords = ['controversy', 'delay', 'criticism', 'issue', 'problem', 'cancel'];
   
-  // Calculate support and resistance
-  const strongestSupport = bids.reduce((max, bid) => 
-    bid.quantity > max.quantity ? bid : max, bids[0]);
+  let keywordPool = [...neutralKeywords];
+  if (overallScore > 0.3) {
+    keywordPool = [...keywordPool, ...positiveKeywords];
+  } else if (overallScore < -0.3) {
+    keywordPool = [...keywordPool, ...negativeKeywords];
+  }
   
-  const strongestResistance = asks.reduce((max, ask) => 
-    ask.quantity > max.quantity ? ask : max, asks[0]);
-    
-  // Generate support and resistance levels
-  const supportLevels = [
-    strongestSupport.price,
-    strongestSupport.price * 0.95,
-    strongestSupport.price * 0.90
-  ];
-  
-  const resistanceLevels = [
-    strongestResistance.price,
-    strongestResistance.price * 1.05,
-    strongestResistance.price * 1.10
-  ];
-  
-  // Calculate buy and sell wall strengths (0-100)
-  const buyWallStrength = faker.number.int({ min: 20, max: 85 });
-  const sellWallStrength = faker.number.int({ min: 20, max: 85 });
-  
-  // Calculate current spread for display
-  const currentSpread = spread;
+  const keywords = keywordPool
+    .sort(() => Math.random() - 0.5)
+    .slice(0, Math.floor(Math.random() * 3) + 3);
   
   return {
-    bids,
-    asks,
+    overall: overallTrend,
     metrics: {
-      totalBidVolume,
-      totalAskVolume,
-      bidAskRatio,
-      spread,
-      spreadPercentage
+      twitter: {
+        score: parseFloat(twitterScore.toFixed(2)),
+        trend: scoreToTrend(twitterScore),
+        volume: twitterVolume
+      },
+      instagram: {
+        score: parseFloat(instagramScore.toFixed(2)),
+        trend: scoreToTrend(instagramScore),
+        volume: instagramVolume
+      },
+      youtube: {
+        score: parseFloat(youtubeScore.toFixed(2)),
+        trend: scoreToTrend(youtubeScore),
+        volume: youtubeVolume
+      }
     },
-    analysis: {
-      liquidityScore: faker.number.int({ min: 30, max: 95 }),
-      volatilityRisk: faker.number.int({ min: 10, max: 90 }),
-      strongestSupport: strongestSupport.price,
-      strongestResistance: strongestResistance.price
-    },
-    supportLevels,
-    resistanceLevels,
-    buyWallStrength,
-    sellWallStrength,
-    currentSpread,
-    timestamp: new Date().toISOString()
+    keywords
   };
 };
 
-// Anomaly detection function
-export const detectAnomalies = (ipo: IPO, recentTrades = []) => {
-  // Simulate if anomalies were detected
-  const detected = faker.number.int({ min: 1, max: 10 }) <= 3; // 30% chance
+// New function to detect trading anomalies
+export const detectAnomalies = (ipo: IPO, recentTrades: any[] = []): AnomalyDetectionResult => {
+  const anomalies = [];
+  let riskScore = 0;
   
-  if (!detected) {
+  // We need a minimum number of trades to detect patterns
+  if (recentTrades.length < 3) {
     return {
-      ipoId: ipo.id,
       detected: false,
-      riskScore: faker.number.int({ min: 5, max: 25 }),
-      timestamp: new Date().toISOString()
+      anomalies: [],
+      riskScore: 0,
+      recommendations: ["Insufficient trading data for analysis"]
     };
   }
   
-  // Generate random anomalies
-  const anomalyCount = faker.number.int({ min: 1, max: 3 });
+  // 1. Check for unusual volume
+  const averageVolume = ipo.averageDailyVolume || 5000;
+  const recentVolume = recentTrades.reduce((sum, trade) => sum + trade.quantity, 0);
+  const volumeRatio = recentVolume / averageVolume;
   
-  // Convert string anomaly types to enum values for better typing
-  const anomalyTypes = [
-    AnomalyType.WASH_TRADING,
-    AnomalyType.UNUSUAL_VOLUME,
-    AnomalyType.PUMP_AND_DUMP,
-    AnomalyType.RAPID_PRICE_CHANGE,
-    AnomalyType.CIRCULAR_TRADING,
-    AnomalyType.SPOOFING
-  ];
-  
-  // Generate severity levels
-  const severityLevels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // 1-10 scale
-  
-  const anomalies = Array.from({ length: anomalyCount }, () => {
-    const anomalyType = faker.helpers.arrayElement(anomalyTypes);
-    const severity = faker.helpers.arrayElement(severityLevels);
-    
-    // Generate affected metrics for this anomaly
-    const affectedMetrics = [];
-    if (anomalyType === AnomalyType.UNUSUAL_VOLUME || anomalyType === AnomalyType.PUMP_AND_DUMP) {
-      affectedMetrics.push('trading_volume', 'price_volatility');
-    } else if (anomalyType === AnomalyType.WASH_TRADING || anomalyType === AnomalyType.CIRCULAR_TRADING) {
-      affectedMetrics.push('order_patterns', 'account_activity');
-    } else {
-      affectedMetrics.push('price_movement', 'market_depth');
-    }
-    
-    return {
-      type: anomalyType,
+  if (volumeRatio > 3) {
+    const severity = Math.min(10, Math.floor(volumeRatio * 1.5));
+    anomalies.push({
+      type: AnomalyType.UNUSUAL_VOLUME,
+      confidence: Math.min(95, 60 + Math.floor(volumeRatio * 5)),
       severity,
-      confidence: faker.number.int({ min: 60, max: 95 }),
-      description: `Detected ${anomalyType.replace('_', ' ')} with severity ${severity}/10`,
-      timestamp: faker.date.recent({ days: 1 }).toISOString(),
-      affectedMetrics
-    };
+      description: `Trading volume is ${volumeRatio.toFixed(1)}x higher than average`,
+      affectedMetrics: ['volume', 'liquidity', 'volatility'],
+      timestamp: new Date().toISOString()
+    });
+    riskScore += severity * 5;
+  }
+  
+  // 2. Check for rapid price changes
+  if (recentTrades.length >= 5) {
+    const prices = recentTrades.map(t => t.price);
+    const maxPrice = Math.max(...prices);
+    const minPrice = Math.min(...prices);
+    const priceRange = (maxPrice - minPrice) / minPrice;
+    
+    if (priceRange > 0.05) { // 5% price swing in recent trades
+      const severity = Math.min(10, Math.floor(priceRange * 100));
+      anomalies.push({
+        type: AnomalyType.RAPID_PRICE_CHANGE,
+        confidence: Math.min(90, 50 + Math.floor(priceRange * 500)),
+        severity,
+        description: `Price fluctuated by ${(priceRange * 100).toFixed(1)}% in a short time period`,
+        affectedMetrics: ['price', 'volatility', 'investor sentiment'],
+        timestamp: new Date().toISOString()
+      });
+      riskScore += severity * 6;
+    }
+  }
+  
+  // 3. Check for wash trading (same buyer and seller)
+  const traderMap = new Map();
+  recentTrades.forEach(trade => {
+    const key = `${trade.buyerId}-${trade.sellerId}`;
+    traderMap.set(key, (traderMap.get(key) || 0) + 1);
   });
   
-  // Calculate risk score based on anomalies
-  const baseRiskScore = faker.number.int({ min: 30, max: 50 });
-  const anomalyRiskContribution = anomalies.reduce((total, anomaly) => {
-    return total + anomaly.severity * 4; // Scale severity to risk contribution
-  }, 0);
+  let potentialWashTrades = 0;
+  traderMap.forEach((count, key) => {
+    if (count >= 3) { // Multiple trades between same parties
+      potentialWashTrades += count;
+    }
+  });
   
-  const riskScore = Math.min(95, baseRiskScore + anomalyRiskContribution);
+  if (potentialWashTrades > 0) {
+    const washTradeRatio = potentialWashTrades / recentTrades.length;
+    if (washTradeRatio > 0.2) { // If more than 20% look suspicious
+      const severity = Math.min(10, Math.floor(washTradeRatio * 10) + 5);
+      anomalies.push({
+        type: AnomalyType.WASH_TRADING,
+        confidence: Math.min(85, 50 + Math.floor(washTradeRatio * 150)),
+        severity,
+        description: `Possible wash trading detected (${(washTradeRatio * 100).toFixed(0)}% of recent trades)`,
+        affectedMetrics: ['volume', 'price discovery', 'market integrity'],
+        timestamp: new Date().toISOString()
+      });
+      riskScore += severity * 8;
+    }
+  }
+  
+  // 4. Check for circular trading patterns
+  const tradingGraph = new Map();
+  recentTrades.forEach(trade => {
+    if (!tradingGraph.has(trade.buyerId)) {
+      tradingGraph.set(trade.buyerId, new Set());
+    }
+    tradingGraph.get(trade.buyerId).add(trade.sellerId);
+  });
+  
+  let circularPaths = 0;
+  tradingGraph.forEach((sellers, buyer) => {
+    sellers.forEach(seller => {
+      if (tradingGraph.has(seller) && tradingGraph.get(seller).has(buyer)) {
+        circularPaths++;
+      }
+    });
+  });
+  
+  if (circularPaths > 0) {
+    const severity = Math.min(10, 5 + circularPaths);
+    anomalies.push({
+      type: AnomalyType.CIRCULAR_TRADING,
+      confidence: Math.min(80, 40 + (circularPaths * 10)),
+      severity,
+      description: `Circular trading pattern detected between multiple parties`,
+      affectedMetrics: ['price', 'volume', 'market manipulation risk'],
+      timestamp: new Date().toISOString()
+    });
+    riskScore += severity * 7;
+  }
+  
+  // Generate recommendations based on detected anomalies
+  const recommendations: string[] = [];
+  
+  if (riskScore > 50) {
+    recommendations.push("Consider temporarily halting trading while investigating market manipulation");
+  }
+  
+  if (anomalies.some(a => a.type === AnomalyType.UNUSUAL_VOLUME)) {
+    recommendations.push("Monitor for sudden influx of new investors or coordinated trading activity");
+  }
+  
+  if (anomalies.some(a => a.type === AnomalyType.WASH_TRADING || a.type === AnomalyType.CIRCULAR_TRADING)) {
+    recommendations.push("Review transaction history to identify potential manipulative trading patterns");
+  }
+  
+  if (anomalies.some(a => a.type === AnomalyType.RAPID_PRICE_CHANGE)) {
+    recommendations.push("Implement circuit breakers to prevent extreme price volatility");
+  }
+  
+  if (recommendations.length === 0 && anomalies.length > 0) {
+    recommendations.push("Continue monitoring trading patterns for further anomalies");
+  }
   
   return {
-    ipoId: ipo.id,
-    detected: true,
-    riskScore,
+    detected: anomalies.length > 0,
     anomalies,
-    recommendations: [
-      'Monitor closely for next 24 hours',
-      'Enable additional verification for large orders',
-      'Temporarily adjust order limits'
-    ],
-    timestamp: new Date().toISOString()
+    riskScore: Math.min(100, riskScore),
+    recommendations: recommendations.length > 0 ? recommendations : ["No action recommended at this time"]
   };
 };
 
-// Calculate dividend yield and related metrics
-export function calculateDividendYield(ipo: IPO) {
-  // Base annual yield percent between 1-7%
-  const annualYieldPercent = faker.number.float({ min: 1, max: 7, fractionDigits: 2 });
+// Simulate dividends based on creator performance
+export const calculateDividendYield = (ipo: IPO): {
+  annualYieldPercent: number;
+  nextPayoutDate: string;
+  nextEstimatedAmount: number;
+  payoutFrequency: 'monthly' | 'quarterly';
+} => {
+  // Better performing creators offer higher dividends
+  const baseYield = (ipo.aiScore / 200) * 5; // 0-2.5% base yield
+  const engagementBonus = (ipo.engagementScore / 200) * 3; // 0-1.5% engagement bonus
+  const totalYield = baseYield + engagementBonus;
   
-  // Calculate estimated quarterly payout
-  const quarterlyPayout = (ipo.revenueUSD || 1000000) * 0.25 * (annualYieldPercent / 100) / 4;
-  
-  // Format in millions
-  const nextEstimatedAmount = (quarterlyPayout / 1000000).toFixed(2);
-  
-  // Generate next payout date (1-90 days in the future)
-  const nextPayoutDays = faker.number.int({ min: 1, max: 90 });
+  // Random next payout date (within next 30 days)
   const nextPayoutDate = new Date();
-  nextPayoutDate.setDate(nextPayoutDate.getDate() + nextPayoutDays);
+  nextPayoutDate.setDate(nextPayoutDate.getDate() + Math.floor(Math.random() * 30) + 1);
   
-  // Generate historical payouts (past 4 quarters)
-  const historicalPayouts = [];
-  for (let i = 1; i <= 4; i++) {
-    const pastDate = new Date();
-    pastDate.setMonth(pastDate.getMonth() - i * 3);
-    
-    const variation = faker.number.float({ min: -0.2, max: 0.2 });
-    const amount = parseFloat((parseFloat(nextEstimatedAmount) * (1 + variation)).toFixed(2));
-    
-    historicalPayouts.push({
-      date: pastDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      }),
-      amount
-    });
-  }
+  // Determine payout frequency (higher rated creators pay more frequently)
+  const payoutFrequency = (ipo.aiScore + ipo.engagementScore) / 2 > 80 ? 'monthly' : 'quarterly';
+  
+  // Calculate next estimated amount
+  const tokensInCirculation = ipo.totalSupply - ipo.availableSupply;
+  const annualDividendPool = (ipo.initialPrice * tokensInCirculation) * (totalYield / 100);
+  const nextEstimatedAmount = payoutFrequency === 'monthly' 
+    ? annualDividendPool / 12 
+    : annualDividendPool / 4;
   
   return {
-    annualYieldPercent,
-    nextEstimatedAmount,
+    annualYieldPercent: parseFloat(totalYield.toFixed(2)),
     nextPayoutDate: nextPayoutDate.toISOString(),
-    payoutFrequency: "Quarterly",
-    historicalPayouts,
-    yieldTrend: faker.helpers.arrayElement(['increasing', 'stable', 'decreasing']),
-    lastUpdated: new Date().toISOString()
+    nextEstimatedAmount: parseFloat((nextEstimatedAmount / 1000000).toFixed(2)), // in millions
+    payoutFrequency
   };
-}
+};
 
-// Generate token vesting rules
-export function getTokenVestingRules(ipo: IPO) {
-  // Creator vesting rules
-  const creatorVesting = {
-    initialUnlock: faker.number.int({ min: 10, max: 30 }), // % unlocked at launch
-    vestingPeriod: faker.number.int({ min: 12, max: 36 }), // months
-    monthlyUnlock: faker.number.float({ min: 2, max: 5, fractionDigits: 1 }), // % per month
-    cliffPeriod: faker.number.int({ min: 0, max: 6 }) // months before vesting starts
+// Simulate vesting and staking rules
+export const getTokenVestingRules = (ipo: IPO): {
+  creatorVesting: {
+    initialUnlock: number; // percentage
+    vestingPeriod: number; // months
+    monthlyUnlock: number; // percentage
   };
-  
-  // Investor staking rules
-  const investorStaking = {
-    minStakingPeriod: faker.number.int({ min: 30, max: 180 }), // days
-    earlyUnstakePenalty: faker.number.int({ min: 5, max: 20 }), // %
-    stakingRewards: faker.number.float({ min: 3, max: 12, fractionDigits: 1 }) // % APY
+  investorStaking: {
+    minStakingPeriod: number; // days
+    earlyUnstakePenalty: number; // percentage
+    stakingRewards: number; // annual percentage
   };
-  
-  // Token lockup schedule
-  const tokenLockupSchedule = [];
-  
-  // Add initial unlock
-  tokenLockupSchedule.push({
-    month: 0,
-    unlockPercentage: creatorVesting.initialUnlock,
-    label: 'Initial'
-  });
-  
-  // Add cliff period if applicable
-  if (creatorVesting.cliffPeriod > 0) {
-    tokenLockupSchedule.push({
-      month: creatorVesting.cliffPeriod,
-      unlockPercentage: 0,
-      label: 'Cliff'
-    });
-  }
-  
-  // Add monthly unlocks for the rest of the vesting period
-  for (let i = (creatorVesting.cliffPeriod > 0 ? creatorVesting.cliffPeriod + 1 : 1); 
-      i <= creatorVesting.vestingPeriod; 
-      i++) {
-    tokenLockupSchedule.push({
-      month: i,
-      unlockPercentage: creatorVesting.monthlyUnlock,
-      label: `Month ${i}`
-    });
-  }
-  
+} => {
   return {
-    creatorVesting,
-    investorStaking,
-    tokenLockupSchedule,
-    lastUpdated: new Date().toISOString()
-  };
-}
-
-// Generate liquidation rules
-export function getLiquidationRules() {
-  return {
-    inactivityThreshold: faker.number.int({ min: 90, max: 365 }), // days
-    engagementMinimum: faker.number.int({ min: 5, max: 20 }),
-    liquidationProcess: faker.helpers.arrayElement([
-      "Gradual token buyback over 30 days at market price",
-      "Immediate token buyback at 90% of market price",
-      "Community vote required before liquidation process",
-      "Creator has 60-day grace period to return to minimum activity"
-    ]),
-    tokenBuybackPrice: faker.number.float({ min: 0.5, max: 0.9, fractionDigits: 2 }),
-    warningThresholds: {
-      severe: 30, // days
-      moderate: 60,
-      mild: 90
+    creatorVesting: {
+      initialUnlock: 20, // 20% unlocked at launch
+      vestingPeriod: 24, // 24 month total vesting
+      monthlyUnlock: 3.33 // approximately 3.33% unlocked each month
+    },
+    investorStaking: {
+      minStakingPeriod: 30, // 30 days minimum staking period
+      earlyUnstakePenalty: 10, // 10% penalty for early unstaking
+      stakingRewards: parseFloat((3 + (ipo.aiScore / 20)).toFixed(2)) // 3-8% annual rewards
     }
   };
-}
+};
+
+// Liquidation conditions if a creator becomes inactive
+export const getLiquidationRules = (ipo: IPO): {
+  inactivityThreshold: number; // days
+  engagementMinimum: number; // minimum engagement score
+  liquidationProcess: string; // explanation
+  tokenBuybackPrice: number; // price
+} => {
+  return {
+    inactivityThreshold: 180, // 6 months of inactivity
+    engagementMinimum: 20, // engagement score cannot fall below 20
+    liquidationProcess: "If creator becomes inactive or engagement falls below minimum threshold, tokens enter a 30-day grace period. If no recovery, smart contract initiates token buyback at specified price.",
+    tokenBuybackPrice: parseFloat((ipo.initialPrice * 0.5).toFixed(2)) // 50% of initial price
+  };
+};

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useTrading } from "@/contexts/TradingContext";
 import { usePortfolio } from "@/contexts/PortfolioContext";
@@ -15,7 +16,7 @@ interface TradeFormProps {
 
 export const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
   const { placeOrder, isLoading } = useTrading();
-  const { portfolio } = usePortfolio();
+  const { portfolio, fetchPortfolio } = usePortfolio();
   
   const [formData, setFormData] = useState({
     type: "buy" as "buy" | "sell",
@@ -80,7 +81,9 @@ export const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
         quantity: formData.quantity
       });
       
-      // Use the onSuccess callback directly instead of fetching portfolio
+      // Refresh portfolio after trade
+      await fetchPortfolio();
+      
       if (onSuccess) {
         onSuccess();
       }
