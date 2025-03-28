@@ -22,7 +22,9 @@ import CreatorDashboard from './pages/CreatorDashboard.tsx';
 import LaunchIPO from './pages/LaunchIPO.tsx';
 import SettingsPage from './pages/Settings.tsx';
 import './index.css';
+import { AuthProvider } from './contexts/AuthContext';
 
+// Create the router configuration
 const router = createBrowserRouter([
   {
     path: "/",
@@ -73,20 +75,23 @@ const router = createBrowserRouter([
         path: "/settings",
         element: <ProtectedRoute><SettingsPage /></ProtectedRoute>,
       },
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/register",
+        element: <Register />,
+      },
     ],
-  },
-  {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/register",
-    element: <Register />,
   },
 ]);
 
+// Render the application, wrapping the router in AuthProvider
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>,
 );

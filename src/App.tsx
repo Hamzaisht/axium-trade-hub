@@ -1,6 +1,5 @@
 
 import { Outlet } from 'react-router-dom';
-import { AuthProvider } from '@/contexts/AuthContext';
 import { IPOProvider } from '@/contexts/IPOContext';
 import { PortfolioProvider } from '@/contexts/PortfolioContext';
 import { TradingProvider } from '@/contexts/TradingContext';
@@ -25,23 +24,21 @@ function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="light">
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TokenRefreshProvider>
-            <IPOProvider>
-              <PortfolioProvider>
-                <TradingProvider>
-                  <DualToastProvider />
-                  <div className="flex flex-col min-h-screen">
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Outlet />
-                    </main>
-                  </div>
-                </TradingProvider>
-              </PortfolioProvider>
-            </IPOProvider>
-          </TokenRefreshProvider>
-        </AuthProvider>
+        <TokenRefreshProvider>
+          <IPOProvider>
+            <PortfolioProvider>
+              <TradingProvider>
+                <DualToastProvider />
+                <div className="flex flex-col min-h-screen">
+                  <Navbar />
+                  <main className="flex-grow">
+                    <Outlet />
+                  </main>
+                </div>
+              </TradingProvider>
+            </PortfolioProvider>
+          </IPOProvider>
+        </TokenRefreshProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );
