@@ -18,11 +18,54 @@ interface ExternalMetricsCardProps {
   className?: string;
 }
 
+// Helper function to map API service metrics to the expected format
+const mapServiceMetricsToApiTypes = (serviceMetrics: any): CreatorMetrics => {
+  if (!serviceMetrics) return null;
+  
+  // Map social metrics
+  const mappedSocial = serviceMetrics.social?.map(platform => ({
+    platform: platform.platform,
+    score: platform.engagement * 10 || 0,  // Convert engagement to score
+    trend: platform.growth > 0 ? 'positive' : 'negative',
+    volume: platform.posts * 100 || 0,      // Convert posts to volume
+    followers: platform.followers || 0,
+    engagement: platform.engagement || 0,
+    growth: platform.growth || 0,
+    isRealData: platform.isRealData || false
+  })) || [];
+  
+  // Create default revenue data if not present
+  const defaultRevenue = {
+    totalRevenue: 0,
+    contentRevenue: 0,
+    sponsorshipRevenue: 0,
+    merchandiseRevenue: 0,
+    liveEventsRevenue: 0,
+    growthRate: 0
+  };
+  
+  // Create default revenue history if not present
+  const defaultRevenueHistory = [
+    { period: 'Jan', revenue: 0 },
+    { period: 'Feb', revenue: 0 },
+    { period: 'Mar', revenue: 0 }
+  ];
+  
+  return {
+    social: mappedSocial as SocialPlatformMetrics[],
+    streaming: serviceMetrics.streaming || [],
+    brandDeals: serviceMetrics.brandDeals || [],
+    revenue: serviceMetrics.revenue || defaultRevenue,
+    revenueHistory: serviceMetrics.revenueHistory || defaultRevenueHistory,
+    lastUpdated: serviceMetrics.lastUpdated || new Date().toISOString()
+  };
+};
+
 export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCardProps) {
   const [activeTab, setActiveTab] = useState('social');
   
   const { 
-    metrics, 
+    metrics: serviceMetrics, 
     aggregatedMetrics, 
     isLoading, 
     isError, 
@@ -31,6 +74,9 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
     creatorId,
     enabled: !!creatorId
   });
+  
+  // Convert service metrics to the expected format
+  const metrics = mapServiceMetricsToApiTypes(serviceMetrics);
   
   return (
     <GlassCard className={cn("p-4", className)}>
@@ -93,11 +139,11 @@ export function ExternalMetricsCard({ creatorId, className }: ExternalMetricsCar
             </TabsList>
             
             <TabsContent value="social" className="pt-2">
-              <SocialTab social={metrics.social as SocialPlatformMetrics[]} />
+              <SocialTab social={metrics.social} />
             </TabsContent>
             
             <TabsContent value="revenue" className="pt-2">
-              <RevenueTab metrics={metrics as CreatorMetrics} />
+              <RevenueTab metrics={metrics} />
             </TabsContent>
             
             <TabsContent value="brands" className="pt-2">

@@ -10,6 +10,9 @@ export interface SocialPlatformMetrics {
   engagement?: number;
   growth?: number;
   isRealData?: boolean;
+  // Add additional fields that might be present in the API service version
+  posts?: number;
+  recentEngagementRate?: number;
 }
 
 export interface StreamingPlatformMetrics {
@@ -17,6 +20,10 @@ export interface StreamingPlatformMetrics {
   streams: number;
   popularity: number;
   isRealData?: boolean;
+  // Add additional fields that might be present in the API service version
+  listeners?: number;
+  avgStreamTime?: number;
+  growth?: number;
 }
 
 export interface BrandDeal {
@@ -48,6 +55,7 @@ export interface CreatorMetrics {
   revenue: RevenueData;  
   revenueHistory: RevenuePeriod[];  
   lastUpdated: string;
+  creatorId?: string; // Add this to match API service version
 }
 
 // Additional types as needed for the application
