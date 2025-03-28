@@ -8,6 +8,7 @@ import { AdminTopTraders } from "@/components/admin/AdminTopTraders";
 import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { AdminPlatformControls } from "@/components/admin/AdminPlatformControls";
 import { AdminFlaggedUsers } from "@/components/admin/AdminFlaggedUsers";
+import { AdminRevenue } from "@/components/admin/AdminRevenue";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 const Admin = () => {
