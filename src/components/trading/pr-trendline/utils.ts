@@ -27,3 +27,19 @@ export const getSentimentLabel = (score: number): string => {
   if (normalizedScore >= 25) return 'Neutral';
   return 'Negative';
 };
+
+/**
+ * PR Event interface for type checking
+ */
+export interface PREvent {
+  id: string;
+  creatorId: string;
+  platform: string;
+  headline: string;
+  summary: string;
+  sentimentScore: number;
+  impact: 'minor' | 'moderate' | 'major';
+  timestamp: string;
+  url?: string;
+  isPositive: boolean;
+}

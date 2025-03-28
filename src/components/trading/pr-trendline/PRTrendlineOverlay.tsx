@@ -6,7 +6,7 @@ import {
   ReferenceArea,
   Scatter
 } from 'recharts';
-import { PREvent } from '@/hooks/ai/usePREngine';
+import { PREvent } from './utils';
 
 interface TrendlineDataPoint {
   date: string;
@@ -48,18 +48,22 @@ export const PRTrendlineOverlay = ({ trendlineData, eventPoints, prEvents }: PRT
           name="PR Sentiment"
         />
         {/* Add reference areas for major events */}
-        {prEvents?.filter(e => e.impact === 'major').map(event => (
-          <ReferenceArea 
-            key={event.id}
-            x={new Date(event.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} 
-            y1={0}
-            y2={100}
-            stroke={event.isPositive ? "#10b981" : "#ef4444"}
-            strokeOpacity={0.3}
-            fillOpacity={0.1}
-            fill={event.isPositive ? "#10b981" : "#ef4444"}
-          />
-        ))}
+        {prEvents?.filter(e => e.impact === 'major').map(event => {
+          // Convert timestamp to date string for x-axis
+          const dateStr = new Date(event.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          return (
+            <ReferenceArea 
+              key={event.id}
+              x={dateStr}
+              y1={0}
+              y2={100}
+              stroke={event.isPositive ? "#10b981" : "#ef4444"}
+              strokeOpacity={0.3}
+              fillOpacity={0.1}
+              fill={event.isPositive ? "#10b981" : "#ef4444"}
+            />
+          );
+        })}
         {/* Add a scatter plot for PR events */}
         <Scatter 
           data={eventPoints}

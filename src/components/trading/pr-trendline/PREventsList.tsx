@@ -1,8 +1,8 @@
 
 import { cn } from "@/lib/utils";
-import { PREvent } from "@/hooks/ai/usePREngine";
 import { Badge } from "@/components/ui/badge";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { PREvent } from "./utils";
 
 interface PREventsListProps {
   events?: PREvent[];
