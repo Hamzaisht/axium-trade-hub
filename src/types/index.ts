@@ -89,4 +89,10 @@ export interface SocialSentimentData {
       volume: number;
     };
   };
+  platforms: {
+    [key: string]: {
+      sentiment: number;
+      engagement: number;
+    };
+  };
 }

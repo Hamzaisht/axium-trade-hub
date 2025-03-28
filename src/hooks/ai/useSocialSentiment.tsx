@@ -1,30 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { mockAIValuationAPI } from '@/utils/mockApi';
-
-export interface SocialSentimentData {
-  overall: number;
-  overallSentiment?: number;
-  positiveMentions: number;
-  negativeMentions: number;
-  keywords: string[];
-  sources: Array<{
-    name: string;
-    sentiment: number;
-    volume: number;
-  }>;
-  trend: Array<{
-    date: string;
-    sentiment: number;
-  }>;
-  trust: number;
-  platforms: {
-    [key: string]: {
-      sentiment: number;
-      engagement: number;
-    };
-  };
-}
+import { SocialSentimentData } from '@/types';
 
 export interface UseSocialSentimentProps {
   ipoId?: string;
@@ -62,6 +39,11 @@ export const useSocialSentiment = ({ ipoId, creatorId }: UseSocialSentimentProps
             { date: '2023-03-01', sentiment: 75 }
           ],
           trust: 82,
+          metrics: {
+            twitter: { score: result.metrics.twitter.score * 100, volume: result.metrics.twitter.volume },
+            instagram: { score: result.metrics.instagram.score * 100, volume: result.metrics.instagram.volume },
+            youtube: { score: result.metrics.youtube.score * 100, volume: result.metrics.youtube.volume }
+          },
           platforms: {
             twitter: { sentiment: result.metrics.twitter.score * 100, engagement: 7.2 },
             instagram: { sentiment: result.metrics.instagram.score * 100, engagement: 8.4 },
