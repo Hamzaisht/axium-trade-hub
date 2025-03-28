@@ -44,7 +44,7 @@ export const useCreatorMarketScore = ({ creatorId }: UseCreatorMarketScoreProps)
       }
       
       try {
-        // Fetch market score data
+        // Fetch market score data - using the correct method name
         const marketScoreData = await mockAIValuationAPI.getCreatorMarketScore(creatorId);
         
         // Incorporate sentiment data if available

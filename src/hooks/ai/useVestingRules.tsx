@@ -15,7 +15,7 @@ export const useVestingRules = ({ ipoId, enabled = true }: UseVestingRulesProps)
         throw new Error('IPO ID is required');
       }
       
-      return mockAIValuationAPI.getVestingAndStakingRules(ipoId);
+      return mockAIValuationAPI.getVestingRules(ipoId);
     },
     enabled: !!ipoId && enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes

@@ -1,3 +1,4 @@
+
 import { mockIPOs, delay, mockOrders, mockTrades } from './data';
 import { getSocialSentiment as getSocialSentimentUtil } from './socialSentimentUtil';
 
@@ -31,6 +32,12 @@ export interface IPO {
   initialPrice?: number;
   revenueUSD?: number;
   averageDailyVolume?: number;
+  // Fields for social links in IPOForm
+  socialLinks?: {
+    twitter?: string;
+    instagram?: string;
+    youtube?: string;
+  };
 }
 
 export interface Order {
@@ -43,6 +50,8 @@ export interface Order {
   quantity: number;
   status: 'pending' | 'fulfilled' | 'cancelled' | 'open';
   timestamp: string;
+  // Add this field to match types/index.ts Order interface
+  createdAt?: string;
 }
 
 export interface Trade {
@@ -53,6 +62,33 @@ export interface Trade {
   price: number;
   quantity: number;
   timestamp: string;
+}
+
+export interface AnomalyDetectionResult {
+  detected: boolean;
+  anomalies: Array<{
+    type: string;
+    severity: number;
+    description: string;
+    timestamp: string;
+  }>;
+}
+
+export interface DividendInfo {
+  nextPayoutDate: string;
+  historicalPayouts: Array<{ date: string; amount: number }>;
+  annualYieldPercent: number;
+  nextEstimatedAmount: number;
+  payoutFrequency: string;
+  warningThresholds: {
+    low: number;
+    medium: number;
+    high: number;
+  };
+  inactivityThreshold: number;
+  engagementMinimum: number;
+  tokenBuybackPrice: number;
+  liquidationProcess: string[];
 }
 
 export class MockTradingAPI {
@@ -92,6 +128,54 @@ export class MockTradingAPI {
     return undefined;
   }
 
+  // Add alias for getIPOs to fix getAllIPOs calls
+  async getAllIPOs(): Promise<IPO[]> {
+    return this.getIPOs();
+  }
+
+  // Add alias for getIPO to fix getIPOById calls
+  async getIPOById(ipoId: string): Promise<IPO | undefined> {
+    return this.getIPO(ipoId);
+  }
+
+  // Add createIPO method
+  async createIPO(ipoData: Partial<IPO>): Promise<IPO> {
+    await delay(500);
+    
+    const newIPO: IPO = {
+      id: Math.random().toString(36).substring(2, 15),
+      symbol: ipoData.symbol || 'TEST',
+      creatorName: ipoData.creatorName || 'Test Creator',
+      category: ipoData.category || 'Test Category',
+      currentPrice: ipoData.initialPrice || 10,
+      targetPrice: (ipoData.initialPrice || 10) * 1.2,
+      priceChange: 0,
+      description: ipoData.description || 'Test description',
+      launchDate: new Date().toISOString(),
+      valuation: ipoData.totalSupply ? ipoData.totalSupply * (ipoData.initialPrice || 10) : 1000000,
+      volume: 0,
+      supply: ipoData.totalSupply || 1000000,
+      website: '',
+      twitter: ipoData.socialLinks?.twitter || '',
+      discord: '',
+      telegram: '',
+      youtube: ipoData.socialLinks?.youtube || '',
+      instagram: ipoData.socialLinks?.instagram || '',
+      featured: false,
+      totalSupply: ipoData.totalSupply || 1000000,
+      availableSupply: ipoData.availableSupply || 250000,
+      initialPrice: ipoData.initialPrice || 10,
+      revenueUSD: 0,
+      averageDailyVolume: 0,
+      socialLinks: ipoData.socialLinks
+    };
+    
+    // Add to mock IPOs
+    mockIPOs.push(newIPO);
+    
+    return newIPO;
+  }
+
   async placeOrder(orderData: Partial<Order>): Promise<Order> {
     await delay(500);
     
@@ -104,7 +188,8 @@ export class MockTradingAPI {
       price: orderData.price || 100,
       quantity: orderData.quantity || 1,
       status: orderData.status || 'pending',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      createdAt: new Date().toISOString() // Add createdAt field
     };
     
     console.log('Order placed:', newOrder);
@@ -123,7 +208,8 @@ export class MockTradingAPI {
       price: 100,
       quantity: 1,
       status: 'cancelled',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      createdAt: new Date().toISOString() // Add createdAt field
     };
     
     console.log('Order cancelled:', cancelledOrder);
@@ -142,7 +228,8 @@ export class MockTradingAPI {
       price: 100,
       quantity: 1,
       status: 'pending',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      createdAt: new Date().toISOString() // Add createdAt field
     }];
     
     return orders;
@@ -176,7 +263,8 @@ export class MockTradingAPI {
       price: 99,
       quantity: 1,
       status: 'pending',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      createdAt: new Date().toISOString() // Add createdAt field
     }];
     
     const asks: Order[] = [{
@@ -188,7 +276,8 @@ export class MockTradingAPI {
       price: 101,
       quantity: 1,
       status: 'pending',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      createdAt: new Date().toISOString() // Add createdAt field
     }];
     
     return { bids, asks };
@@ -237,29 +326,81 @@ export class MockTradingAPI {
 
 export const mockTradingAPI = new MockTradingAPI();
 
-// Add these missing APIs that are referenced elsewhere in the codebase
-export const mockIPOAPI = mockTradingAPI;
+// Enhance the mockAIValuationAPI to include the missing methods
 export const mockAIValuationAPI = {
-  // Placeholder implementation to satisfy imports
   getPricePrediction: () => Promise.resolve({}),
   getSocialSentiment: mockTradingAPI.getSocialSentiment.bind(mockTradingAPI),
   calculateMarketDepth: () => Promise.resolve({}),
   getValuation: () => Promise.resolve({}),
-  detectAnomalies: () => Promise.resolve({}),
+  detectAnomalies: (ipoId: string, recentTrades: any[]): Promise<AnomalyDetectionResult> => {
+    return Promise.resolve({
+      detected: Math.random() > 0.5,
+      anomalies: Math.random() > 0.3 ? [
+        {
+          type: 'wash_trading',
+          severity: Math.floor(Math.random() * 10) + 1,
+          description: 'Potential wash trading detected',
+          timestamp: new Date().toISOString()
+        }
+      ] : []
+    });
+  },
   getCreatorScore: () => Promise.resolve({}),
-  getDividendInfo: () => Promise.resolve({}),
+  getCreatorMarketScore: (creatorId: string) => Promise.resolve({
+    totalScore: 75 + Math.floor(Math.random() * 20),
+    lastUpdated: new Date().toISOString()
+  }),
+  getDividendInfo: (ipoId: string): Promise<DividendInfo> => {
+    return Promise.resolve({
+      nextPayoutDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
+      historicalPayouts: [
+        { date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), amount: 0.05 },
+        { date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(), amount: 0.04 }
+      ],
+      annualYieldPercent: 4.8,
+      nextEstimatedAmount: 0.06,
+      payoutFrequency: 'Monthly',
+      warningThresholds: { low: 30, medium: 60, high: 90 },
+      inactivityThreshold: 90,
+      engagementMinimum: 10,
+      tokenBuybackPrice: 0.8,
+      liquidationProcess: ['Warning', 'Partial Lock', 'Full Lock', 'Liquidation']
+    });
+  },
   getVestingRules: () => Promise.resolve({}),
-  getLiquidationRules: () => Promise.resolve({})
+  getVestingAndStakingRules: () => Promise.resolve({}),
+  getLiquidationRules: () => Promise.resolve({}),
+  getMarketDepth: () => Promise.resolve({}),
+  predictPriceMovement: (ipoId: string, timeframe: string, model: string) => Promise.resolve({
+    predicted: true,
+    direction: Math.random() > 0.5 ? 'up' : 'down',
+    confidence: Math.random() * 100,
+    predictedPrice: Math.random() * 100 + 50
+  }),
+  getSentimentAnalysis: (creatorId: string) => Promise.resolve({
+    overallSentiment: Math.floor(Math.random() * 100),
+    positiveMentions: Math.floor(Math.random() * 1000),
+    negativeMentions: Math.floor(Math.random() * 200),
+    keywords: ['popular', 'trending', 'viral'],
+    lastUpdated: new Date().toISOString()
+  })
 };
 
+// Add these missing APIs that are referenced elsewhere in the codebase
+export const mockIPOAPI = mockTradingAPI;
+
 export const mockPortfolioAPI = {
-  // Placeholder implementation
+  // Updated with history property
   getPortfolio: () => Promise.resolve({
     userId: 'test-user',
     holdings: [],
     totalValue: 0,
     cash: 10000,
-    invested: 0
+    invested: 0,
+    history: [
+      { date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), value: 9500 },
+      { date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(), value: 9000 }
+    ]
   }),
   updatePortfolio: () => Promise.resolve({})
 };

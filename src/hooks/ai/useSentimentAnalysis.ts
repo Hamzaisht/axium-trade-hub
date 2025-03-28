@@ -23,7 +23,7 @@ export const useSentimentAnalysis = ({ creatorId }: UseSentimentAnalysisProps) =
       }
 
       try {
-        // Use the getSentimentAnalysis method from mockAIValuationAPI
+        // Use the correct method for sentiment analysis
         return await mockAIValuationAPI.getSentimentAnalysis(creatorId);
       } catch (error) {
         console.error('Error fetching sentiment analysis:', error);
