@@ -461,8 +461,8 @@ class AIValuationAPI {
     const ipo = mockIPOs.find(item => item.id === ipoId);
     if (!ipo) throw new Error(`IPO with id ${ipoId} not found`);
 
-    // Converting string sentiment score to number
-    return getSocialSentimentUtil(ipo);
+    const result = getSocialSentimentUtil(ipo);
+    return result;
   }
 
   async getMarketDepth(ipoId: string): Promise<MarketDepthModel> {
