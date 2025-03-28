@@ -20,7 +20,6 @@ import Profile from './pages/Profile.tsx';
 import ProtectedRoute from './components/auth/ProtectedRoute.tsx';
 import CreatorDashboard from './pages/CreatorDashboard.tsx';
 import LaunchIPO from './pages/LaunchIPO.tsx';
-import { ThemeProvider } from './providers/ThemeProvider.tsx';
 import SettingsPage from './pages/Settings.tsx';
 import './index.css';
 
@@ -88,8 +87,6 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <RouterProvider router={router} />
-    </ThemeProvider>
+    <RouterProvider router={router} />
   </React.StrictMode>,
 );
