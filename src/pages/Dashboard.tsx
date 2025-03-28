@@ -6,15 +6,44 @@ import Footer from "@/components/layout/Footer";
 import { DashboardTabs } from "@/components/dashboard";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import CreatorsList from "@/components/dashboard/CreatorsList";
-import { PortfolioOverview } from "@/components/portfolio/PortfolioOverview";
-import { PortfolioBreakdown } from "@/components/portfolio/PortfolioBreakdown";
+import PortfolioOverview from "@/components/portfolio/PortfolioOverview";
+import PortfolioBreakdown from "@/components/portfolio/PortfolioBreakdown";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SearchBar } from "@/components/dashboard/SearchBar";
-import { ArrowUpRight, TrendingUp, Users, Activity, ArrowDownRight } from "lucide-react";
+import { Activity, TrendingUp, Users } from "lucide-react";
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { topPerformers, topLosers, marketOverview } = useIPO();
+  const { ipos, isLoading } = useIPO();
+
+  // Calculate market overview data
+  const marketOverview = {
+    totalMarketCap: 12500000,
+    marketCapChange: 3.7,
+    averagePrice: 27.82,
+    averagePriceChange: 1.9,
+    activeCreators: 125,
+    activeCreatorsChange: 5.3,
+    volume24h: 4620000,
+    volumeChange: 8.2
+  };
+
+  // Calculate top performers and losers
+  const topPerformers = ipos.slice(0, 5).map(ipo => ({
+    id: ipo.id,
+    creatorName: ipo.creatorName,
+    symbol: ipo.symbol,
+    currentPrice: ipo.currentPrice,
+    priceChange: ((ipo.currentPrice - ipo.initialPrice) / ipo.initialPrice) * 100,
+  }));
+
+  const topLosers = [...ipos].reverse().slice(0, 5).map(ipo => ({
+    id: ipo.id,
+    creatorName: ipo.creatorName,
+    symbol: ipo.symbol,
+    currentPrice: ipo.currentPrice,
+    priceChange: -Math.abs(((ipo.currentPrice - ipo.initialPrice) / ipo.initialPrice) * 100),
+  }));
 
   return (
     <div className="min-h-screen bg-axium-gray-100/30">
@@ -27,7 +56,7 @@ const Dashboard = () => {
             <p className="text-axium-gray-600">Welcome back, {user?.name || "User"}!</p>
           </div>
           
-          <SearchBar className="mt-4 md:mt-0 w-full md:w-64" />
+          <SearchBar />
         </div>
         
         {/* Metrics Row */}
@@ -69,7 +98,7 @@ const Dashboard = () => {
           <GlassCard>
             <div className="p-5">
               <h2 className="text-xl font-semibold mb-6 flex items-center">
-                <ArrowUpRight className="mr-2 text-green-500" /> Top Performers
+                <TrendingUp className="mr-2 text-green-500" /> Top Performers
               </h2>
               <div className="space-y-5">
                 {topPerformers.map((performer) => (
@@ -88,8 +117,8 @@ const Dashboard = () => {
                     <div className="text-right">
                       <p className="font-medium">${performer.currentPrice.toFixed(2)}</p>
                       <p className="text-green-500 text-sm flex items-center justify-end">
-                        <ArrowUpRight className="h-3 w-3 mr-1" />
-                        {performer.priceChange}%
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        {performer.priceChange.toFixed(2)}%
                       </p>
                     </div>
                   </div>
@@ -101,7 +130,7 @@ const Dashboard = () => {
           <GlassCard>
             <div className="p-5">
               <h2 className="text-xl font-semibold mb-6 flex items-center">
-                <ArrowDownRight className="mr-2 text-red-500" /> Top Losers
+                <TrendingUp className="mr-2 text-red-500 transform rotate-180" /> Top Losers
               </h2>
               <div className="space-y-5">
                 {topLosers.map((loser) => (
@@ -120,8 +149,8 @@ const Dashboard = () => {
                     <div className="text-right">
                       <p className="font-medium">${loser.currentPrice.toFixed(2)}</p>
                       <p className="text-red-500 text-sm flex items-center justify-end">
-                        <ArrowDownRight className="h-3 w-3 mr-1" />
-                        {Math.abs(loser.priceChange)}%
+                        <TrendingUp className="h-3 w-3 mr-1 transform rotate-180" />
+                        {Math.abs(loser.priceChange).toFixed(2)}%
                       </p>
                     </div>
                   </div>
@@ -136,7 +165,7 @@ const Dashboard = () => {
         
         {/* Market Insights Tabs */}
         <div className="mt-8">
-          <DashboardTabs />
+          <DashboardTabs selectedTab="market" onTabChange={() => {}} />
         </div>
       </main>
       

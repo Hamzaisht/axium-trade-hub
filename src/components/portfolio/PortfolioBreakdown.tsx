@@ -1,29 +1,78 @@
 
+import { useEffect, useState } from "react";
 import { usePortfolio } from "@/contexts/PortfolioContext";
 import { useNavigate } from "react-router-dom";
+import { useIPO } from "@/contexts/IPOContext";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Define enhanced holding type with the properties we need
+interface EnhancedHolding {
+  ipoId: string;
+  quantity: number;
+  averagePurchasePrice: number;
+  currentPrice?: number;
+  creatorSymbol?: string;
+  creatorName?: string;
+  priceChange?: number;
+  value?: number;
+  percent?: number;
+  color?: string;
+}
+
 const PortfolioBreakdown = () => {
   const { portfolio, isLoading } = usePortfolio();
+  const { ipos } = useIPO();
   const navigate = useNavigate();
+  const [holdingsWithData, setHoldingsWithData] = useState<EnhancedHolding[]>([]);
+  
+  // Enhance holdings with creator data
+  useEffect(() => {
+    if (!portfolio || !portfolio.holdings || !ipos || ipos.length === 0) {
+      return;
+    }
+    
+    // Map portfolio holdings to include creator data from ipos
+    const enhancedHoldings = portfolio.holdings.map(holding => {
+      const ipoData = ipos.find(ipo => ipo.id === holding.ipoId);
+      
+      // If we found matching IPO data, include it
+      if (ipoData) {
+        const priceChange = ipoData.currentPrice && ipoData.initialPrice 
+          ? ((ipoData.currentPrice - ipoData.initialPrice) / ipoData.initialPrice) * 100
+          : 0;
+          
+        return {
+          ...holding,
+          creatorSymbol: ipoData.symbol,
+          creatorName: ipoData.creatorName,
+          priceChange: Number(priceChange.toFixed(2))
+        };
+      }
+      
+      // Return the original holding if no IPO data found
+      return holding;
+    });
+    
+    setHoldingsWithData(enhancedHoldings);
+  }, [portfolio, ipos]);
   
   // Calculate the percentage each holding represents
   const calculatePercentages = () => {
-    if (!portfolio || !portfolio.holdings || portfolio.holdings.length === 0) {
+    if (!holdingsWithData || holdingsWithData.length === 0) {
       return [];
     }
     
-    const totalValue = portfolio.holdings.reduce(
-      (sum, holding) => sum + holding.quantity * holding.currentPrice, 
+    const totalValue = holdingsWithData.reduce(
+      (sum, holding) => sum + holding.quantity * (holding.currentPrice || holding.averagePurchasePrice), 
       0
     );
     
-    return portfolio.holdings.map((holding, index) => {
-      const value = holding.quantity * holding.currentPrice;
+    return holdingsWithData.map((holding, index) => {
+      const value = holding.quantity * (holding.currentPrice || holding.averagePurchasePrice);
       const percent = (value / totalValue * 100).toFixed(1);
       
       // Assign a color from a predefined palette
@@ -100,7 +149,7 @@ const PortfolioBreakdown = () => {
               </Pie>
               <Tooltip 
                 formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']}
-                labelFormatter={(index) => holdingsWithPercent[index].creatorSymbol}
+                labelFormatter={(index) => holdingsWithPercent[index].creatorSymbol || 'Unknown'}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -115,22 +164,22 @@ const PortfolioBreakdown = () => {
                   style={{ backgroundColor: holding.color }}
                 />
                 <div>
-                  <p className="font-medium">{holding.creatorSymbol}</p>
+                  <p className="font-medium">{holding.creatorSymbol || 'Unknown'}</p>
                   <p className="text-xs text-axium-gray-500">{holding.percent}%</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-medium">${holding.value.toLocaleString()}</p>
+                <p className="font-medium">${holding.value?.toLocaleString()}</p>
                 <div className={cn(
                   "flex items-center text-xs justify-end",
-                  holding.priceChange >= 0 ? "text-green-500" : "text-red-500"
+                  (holding.priceChange || 0) >= 0 ? "text-green-500" : "text-red-500"
                 )}>
-                  {holding.priceChange >= 0 ? (
+                  {(holding.priceChange || 0) >= 0 ? (
                     <TrendingUp className="h-3 w-3 mr-1" />
                   ) : (
                     <TrendingDown className="h-3 w-3 mr-1" />
                   )}
-                  {holding.priceChange >= 0 ? "+" : ""}{holding.priceChange}%
+                  {(holding.priceChange || 0) >= 0 ? "+" : ""}{holding.priceChange || 0}%
                 </div>
               </div>
             </div>

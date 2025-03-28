@@ -9,7 +9,7 @@ import { CreatorCard } from "@/components/creators/CreatorCard";
 
 const CreatorsList = () => {
   const { ipos, isLoading } = useIPO();
-  const [featuredCreators, setFeaturedCreators] = useState<IPO[]>([]);
+  const [featuredCreators, setFeaturedCreators] = useState<(IPO & { priceChange: number })[]>([]);
   const navigate = useNavigate();
 
   // Select a few featured creators
@@ -18,11 +18,11 @@ const CreatorsList = () => {
       // Get some diverse creators for the featured list
       // Using initialPrice and currentPrice to calculate price change percentage
       const topPerformers = [...ipos]
-        .sort((a, b) => {
-          const priceChangeA = ((a.currentPrice - a.initialPrice) / a.initialPrice) * 100;
-          const priceChangeB = ((b.currentPrice - b.initialPrice) / b.initialPrice) * 100;
-          return priceChangeB - priceChangeA;
-        })
+        .map(ipo => ({
+          ...ipo,
+          priceChange: ((ipo.currentPrice - ipo.initialPrice) / ipo.initialPrice) * 100
+        }))
+        .sort((a, b) => b.priceChange - a.priceChange)
         .slice(0, 3);
       
       setFeaturedCreators(topPerformers);
