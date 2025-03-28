@@ -84,7 +84,7 @@ const Dashboard = () => {
           />
           <MetricCard
             title="Active Creators"
-            value={`${marketOverview?.activeCreators || 0}`}
+            value={marketOverview?.activeCreators.toString() || '0'}
             subtitle={`${marketOverview?.activeCreatorsChange >= 0 ? '+' : ''}${marketOverview?.activeCreatorsChange.toFixed(2)}% this month`}
             icon={Users}
             change={marketOverview?.activeCreatorsChange || 0}

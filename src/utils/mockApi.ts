@@ -35,7 +35,12 @@ export interface IPO {
   activeUserCount: number;
   engagementRate: number;
   sentimentScore: number;
-  revenueStreams: any[];
+  revenueStreams: {
+    subscriptions?: number;
+    advertising?: number;
+    merchandise?: number;
+    sponsorships?: number;
+  } | any[];
   totalRevenue: number;
   yoyGrowth: number;
   audienceGrowth: number;
@@ -135,10 +140,10 @@ export const mockIPOs: IPO[] = Array(20).fill(null).map((_, i) => {
     platformExpansion: parseFloat((Math.random() * 20 + 5).toFixed(1)),
     projectedGrowth: parseFloat((Math.random() * 30 + 10).toFixed(1)),
     revenueStreams: {
-      subscriptions?: number;
-      advertising?: number;
-      merchandise?: number;
-      sponsorships?: number;
+      subscriptions: Math.random() > 0.3 ? faker.number.int({ min: 50000, max: 2000000 }) : 0,
+      advertising: Math.random() > 0.3 ? faker.number.int({ min: 30000, max: 1500000 }) : 0,
+      merchandise: Math.random() > 0.5 ? faker.number.int({ min: 20000, max: 500000 }) : 0,
+      sponsorships: Math.random() > 0.4 ? faker.number.int({ min: 100000, max: 3000000 }) : 0
     },
     socialLinks: {
       twitter: `@${creatorName.replace(' ', '').toLowerCase()}`,
