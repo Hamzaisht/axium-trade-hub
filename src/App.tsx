@@ -29,10 +29,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <IPOProvider>
-            <TradingProvider>
-              <BrowserRouter>
+        <BrowserRouter>
+          <AuthProvider>
+            <IPOProvider>
+              <TradingProvider>
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/login" element={<Login />} />
@@ -45,11 +45,11 @@ function App() {
                     <Route path="/institutional/:slug" element={<InstitutionalCreator />} />
                   </Route>
                 </Routes>
-              </BrowserRouter>
-              <ToastContainer />
-            </TradingProvider>
-          </IPOProvider>
-        </AuthProvider>
+                <ToastContainer />
+              </TradingProvider>
+            </IPOProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
   );
