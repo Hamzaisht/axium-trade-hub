@@ -1,6 +1,5 @@
-
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import { CreatorService, Creator } from "@/services/CreatorService";
 import { useCreatorBySlug, useRecordTradeEvent } from "@/hooks/useCreator";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import { CreatorTradeHistory } from "@/components/creator/CreatorTradeHistory";
 import TradePanel from "@/components/market/TradePanel";
 import SentimentInsights from "@/components/trading/SentimentInsights";
 import { ExternalMetricsCard } from "@/components/trading/external-metrics/ExternalMetricsCard";
-import { RotateCw, AlertCircle } from "lucide-react";
+import { RotateCw, AlertCircle, LayoutDashboard } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   MetricCardSkeleton, 
@@ -21,7 +20,6 @@ import {
   SentimentInsightsSkeleton
 } from "@/components/ui/skeleton-components";
 
-// Mock data for demo mode
 const MOCK_CREATOR: Creator = {
   id: "demo-123",
   slug: "demo-creator",
@@ -46,7 +44,6 @@ export default function CreatorProfile() {
   const { user } = useAuth();
   const [hasLoggedView, setHasLoggedView] = useState(false);
   
-  // Fetch creator data based on slug
   const { 
     data: creator, 
     isLoading, 
@@ -55,13 +52,10 @@ export default function CreatorProfile() {
     refetch 
   } = useCreatorBySlug(isDemoMode ? "" : slug);
   
-  // Use mutation hook for recording view events
   const recordTradeEvent = useRecordTradeEvent();
 
-  // Use demo data or fetched data
   const creatorData = isDemoMode ? MOCK_CREATOR : creator;
 
-  // Log the profile view to trade_events
   useEffect(() => {
     if (creatorData && !hasLoggedView && !isDemoMode) {
       recordTradeEvent.mutate({
@@ -77,7 +71,6 @@ export default function CreatorProfile() {
     }
   }, [creatorData, hasLoggedView, isDemoMode, recordTradeEvent]);
 
-  // If we're still loading, show loading state
   if (isLoading) {
     return (
       <DashboardShell>
@@ -102,7 +95,6 @@ export default function CreatorProfile() {
     );
   }
 
-  // If there's an error, show error state with retry button
   if (isError || !creatorData) {
     return (
       <DashboardShell>
@@ -128,44 +120,47 @@ export default function CreatorProfile() {
     );
   }
 
-  // Generate engagement and AI scores for the creator based on their metrics
   const generateEngagementScore = () => Math.min(99, Math.floor((creatorData.followers / 1000000) * 10 + (creatorData.engagement || 0) * 15));
   const generateAIScore = () => Math.min(95, Math.floor((creatorData.monthly_income / 50000) * 10 + (creatorData.followers / 1000000) * 5 + (creatorData.engagement || 0) * 10));
 
   return (
     <DashboardShell>
       <div className="container mx-auto p-4 space-y-6">
-        {/* Adapt CreatorHeader to work with Creator type */}
-        <CreatorHeader creator={{
-          id: creatorData.id,
-          creatorName: creatorData.name,
-          symbol: creatorData.handle || creatorData.slug,
-          initialPrice: 10, // Default values since Creator doesn't have these
-          currentPrice: 15,
-          totalSupply: 1000000,
-          availableSupply: 500000,
-          engagementScore: generateEngagementScore(),
-          aiScore: generateAIScore()
-        }} />
+        <div className="flex justify-between items-center">
+          <CreatorHeader creator={{
+            id: creatorData.id,
+            creatorName: creatorData.name,
+            symbol: creatorData.handle || creatorData.slug,
+            initialPrice: 10,
+            currentPrice: 15,
+            totalSupply: 1000000,
+            availableSupply: 500000,
+            engagementScore: generateEngagementScore(),
+            aiScore: generateAIScore()
+          }} />
+          
+          <Link to={`/creators/${creatorData.slug}/institutional`}>
+            <Button variant="outline" size="sm" className="gap-2">
+              <LayoutDashboard className="h-4 w-4" />
+              Institutional View
+            </Button>
+          </Link>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
-            {/* Price Chart and Metrics */}
             <ExternalMetricsCard creatorId={creatorData.id} />
           </div>
           
           <div className="space-y-6">
-            {/* Trade Panel */}
             <TradePanel 
               creatorId={creatorData.id} 
               currentPrice={15} 
               symbol={creatorData.handle || creatorData.name} 
             />
             
-            {/* Trade History */}
             <CreatorTradeHistory creatorId={creatorData.id} symbol={creatorData.handle || creatorData.name} />
             
-            {/* Sentiment Analysis */}
             <SentimentInsights creatorId={creatorData.id} />
           </div>
         </div>

@@ -10,4 +10,5 @@ export * from './OrderBookTable';
 export * from './PriceTicker';
 export * from './PriceTickerScroll';
 export * from './TradeHistory';
+export * from './TabbedPanel';
 export { default as TradePanel } from './TradePanel';

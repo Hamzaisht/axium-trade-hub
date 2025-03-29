@@ -16,6 +16,7 @@ import Dashboard from '@/pages/Dashboard';
 import Portfolio from '@/pages/Portfolio';
 import Creators from '@/pages/Creators';
 import CreatorProfile from '@/pages/CreatorProfile';
+import InstitutionalCreator from '@/pages/InstitutionalCreator';
 import Trading from '@/pages/Trading';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -80,6 +81,15 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <CreatorProfile />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      <Route 
+                        path="/creators/:slug/institutional" 
+                        element={
+                          <ProtectedRoute>
+                            <InstitutionalCreator />
                           </ProtectedRoute>
                         } 
                       />
