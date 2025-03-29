@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -7,9 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowRightLeft, TrendingDown, TrendingUp } from "lucide-react";
 import { showNotification } from "@/components/notifications/ToastContainer";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { placeOrder } from "@/lib/placeOrder";
 
 interface BuySellSectionProps {
   creatorId: string;
@@ -60,20 +59,13 @@ export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuyS
     setIsProcessing(true);
 
     try {
-      // Insert order into Supabase
-      const { data, error } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user.id,
-          creator_id: creatorId,
-          type: orderType,
-          quantity: parseInt(quantity, 10),
-          price: currentPrice
-        });
-
-      if (error) {
-        throw error;
-      }
+      await placeOrder({
+        userId: user.id,
+        creatorId: creatorId,
+        type: orderType,
+        quantity: parseInt(quantity, 10),
+        price: currentPrice
+      });
 
       toast({
         title: `${orderType === "buy" ? "Buy" : "Sell"} Order Submitted`,
