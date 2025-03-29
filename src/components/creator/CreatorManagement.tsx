@@ -8,6 +8,7 @@ import { Search, BarChart3, TrendingUp, TrendingDown } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Creator } from "@/services/CreatorService";
+import { Link } from "react-router-dom";
 
 export function CreatorManagement() {
   const { data: creators = [], isLoading } = useCreators();
@@ -114,7 +115,9 @@ function CreatorRow({ creator }: { creator: Creator }) {
             <span className="text-muted-foreground">Engagement:</span> {creator.engagement.toFixed(1)}%
           </div>
         )}
-        <Button variant="outline" size="sm">View</Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link to={`/creators/${creator.slug}`}>View</Link>
+        </Button>
       </div>
     </div>
   );

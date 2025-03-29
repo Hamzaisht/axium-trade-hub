@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Json } from "@/integrations/supabase/types";
@@ -65,7 +64,7 @@ export const CreatorService = {
       return [];
     }
   },
-
+  
   async getCreatorBySlug(slug: string): Promise<Creator | null> {
     try {
       const { data, error } = await supabase
@@ -104,7 +103,7 @@ export const CreatorService = {
       return [];
     }
   },
-
+  
   async recordTradeEvent(event: Omit<TradeEvent, 'id' | 'timestamp'>): Promise<TradeEvent | null> {
     try {
       const { data, error } = await supabase
@@ -126,4 +125,3 @@ export const CreatorService = {
     }
   }
 };
-

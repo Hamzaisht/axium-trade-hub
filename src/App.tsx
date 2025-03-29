@@ -15,6 +15,7 @@ import Index from '@/pages/Index';
 import Dashboard from '@/pages/Dashboard';
 import Portfolio from '@/pages/Portfolio';
 import Creators from '@/pages/Creators';
+import CreatorProfile from '@/pages/CreatorProfile';
 import Trading from '@/pages/Trading';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
@@ -70,6 +71,15 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <Creators />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      <Route 
+                        path="/creators/:slug" 
+                        element={
+                          <ProtectedRoute>
+                            <CreatorProfile />
                           </ProtectedRoute>
                         } 
                       />

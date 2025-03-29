@@ -45,7 +45,10 @@ export function useRecordTradeEvent() {
     onSuccess: (data) => {
       if (data) {
         queryClient.invalidateQueries({ queryKey: ['tradeEvents', data.creator_id] });
-        toast.success('Trade recorded successfully');
+        // Don't show toast for view events
+        if (!data.metadata || !data.metadata.action || data.metadata.action !== 'view_profile') {
+          toast.success('Trade recorded successfully');
+        }
       }
     },
   });
