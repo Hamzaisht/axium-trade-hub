@@ -1,40 +1,52 @@
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useGLTF } from '@react-three/drei';
+import { useGLTF, useTexture } from '@react-three/drei';
 import { GoldenVeins } from './GoldenVeins';
-import { AmbientEffects } from './AmbientEffects';
 
-// Create placeholder head model
+// Create humanoid head model
 const createHeadGeometry = () => {
-  // Create a simplified head shape using a sphere and modifiers
-  const geometry = new THREE.SphereGeometry(1, 64, 64);
+  // Create a head shape using a combination of geometries
+  const geometry = new THREE.BufferGeometry();
   
-  // Slightly reshape to be more head-like
-  const positions = geometry.attributes.position;
+  // Base head shape (sphere with modifications)
+  const baseHead = new THREE.SphereGeometry(1, 64, 64);
+  
+  // Modify vertices to create a more head-like shape
+  const positions = baseHead.attributes.position as THREE.BufferAttribute;
+  const vertices = [];
   
   for (let i = 0; i < positions.count; i++) {
-    const x = positions.getX(i);
-    const y = positions.getY(i);
-    const z = positions.getZ(i);
+    let x = positions.getX(i);
+    let y = positions.getY(i);
+    let z = positions.getZ(i);
     
-    // Elongate slightly for head shape
-    positions.setY(i, y * 1.2);
+    // Elongate to create head shape
+    y = y * 1.2;
     
     // Flatten back of head slightly
     if (z < -0.2) {
-      positions.setZ(i, z * 0.9);
+      z = z * 0.9;
     }
     
-    // Extend chin area slightly
-    if (y < -0.5 && Math.abs(x) < 0.5 && z > 0.2) {
-      positions.setY(i, y * 1.15);
-      positions.setZ(i, z * 1.05);
+    // Create jaw/chin area
+    if (y < -0.3 && Math.abs(x) < 0.4 && z > 0.2) {
+      y = y * 1.3;
+      z = z * 1.2;
     }
+    
+    // Add slight indentation for eyes
+    if (Math.abs(x) > 0.3 && Math.abs(x) < 0.5 && y > 0.1 && y < 0.3 && z > 0.7) {
+      z = z * 0.9;
+    }
+    
+    vertices.push(x, y, z);
   }
   
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
   geometry.computeVertexNormals();
+  
   return geometry;
 };
 
@@ -53,7 +65,17 @@ export function MarbleHead({
 }: MarbleHeadProps) {
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
-  const { nodes, materials } = useModelOrFallback();
+  
+  // Custom geometry for humanoid head
+  const headGeometry = useMemo(() => createHeadGeometry(), []);
+  
+  // Optional: Try to load a model if available
+  let model = null;
+  try {
+    model = useGLTF('/models/marble-head.glb');
+  } catch (error) {
+    console.log('Using fallback geometry instead of GLB model');
+  }
   
   // Animation loop
   useFrame((state) => {
@@ -73,19 +95,21 @@ export function MarbleHead({
       }
     }
     
-    if (meshRef.current && meshRef.current.material) {
+    if (meshRef.current) {
       // Pulse the material's emissive intensity
       const material = meshRef.current.material as THREE.MeshStandardMaterial;
-      material.emissiveIntensity = 0.1 + Math.sin(state.clock.elapsedTime) * 0.05;
+      if (material.emissiveIntensity !== undefined) {
+        material.emissiveIntensity = 0.1 + Math.sin(state.clock.elapsedTime) * 0.05;
+      }
     }
   });
   
   return (
-    <group ref={groupRef} position={position} rotation={rotation}>
+    <group ref={groupRef} position={position as any} rotation={rotation as any}>
       {/* Main Head Mesh */}
       <mesh 
         ref={meshRef}
-        geometry={nodes && nodes.Head ? nodes.Head.geometry : createHeadGeometry()}
+        geometry={model?.nodes?.Head?.geometry || headGeometry}
         castShadow
         receiveShadow
       >
@@ -101,36 +125,14 @@ export function MarbleHead({
       
       {/* Gold Veins Effect */}
       <GoldenVeins 
-        parentGeometry={nodes && nodes.Head ? nodes.Head.geometry : null} 
+        parentGeometry={model?.nodes?.Head?.geometry || headGeometry}
         intensity={0.8}
         pulseSpeed={0.6}
         pulseMagnitude={0.3}
-      />
-      
-      {/* Additional Ambient Effects */}
-      <AmbientEffects 
-        scale={1.1} 
-        intensity={0.5}
-        color="#D4AF37"
       />
     </group>
   );
 }
 
-// Either load a model or use fallback geometry
-function useModelOrFallback() {
-  // Try to load actual GLB model if available
-  try {
-    // If you have a GLB model ready, you can uncomment and use this:
-    // return useGLTF('/models/marble-head.glb');
-    
-    // For now, return empty data for fallback geometry
-    return { nodes: null, materials: null };
-  } catch (error) {
-    console.warn('Model loading failed, using fallback geometry', error);
-    return { nodes: null, materials: null };
-  }
-}
-
-// Cleanup function to prevent memory leaks - uncomment when using actual GLB
-// useGLTF.preload('/models/marble-head.glb');
+// Cleanup function to prevent memory leaks
+useGLTF.preload('/models/marble-head.glb');

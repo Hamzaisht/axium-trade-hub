@@ -3,15 +3,27 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-export function GoldenVeins({ parentGeometry = null, intensity = 0.8, pulseSpeed = 0.5, pulseMagnitude = 0.2 }) {
-  const linesRef = useRef<THREE.LineSegments>(null);
-  const pointsRef = useRef<THREE.Points>(null);
+interface GoldenVeinsProps {
+  parentGeometry: THREE.BufferGeometry | null;
+  intensity?: number;
+  pulseSpeed?: number;
+  pulseMagnitude?: number;
+}
+
+export function GoldenVeins({ 
+  parentGeometry = null, 
+  intensity = 0.8, 
+  pulseSpeed = 0.5, 
+  pulseMagnitude = 0.2 
+}: GoldenVeinsProps) {
+  const linesRef = useRef<THREE.LineSegments | null>(null);
+  const pointsRef = useRef<THREE.Points | null>(null);
   
   // Generate veins based on parent geometry or create procedural veins
   const { veinsGeometry, pointsGeometry } = useMemo(() => {
     // Create procedural veins
-    const curves = [];
-    const points = [];
+    const curves: THREE.CurvePath<THREE.Vector3>[] = [];
+    const points: THREE.Vector3[] = [];
     
     // Number of veins to create
     const veinsCount = 12;
@@ -24,7 +36,7 @@ export function GoldenVeins({ parentGeometry = null, intensity = 0.8, pulseSpeed
     
     // Create procedural veins
     for (let i = 0; i < veinsCount; i++) {
-      const curve = new THREE.CurvePath();
+      const curve = new THREE.CurvePath<THREE.Vector3>();
       
       // Starting point for the vein
       const startAngle = (Math.PI * 2 * i) / veinsCount;
@@ -75,7 +87,7 @@ export function GoldenVeins({ parentGeometry = null, intensity = 0.8, pulseSpeed
     const pointsGeometry = new THREE.BufferGeometry();
     
     // Create line segments for each curve
-    const vertices = [];
+    const vertices: number[] = [];
     curves.forEach(curve => {
       const points = curve.getPoints(20);
       for (let i = 0; i < points.length - 1; i++) {
@@ -96,7 +108,7 @@ export function GoldenVeins({ parentGeometry = null, intensity = 0.8, pulseSpeed
   // Animation for flowing lava effect
   useFrame((state) => {
     if (linesRef.current) {
-      // Pulse the material's opacity/emissive for a flowing effect
+      // Pulse the material's opacity for a flowing effect
       const pulse = Math.sin(state.clock.elapsedTime * pulseSpeed) * pulseMagnitude + 0.7;
       const material = linesRef.current.material as THREE.LineBasicMaterial;
       material.opacity = intensity * pulse;

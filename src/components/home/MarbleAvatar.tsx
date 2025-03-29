@@ -1,9 +1,8 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, useProgress, Html } from '@react-three/drei';
+import { OrbitControls, Environment, useProgress, Html, ContactShadows } from '@react-three/drei';
 import { MarbleHead } from './marble-avatar/MarbleHead';
-import { CanvasErrorBoundary } from '@/components/home/marble-background/CanvasErrorBoundary';
 import { AvatarLighting } from './marble-avatar/AvatarLighting';
 
 function Loader() {
@@ -65,15 +64,18 @@ const MarbleAvatar: React.FC<MarbleAvatarProps> = ({
   // Fallback if WebGL is not supported
   if (!canvasLoaded) {
     return (
-      <div className="absolute inset-0 w-full h-full overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0B0F1A] to-[#162A54]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.15),transparent_70%)]"></div>
+      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0B0F1A] to-[#162A54] rounded-xl overflow-hidden">
+        <div className="p-6 text-center">
+          <div className="w-32 h-32 mx-auto bg-[#111111] rounded-full mb-4 border border-[#D4AF37]/30"></div>
+          <p className="text-white text-lg">Interactive 3D requires WebGL support</p>
+          <p className="text-zinc-400 text-sm mt-2">Your browser may not support this feature</p>
+        </div>
       </div>
     );
   }
   
   return (
-    <CanvasErrorBoundary>
+    <div className="w-full h-full rounded-xl overflow-hidden">
       <Canvas
         gl={{ 
           antialias: true,
@@ -81,22 +83,24 @@ const MarbleAvatar: React.FC<MarbleAvatarProps> = ({
           powerPreference: 'high-performance'
         }}
         dpr={[1, 2]}
-        camera={{ position: [0, 0, 6], fov: 45 }}
+        camera={{ position: [0, 0, 5], fov: 45 }}
         style={{ 
           width: '100%', 
-          height: '100%'
+          height: '100%',
+          background: 'transparent'
         }}
       >
         <Suspense fallback={<Loader />}>
           <AvatarLighting />
           
           <MarbleHead 
-            position={[2, 0, 0]} 
-            rotation={[0, -Math.PI / 4, 0]} 
+            position={[0, 0, 0]} 
+            rotation={[0, 0, 0]} 
             mousePosition={mousePosition}
             scrollEffect={scrollPosition}
           />
           
+          <ContactShadows opacity={0.4} scale={5} blur={2.5} far={4} />
           <Environment preset="city" />
           
           <OrbitControls 
@@ -105,12 +109,14 @@ const MarbleAvatar: React.FC<MarbleAvatarProps> = ({
             rotateSpeed={0.2}
             minPolarAngle={Math.PI / 3}
             maxPolarAngle={Math.PI / 1.5}
-            minAzimuthAngle={-Math.PI / 4}
-            maxAzimuthAngle={Math.PI / 2}
+            enableDamping={true}
+            dampingFactor={0.05}
+            autoRotate={true}
+            autoRotateSpeed={0.5}
           />
         </Suspense>
       </Canvas>
-    </CanvasErrorBoundary>
+    </div>
   );
 };
 

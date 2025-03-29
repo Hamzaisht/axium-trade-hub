@@ -18,10 +18,18 @@ interface TextureOptionsMap {
   [key: string]: TextureOptions;
 }
 
+interface TextureLoaderResult {
+  textures: { [key: string]: THREE.Texture | null };
+  texture: THREE.Texture | null;
+  normalMap: THREE.Texture | null;
+  loading: boolean;
+  error: Error | null;
+}
+
 export function useTextureLoader(
   texturePaths: TextureMap,
   options: TextureOptionsMap = {}
-) {
+): TextureLoaderResult {
   const [textures, setTextures] = useState<{ [key: string]: THREE.Texture | null }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -97,7 +105,7 @@ export function useTextureLoader(
 
   // Extract the primary texture for convenience
   const mainTextureKey = Object.keys(texturePaths)[0];
-  const texture = mainTextureKey ? textures[mainTextureKey] : null;
+  const texture = mainTextureKey && textures[mainTextureKey] ? textures[mainTextureKey] : null;
   
   // Extract the normal map if it exists
   const normalMap = textures['normal'] || null;

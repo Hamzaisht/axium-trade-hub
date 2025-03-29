@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 export function AvatarLighting() {
-  const spotLightRef = useRef<THREE.SpotLight>(null);
+  const spotLightRef = useRef<THREE.SpotLight | null>(null);
   
   useFrame((state) => {
     if (spotLightRef.current) {
