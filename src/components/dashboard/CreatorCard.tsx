@@ -33,7 +33,7 @@ export const CreatorCard = ({ creator, onSelect, selected, sentimentEnabled = fa
       variant={selected ? "blue" : "default"}
       interactive={!selected}
       className={cn(
-        "transition-all duration-300 overflow-visible",
+        "transition-all duration-300 overflow-visible backdrop-blur-md rounded-2xl hover:bg-opacity-90",
         selected ? "ring-2 ring-axium-blue" : isHovered ? "shadow-glass-blue" : "",
       )}
       onMouseEnter={() => setIsHovered(true)}

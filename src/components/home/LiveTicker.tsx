@@ -22,7 +22,7 @@ export const LiveTicker = () => {
   
   return (
     <div className={`relative py-4 backdrop-blur-md border-y overflow-hidden ${
-      isDark ? 'bg-[#0B0F1A]/80 border-axium-neon-blue/20' : 'bg-white/80 border-gray-200'
+      isDark ? 'bg-[#0B0F1A]/80 border-white/10' : 'bg-white/80 border-zinc-200'
     }`}>
       {isDark && (
         <div className="absolute inset-0 bg-gradient-to-r from-axium-neon-blue/5 via-transparent to-axium-neon-mint/5"></div>
@@ -33,9 +33,9 @@ export const LiveTicker = () => {
           {[...TOKENS, ...TOKENS].map((token, index) => (
             <motion.div 
               key={`${token.symbol}-${index}`} 
-              className={`flex items-center mx-4 py-2 px-4 rounded-md ${
-                isDark ? 'bg-[#0F0F12]/90' : 'bg-white/90'
-              } backdrop-blur-md border ${
+              className={`flex items-center mx-4 py-2 px-4 rounded-2xl backdrop-blur-md ${
+                isDark ? 'bg-[#0F0F12]/90 border-white/10' : 'bg-white/90 border-zinc-200'
+              } border hover:bg-opacity-90 ${
                 token.change >= 0 
                   ? 'border-axium-positive/20'
                   : 'border-axium-negative/20'

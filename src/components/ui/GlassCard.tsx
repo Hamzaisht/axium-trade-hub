@@ -31,8 +31,8 @@ export function GlassCard({
   const isDark = theme === 'dark';
   
   const baseClasses = cn(
-    "rounded-lg transition-all duration-300 relative overflow-hidden",
-    interactive && "cursor-pointer hover:translate-y-[-2px]",
+    "rounded-2xl transition-all duration-300 relative overflow-hidden backdrop-blur-md",
+    interactive && "cursor-pointer hover:translate-y-[-2px] hover:bg-opacity-90",
     // Add size-based padding
     size === "sm" && "p-3",
     size === "md" && "p-4",
@@ -45,12 +45,12 @@ export function GlassCard({
   // Enhanced variants with more cyberpunk styling in dark mode
   const variantClasses = {
     default: cn(
-      "bg-white/70 backdrop-blur-md border border-axium-gray-200/50 shadow-glass",
-      "dark:bg-axium-gray-800/40 dark:border-axium-gray-700/20 dark:shadow-glass-strong"
+      "bg-white/70 backdrop-blur-md border border-zinc-200 shadow-glass",
+      "dark:bg-axium-gray-800/40 dark:border-white/10 dark:shadow-glass-strong"
     ),
     dark: cn(
-      "bg-axium-gray-800/70 backdrop-blur-md border border-axium-gray-700/30 shadow-glass",
-      "dark:bg-black/40 dark:border-axium-gray-700/40 dark:shadow-glass-blue"
+      "bg-axium-gray-800/70 backdrop-blur-md border border-white/10 shadow-glass",
+      "dark:bg-black/40 dark:border-white/10 dark:shadow-glass-blue"
     ),
     blue: cn(
       "bg-white/70 backdrop-blur-md border border-axium-neon-blue/30 shadow-neon-blue",

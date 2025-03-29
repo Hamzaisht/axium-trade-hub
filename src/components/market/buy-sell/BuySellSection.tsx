@@ -104,13 +104,13 @@ export function BuySellSection({ creatorId, symbol = "UNKNOWN", currentPrice = 2
       transition={{ duration: 0.5 }}
     >
       <Card className={`
-        shadow-lg border-slate-800/30 backdrop-blur-sm
-        ${isDark ? 'bg-axium-gray-800/40 border-axium-gray-700/40' : ''}
+        shadow-lg border backdrop-blur-md rounded-2xl
+        ${isDark ? 'border-white/10 bg-axium-gray-800/40' : 'border-zinc-200'}
         ${orderType === 'buy' ? 
           (isDark ? 'border-axium-positive/20 shadow-neon-blue/20' : 'border-axium-positive/10') : 
           (isDark ? 'border-axium-negative/20 shadow-[0_0_10px_rgba(255,61,94,0.1)]' : 'border-axium-negative/10')
         }
-        relative overflow-hidden
+        relative overflow-hidden hover:bg-opacity-90
       `}>
         {isDark && (
           <>

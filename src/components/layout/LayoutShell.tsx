@@ -1,4 +1,3 @@
-
 import { Sidebar } from "@/components/layout/Sidebar";
 import { ReactNode } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -60,7 +59,7 @@ export function LayoutShell({ children, className = "" }: LayoutShellProps) {
             </div>
           </>
         )}
-        <div className="relative z-10">
+        <div className="relative z-10 rounded-2xl">
           {children}
         </div>
       </div>
