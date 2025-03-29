@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowRightLeft, TrendingDown, TrendingUp } from "lucide-react";
 import { showNotification } from "@/components/notifications/ToastContainer";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import { toast } from "sonner";
 import { placeOrder } from "@/lib/placeOrder";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -26,11 +26,10 @@ export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuyS
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
+  const { isDemo, demoToast } = useDemoMode();
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only allow numbers and decimals
     const value = e.target.value.replace(/[^0-9.]/g, "");
-    // Prevent multiple decimal points
     const decimalCount = (value.match(/\./g) || []).length;
     if (decimalCount > 1) return;
     
@@ -45,6 +44,11 @@ export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuyS
   const handleSubmitOrder = async () => {
     if (!quantity || parseFloat(quantity) <= 0) {
       showNotification.warning("Please enter a valid quantity");
+      return;
+    }
+
+    if (isDemo) {
+      demoToast();
       return;
     }
 
@@ -93,7 +97,7 @@ export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuyS
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2">
           <ArrowRightLeft className="h-5 w-5" />
-          Place Order
+          Place Order {isDemo && <span className="text-xs text-muted-foreground ml-2">(Demo Mode)</span>}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -174,20 +178,32 @@ export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuyS
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
-                className="w-full"
+                className={`w-full ${isDemo ? 'opacity-70' : ''}`}
                 disabled={isProcessing || !quantity || parseFloat(quantity) <= 0}
                 onClick={handleSubmitOrder}
                 variant={orderType === "buy" ? "default" : "destructive"}
               >
                 {isProcessing 
                   ? "Processing..." 
+                  : isDemo
+                  ? `Demo ${orderType === "buy" ? "Buy" : "Sell"}`
                   : `${orderType === "buy" ? "Buy" : "Sell"} ${symbol || "Token"}`}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p className="text-xs">Submit {orderType} order for {quantity} {symbol}</p>
+              <p className="text-xs">
+                {isDemo 
+                  ? "Demo Mode: Login to place real trades" 
+                  : `Submit ${orderType} order for ${quantity} ${symbol}`}
+              </p>
             </TooltipContent>
           </Tooltip>
+          
+          {isDemo && (
+            <div className="text-xs text-muted-foreground text-center">
+              Demo Mode: No real transactions are made
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

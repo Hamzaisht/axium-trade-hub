@@ -1,7 +1,9 @@
+
 import { useState } from "react";
 import { placeOrder } from "@/lib/placeOrder";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,11 +24,18 @@ export default function TradePanel({
 }: TradePanelProps) {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
+  const { isDemo, demoToast } = useDemoMode();
   const [quantity, setQuantity] = useState(1);
   const [price, setPrice] = useState(currentPrice);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleOrder = async (type: "buy" | "sell") => {
+    // In demo mode, show toast and prevent real order
+    if (isDemo) {
+      demoToast();
+      return;
+    }
+
     if (!isAuthenticated || !user) {
       toast({
         title: "Authentication Required",
@@ -91,6 +100,7 @@ export default function TradePanel({
             <TooltipContent side="right">
               <p className="text-xs max-w-[200px]">
                 Place market orders to buy or sell {symbol} shares at the current market price
+                {isDemo && " (Demo Mode: No real transactions)"}
               </p>
             </TooltipContent>
           </Tooltip>
@@ -155,13 +165,15 @@ export default function TradePanel({
                 <Button
                   onClick={() => handleOrder("buy")}
                   disabled={isProcessing || quantity <= 0 || price <= 0}
-                  className="bg-axium-positive hover:bg-axium-positive/90"
+                  className={`bg-axium-positive hover:bg-axium-positive/90 ${isDemo ? 'opacity-70' : ''}`}
                 >
-                  {isProcessing ? "Processing..." : "Buy"}
+                  {isProcessing ? "Processing..." : isDemo ? "Demo Buy" : "Buy"}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top">
-                <p className="text-xs">Buy {quantity} shares at ${price} each</p>
+                <p className="text-xs">
+                  {isDemo ? "Demo Mode: Login to place real trades" : `Buy ${quantity} shares at $${price} each`}
+                </p>
               </TooltipContent>
             </Tooltip>
             
@@ -171,15 +183,24 @@ export default function TradePanel({
                   onClick={() => handleOrder("sell")}
                   disabled={isProcessing || quantity <= 0 || price <= 0}
                   variant="destructive"
+                  className={isDemo ? 'opacity-70' : ''}
                 >
-                  {isProcessing ? "Processing..." : "Sell"}
+                  {isProcessing ? "Processing..." : isDemo ? "Demo Sell" : "Sell"}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top">
-                <p className="text-xs">Sell {quantity} shares at ${price} each</p>
+                <p className="text-xs">
+                  {isDemo ? "Demo Mode: Login to place real trades" : `Sell ${quantity} shares at $${price} each`}
+                </p>
               </TooltipContent>
             </Tooltip>
           </div>
+          
+          {isDemo && (
+            <div className="text-xs text-muted-foreground text-center pt-2">
+              Demo Mode: No real transactions are made
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

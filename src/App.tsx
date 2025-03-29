@@ -1,9 +1,9 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { IPOProvider } from '@/contexts/IPOContext';
 import { PortfolioProvider } from '@/contexts/PortfolioContext';
 import { TradingProvider } from '@/contexts/TradingContext';
+import { DemoModeProvider } from '@/contexts/DemoModeContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -38,78 +38,80 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark">
         <Router>
-          <AuthProvider>
-            <TokenRefreshProvider>
-              <IPOProvider>
-                <PortfolioProvider>
-                  <TradingProvider>
-                    <DualToastProvider />
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/register" element={<Register />} />
-                      
-                      <Route 
-                        path="/dashboard" 
-                        element={
-                          <ProtectedRoute>
-                            <Dashboard />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      
-                      <Route 
-                        path="/portfolio" 
-                        element={
-                          <ProtectedRoute>
-                            <Portfolio />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      
-                      <Route 
-                        path="/creators" 
-                        element={
-                          <ProtectedRoute>
-                            <Creators />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      
-                      <Route 
-                        path="/creators/:slug" 
-                        element={
-                          <ProtectedRoute>
-                            <CreatorProfile />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      
-                      <Route 
-                        path="/creators/:slug/institutional" 
-                        element={
-                          <ProtectedRoute>
-                            <InstitutionalCreator />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      
-                      <Route 
-                        path="/trading" 
-                        element={
-                          <ProtectedRoute>
-                            <Trading />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </TradingProvider>
-                </PortfolioProvider>
-              </IPOProvider>
-            </TokenRefreshProvider>
-          </AuthProvider>
+          <DemoModeProvider>
+            <AuthProvider>
+              <TokenRefreshProvider>
+                <IPOProvider>
+                  <PortfolioProvider>
+                    <TradingProvider>
+                      <DualToastProvider />
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        
+                        <Route 
+                          path="/dashboard" 
+                          element={
+                            <ProtectedRoute>
+                              <Dashboard />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        
+                        <Route 
+                          path="/portfolio" 
+                          element={
+                            <ProtectedRoute>
+                              <Portfolio />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        
+                        <Route 
+                          path="/creators" 
+                          element={
+                            <ProtectedRoute>
+                              <Creators />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        
+                        <Route 
+                          path="/creators/:slug" 
+                          element={
+                            <ProtectedRoute>
+                              <CreatorProfile />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        
+                        <Route 
+                          path="/creators/:slug/institutional" 
+                          element={
+                            <ProtectedRoute>
+                              <InstitutionalCreator />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        
+                        <Route 
+                          path="/trading" 
+                          element={
+                            <ProtectedRoute>
+                              <Trading />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </TradingProvider>
+                  </PortfolioProvider>
+                </IPOProvider>
+              </TokenRefreshProvider>
+            </AuthProvider>
+          </DemoModeProvider>
         </Router>
       </ThemeProvider>
     </QueryClientProvider>

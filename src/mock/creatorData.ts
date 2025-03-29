@@ -3,7 +3,7 @@ import { Creator } from "@/utils/ClaudeInsights";
 
 export const getMockCreator = (id: string): Creator => {
   // Generate consistent but random-looking data based on creator ID
-  const seedNumber = parseInt(id.replace(/\D/g, '').substring(0, 4) || '1234', 10);
+  const seedNumber = parseInt(id?.replace(/\D/g, '').substring(0, 4) || '1234', 10);
   const normalizedSeed = seedNumber / 10000; // Between 0 and 1
   
   // Base values
@@ -28,10 +28,30 @@ export const getMockCreator = (id: string): Creator => {
   // AI score (0-100)
   const aiScore = Math.floor(50 + (normalizedSeed + changeBias) * 25);
   
+  // Creator names based on ID (for demo mode)
+  const nameMap: Record<string, string> = {
+    'creator1': 'Emma Thompson',
+    'creator2': 'Alex Rivers',
+    'creator3': 'Sophia Chen',
+    'creator4': 'Marcus Jackson',
+    'creator5': 'Olivia Rodriguez',
+    'default': 'Demo Creator'
+  };
+  
+  // Creator symbols based on ID (for demo mode)
+  const symbolMap: Record<string, string> = {
+    'creator1': 'EMMA',
+    'creator2': 'ALXR',
+    'creator3': 'SOPH',
+    'creator4': 'MJCK',
+    'creator5': 'OLIV',
+    'default': 'DEMO'
+  };
+  
   return {
     id,
-    name: `Creator ${id.substring(0, 5)}`,
-    symbol: `CR${id.substring(0, 3)}`,
+    name: nameMap[id] || `Creator ${id.substring(0, 5)}`,
+    symbol: symbolMap[id] || `CR${id.substring(0, 3)}`,
     price: parseFloat(basePrice.toFixed(2)),
     change: parseFloat(change.toFixed(2)),
     marketCap: parseFloat(marketCap.toFixed(2)),
@@ -62,10 +82,13 @@ export const getMockCreator = (id: string): Creator => {
   };
 };
 
+// Add more creators for demo mode
 export const mockCreators: Record<string, Creator> = {
   "creator1": getMockCreator("creator1"),
   "creator2": getMockCreator("creator2"),
   "creator3": getMockCreator("creator3"),
+  "creator4": getMockCreator("creator4"),
+  "creator5": getMockCreator("creator5"),
   "default": getMockCreator("default")
 };
 

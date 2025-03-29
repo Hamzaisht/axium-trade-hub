@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -7,6 +6,8 @@ import { ClaudeInsight, getClaudeInsights, Creator } from "@/utils/ClaudeInsight
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { getMockTradeHistory } from "@/mock/tradeHistory";
+import { useDemoMode } from "@/contexts/DemoModeContext";
+import { getCreatorById } from "@/mock/creatorData";
 
 interface ClaudeInsightsCardProps {
   creator?: Creator;
@@ -18,6 +19,7 @@ interface ClaudeInsightsCardProps {
 export function ClaudeInsightsCard({ creator, creatorId, className, limit = 3 }: ClaudeInsightsCardProps) {
   const [insights, setInsights] = useState<ClaudeInsight[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { isDemo } = useDemoMode();
 
   useEffect(() => {
     if (!creator && !creatorId) return;
@@ -30,8 +32,14 @@ export function ClaudeInsightsCard({ creator, creatorId, className, limit = 3 }:
         // Get recent trades for additional context
         const recentTrades = getMockTradeHistory(creatorId, 10);
         
+        // For demo mode, always use mock creator data
+        let creatorData = creator;
+        if (isDemo || !creatorData) {
+          creatorData = getCreatorById(creatorId);
+        }
+        
         // Get insights
-        const claudeInsights = await getClaudeInsights(creator, recentTrades);
+        const claudeInsights = await getClaudeInsights(creatorData, recentTrades);
         setInsights(claudeInsights);
       } catch (error) {
         console.error("Error fetching Claude insights:", error);
@@ -41,9 +49,8 @@ export function ClaudeInsightsCard({ creator, creatorId, className, limit = 3 }:
     }, 1500);
     
     return () => clearTimeout(timer);
-  }, [creator, creatorId]);
+  }, [creator, creatorId, isDemo]);
 
-  // Format time relative to now
   const formatTime = (timestamp: string) => {
     return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
   };
