@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
@@ -7,6 +8,7 @@ import LiveTicker from "@/components/home/LiveTicker";
 import Features from "@/components/home/Features";
 import FAQ from "@/components/home/FAQ";
 import MarbleBackground from "@/components/home/MarbleBackground";
+import AnimatedCubeExample from "@/components/home/AnimatedCubeExample";
 import { cn } from "@/lib/utils";
 import { ArrowRight, ChevronRight, ExternalLink, LineChart, Shield, Star, TrendingUp, Users } from "lucide-react";
 
@@ -77,6 +79,9 @@ const Index = () => {
             </div>
           </div>
         </section>
+        
+        {/* Add our new component here */}
+        <AnimatedCubeExample />
         
         <section className="py-24 relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('/bg-dots.svg')] bg-center opacity-5"></div>
