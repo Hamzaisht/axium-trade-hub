@@ -16,7 +16,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Initialize theme based on saved preference or default to dark
   useEffect(() => {
     const savedTheme = localStorage.getItem('axium-theme') as Theme;
-    setTheme(savedTheme || 'dark'); // Default to dark mode
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else {
+      // Default to dark mode if no preference saved
+      setTheme('dark');
+      localStorage.setItem('axium-theme', 'dark');
+    }
   }, []);
 
   // Apply theme class to document and save to localStorage
@@ -26,34 +32,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
-      document.body.classList.add('cyberpunk-grid', 'dark-mode-transition');
-      
-      // Apply dark mode specific animations and effects
-      const overlay = document.createElement('div');
-      overlay.classList.add('fixed', 'inset-0', 'pointer-events-none', 'z-[-1]');
-      overlay.style.background = 'radial-gradient(circle at 10% 30%, rgba(0,207,255,0.07), transparent 70%)';
-      document.body.appendChild(overlay);
-      
-      return () => {
-        document.body.removeChild(overlay);
-      };
+      document.body.classList.add('cyberpunk-grid');
+      document.body.style.backgroundColor = '#0B0F1A'; // Obsidian black
     } else {
       document.documentElement.classList.remove('dark');
-      document.body.classList.remove('cyberpunk-grid', 'dark-mode-transition');
+      document.body.classList.remove('cyberpunk-grid');
+      document.body.style.backgroundColor = '#F7F9FB'; // Light white/gray
     }
   }, [theme]);
 
   const toggleTheme = () => {
-    // Add flash animation effect during theme toggle
-    const flash = document.createElement('div');
-    flash.classList.add('fixed', 'inset-0', 'bg-white', 'z-[9999]', 'pointer-events-none');
-    flash.style.opacity = '0.1';
-    document.body.appendChild(flash);
-    
-    setTimeout(() => {
-      document.body.removeChild(flash);
-      setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
-    }, 50);
+    setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
   };
 
   return (

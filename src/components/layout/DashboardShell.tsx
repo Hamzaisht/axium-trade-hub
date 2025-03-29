@@ -20,10 +20,13 @@ export function DashboardShell({ children, className = "" }: DashboardShellProps
     <TooltipProvider>
       <div className={cn(
         "flex flex-col min-h-screen transition-colors duration-500",
-        "bg-[#F7F9FB] dark:bg-[#0A0A0D]", // Updated to obsidian black in dark mode
+        isDark ? "bg-[#0B0F1A]" : "bg-[#F7F9FB]", // Using the specified colors
         className
       )}>
-        <header className="bg-[#161B22] border-b border-[#292F36] py-2 relative dark:bg-[#0F0F12]"> {/* Slightly lighter obsidian */}
+        <header className={cn(
+          "border-b py-2 relative", 
+          isDark ? "bg-[#0F0F12] border-[#292F36]" : "bg-white border-gray-200"
+        )}>
           {isDark && (
             <>
               <div className="absolute inset-0 bg-gradient-to-r from-axium-neon-blue/5 via-transparent to-axium-neon-mint/5 opacity-30"></div>
@@ -50,12 +53,15 @@ export function DashboardShell({ children, className = "" }: DashboardShellProps
                 AXIUM TRADING
               </span>
             </div>
-            <div className="h-6 w-[1px] bg-[#292F36] mx-2"></div>
-            <span className="text-xs text-[#B0B6BE] tracking-wider">NEXT-GEN CREATOR ECONOMY</span>
+            <div className={cn("h-6 w-[1px] mx-2", isDark ? "bg-[#292F36]" : "bg-gray-200")}></div>
+            <span className={cn("text-xs tracking-wider", isDark ? "text-[#B0B6BE]" : "text-gray-500")}>NEXT-GEN CREATOR ECONOMY</span>
           </div>
         </header>
         
-        <PriceTickerScroll className="backdrop-blur-md bg-white/5 border-b border-[#292F36]" />
+        <PriceTickerScroll className={cn(
+          "backdrop-blur-md border-b",
+          isDark ? "bg-white/5 border-[#292F36]" : "bg-black/5 border-gray-200"
+        )} />
         
         <div className="flex-1 container mx-auto px-4 md:px-6 py-4 relative">
           {isDark && (

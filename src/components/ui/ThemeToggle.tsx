@@ -22,7 +22,7 @@ export function ThemeToggle({ className = "" }: ThemeToggleProps) {
       onMouseLeave={() => setIsHovering(false)}
       className={`relative transition-all duration-500 overflow-hidden group ${className} hover:shadow-[0_0_15px_rgba(0,207,255,0.3)]`}
     >
-      {/* 3D effect on hover - interactive Oracle effect */}
+      {/* Enhanced 3D Oracle effect on hover */}
       {isHovering && (
         <motion.div 
           className="absolute inset-0 bg-gradient-to-r from-axium-neon-blue/20 to-axium-neon-mint/20 rounded-full z-0"
@@ -35,6 +35,29 @@ export function ThemeToggle({ className = "" }: ThemeToggleProps) {
           }}
           transition={{ duration: 1.5, repeat: Infinity, repeatType: "mirror" }}
         />
+      )}
+      
+      {/* Interactive 3D Oracle glow effect */}
+      {isHovering && (
+        <motion.div 
+          className="absolute -inset-3 z-0 opacity-30 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <motion.div 
+            className="absolute inset-0 rounded-full"
+            style={{ 
+              background: theme === 'dark' 
+                ? 'radial-gradient(circle at 50% 50%, rgba(0, 207, 255, 0.7), transparent 70%)' 
+                : 'radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.7), transparent 70%)'
+            }}
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, 360]
+            }}
+            transition={{ duration: 8, repeat: Infinity, repeatType: "mirror" }}
+          />
+        </motion.div>
       )}
       
       {/* Background glow effect */}

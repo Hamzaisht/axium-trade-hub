@@ -17,7 +17,7 @@ export function LayoutShell({ children, className = "" }: LayoutShellProps) {
   return (
     <div className={cn(
       "flex min-h-screen transition-all duration-500",
-      "bg-[#F7F9FB] dark:bg-[#0A0A0D]", // Updated to obsidian black in dark mode
+      isDark ? "bg-[#0B0F1A]" : "bg-[#F7F9FB]", // Using the specified colors
       isDark && [
         "cyberpunk-grid",
         "bg-[linear-gradient(to_right,rgba(0,207,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,207,255,0.03)_1px,transparent_1px)]",

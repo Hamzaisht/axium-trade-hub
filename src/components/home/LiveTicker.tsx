@@ -21,7 +21,9 @@ export const LiveTicker = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   
   return (
-    <div className="relative py-4 bg-background/80 backdrop-blur-md border-y border-axium-neon-blue/20 overflow-hidden">
+    <div className={`relative py-4 backdrop-blur-md border-y overflow-hidden ${
+      isDark ? 'bg-[#0B0F1A]/80 border-axium-neon-blue/20' : 'bg-white/80 border-gray-200'
+    }`}>
       {isDark && (
         <div className="absolute inset-0 bg-gradient-to-r from-axium-neon-blue/5 via-transparent to-axium-neon-mint/5"></div>
       )}
@@ -32,7 +34,7 @@ export const LiveTicker = () => {
             <motion.div 
               key={`${token.symbol}-${index}`} 
               className={`flex items-center mx-4 py-2 px-4 rounded-md ${
-                isDark ? 'bg-[#0F0F12]/90' : 'bg-background/90'
+                isDark ? 'bg-[#0F0F12]/90' : 'bg-white/90'
               } backdrop-blur-md border ${
                 token.change >= 0 
                   ? 'border-axium-positive/20'
@@ -45,6 +47,9 @@ export const LiveTicker = () => {
                 scale: [1, 1.05, 1],
                 transition: { duration: 0.5 }
               } : {}}
+              whileHover={{
+                z: 10
+              }}
             >
               <div className="flex items-center">
                 <span className="font-medium mr-2 text-foreground">{token.symbol}</span>
@@ -77,14 +82,55 @@ export const LiveTicker = () => {
                   transition={{ duration: 0.3 }}
                 />
               )}
+              
+              {/* Enhanced 3D Oracle effect on hover */}
+              {hoveredIndex === index && (
+                <motion.div 
+                  className="absolute inset-0 rounded-md pointer-events-none overflow-hidden"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <motion.div 
+                    className={`absolute inset-0 opacity-20 ${
+                      token.change >= 0 ? 'bg-axium-positive' : 'bg-axium-negative'
+                    }`}
+                    animate={{ 
+                      backgroundPosition: ['0% 0%', '100% 100%'],
+                      scale: [1, 1.05, 1]
+                    }}
+                    transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
+                  />
+                  <motion.div 
+                    className="absolute -inset-1 opacity-30"
+                    style={{ 
+                      background: `radial-gradient(circle at 50% 50%, ${
+                        token.change >= 0 ? 'rgba(42, 255, 145, 0.6)' : 'rgba(255, 61, 94, 0.6)'
+                      }, transparent 70%)` 
+                    }}
+                    animate={{ 
+                      rotate: [0, 360],
+                      scale: [1, 1.2, 1]
+                    }}
+                    transition={{ duration: 8, repeat: Infinity, repeatType: "reverse" }}
+                  />
+                </motion.div>
+              )}
             </motion.div>
           ))}
         </div>
       </div>
       
       {/* Gradient fade effect on edges */}
-      <div className="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-background via-background/90 to-transparent z-10"></div>
-      <div className="absolute top-0 right-0 h-full w-20 bg-gradient-to-l from-background via-background/90 to-transparent z-10"></div>
+      <div className={`absolute top-0 left-0 h-full w-20 z-10 ${
+        isDark 
+          ? 'bg-gradient-to-r from-[#0B0F1A] via-[#0B0F1A]/90 to-transparent' 
+          : 'bg-gradient-to-r from-[#F7F9FB] via-[#F7F9FB]/90 to-transparent'
+      }`}></div>
+      <div className={`absolute top-0 right-0 h-full w-20 z-10 ${
+        isDark 
+          ? 'bg-gradient-to-l from-[#0B0F1A] via-[#0B0F1A]/90 to-transparent' 
+          : 'bg-gradient-to-l from-[#F7F9FB] via-[#F7F9FB]/90 to-transparent'
+      }`}></div>
     </div>
   );
 };
