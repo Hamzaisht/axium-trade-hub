@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   Lightbulb, 
   Sparkles,
-  Cpu // Replacing Chip with Cpu which is available in lucide-react
+  Cpu
 } from "lucide-react";
 
 const features = [
@@ -39,7 +39,7 @@ const features = [
     description: "Track your investments with real-time analytics, custom watchlists, and price alerts."
   },
   {
-    icon: Cpu,  // Changed from Chip to Cpu
+    icon: Cpu,
     title: "Advanced Analytics",
     description: "Access sentiment analysis and predictive models to make informed investment decisions."
   }
@@ -147,7 +147,7 @@ export const Features = () => {
               
               <div className="absolute inset-0 flex items-center justify-center">
                 <GlassCard 
-                  variant="premium" 
+                  variant="gold" 
                   size="xl"
                   className="w-[90%] h-[90%] shadow-glass-blue"
                 >

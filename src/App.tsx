@@ -14,7 +14,7 @@ import Portfolio from "./pages/Portfolio";
 import CreatorProfile from "./pages/CreatorProfile";
 import InstitutionalCreator from "./pages/InstitutionalCreator";
 import Layout from "./components/layout/Layout";
-import ToastContainer from "./components/notifications/ToastContainer";
+import { ToastContainer } from "./components/notifications/ToastContainer";
 
 const queryClient = new QueryClient({
   defaultOptions: {

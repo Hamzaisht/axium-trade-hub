@@ -8,6 +8,9 @@ interface GlassCardProps {
   variant?: "default" | "dark" | "blue" | "gold" | "mint";
   interactive?: boolean;
   onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+  size?: "sm" | "md" | "lg" | "xl"; // Add size prop
 }
 
 export function GlassCard({ 
@@ -15,11 +18,19 @@ export function GlassCard({
   className = "", 
   variant = "default", 
   interactive = false,
-  onClick
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+  size = "md"
 }: GlassCardProps) {
   const baseClasses = cn(
     "rounded-lg p-4 transition-all duration-300",
     interactive && "cursor-pointer hover:translate-y-[-2px]",
+    // Add size-based padding
+    size === "sm" && "p-3",
+    size === "md" && "p-4",
+    size === "lg" && "p-5",
+    size === "xl" && "p-6",
     className
   );
   
@@ -35,8 +46,12 @@ export function GlassCard({
     <div 
       className={cn(baseClasses, variantClasses[variant])}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {children}
     </div>
   );
 }
+
+export type { GlassCardProps };

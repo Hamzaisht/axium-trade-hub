@@ -72,7 +72,7 @@ export const Hero = () => {
               <div className="absolute top-0 left-0 w-full h-full bg-gradient-conic from-axium-blue/10 via-transparent to-axium-blue-light/5 rounded-full animate-spin-slow [animation-duration:20s] opacity-70" />
               
               <GlassCard 
-                variant="premium" 
+                variant="gold" 
                 size="lg" 
                 className="absolute top-[5%] left-[10%] h-52 w-64 animate-float"
               >
