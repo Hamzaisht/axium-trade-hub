@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   ResponsiveContainer, 
@@ -32,7 +31,7 @@ interface ShowIndicators {
 }
 
 interface LiveChartProps {
-  creatorId: string;
+  creatorId?: string;
   symbol?: string;
 }
 
@@ -153,7 +152,6 @@ export function LiveChart({ creatorId, symbol }: LiveChartProps) {
     return null;
   };
 
-  // Calculate latest price and change
   const getLatestPrice = () => {
     if (chartData.length === 0) return null;
     return chartData[chartData.length - 1].price;

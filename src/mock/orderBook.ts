@@ -36,12 +36,13 @@ const generateOrder = (
 };
 
 export const getMockOrderBook = (
-  creatorId: string, 
+  creatorId?: string, 
   basePrice = 25.75
 ): OrderBook => {
-  // Use the creatorId to seed the random data
+  // Use the creatorId to seed the random data or provide default if undefined
   // This ensures the same creator always gets consistent data
-  const seed = creatorId.charCodeAt(0) % 10;
+  const idToUse = creatorId || "default";
+  const seed = idToUse.charCodeAt(0) % 10;
   basePrice = basePrice + (seed - 5);
   
   const bids: Order[] = [];

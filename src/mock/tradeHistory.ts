@@ -39,12 +39,13 @@ const generateMockTrade = (
 };
 
 export const getMockTradeHistory = (
-  creatorId: string,
+  creatorId?: string,
   count = 20,
   basePrice = 25.75
 ): Trade[] => {
-  // Use creatorId to seed the random data
-  const seed = creatorId.charCodeAt(0) % 10;
+  // Use creatorId to seed the random data, provide default if undefined
+  const idToUse = creatorId || "default";
+  const seed = idToUse.charCodeAt(0) % 10;
   basePrice = basePrice + (seed - 5);
   
   const trades: Trade[] = [];

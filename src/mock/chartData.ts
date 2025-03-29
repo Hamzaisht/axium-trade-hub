@@ -64,14 +64,16 @@ const generateMockData = (
 };
 
 export const getChartData = (
-  creatorId: string, 
+  creatorId?: string, 
   timeframe: TimeFrame = '1D'
 ): Promise<ChartDataPoint[]> => {
   // In a real application, this would fetch data from an API
   // For now, we'll generate mock data based on the creator ID
   // to ensure consistency for the same creator
   
-  const seed = creatorId.charCodeAt(0) % 10;
+  // Guard against undefined creatorId by providing a default value
+  const idToUse = creatorId || "default";
+  const seed = idToUse.charCodeAt(0) % 10;
   const basePrice = 15 + seed * 2;
   const volatility = 0.01 + (seed * 0.005);
   
