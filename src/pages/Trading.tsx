@@ -4,10 +4,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTrading } from "@/contexts/TradingContext";
 import { useIPO } from "@/contexts/IPOContext";
 import { useMarketData } from "@/hooks/useMarketData";
-import { GlassCard } from "@/components/ui/card";
+import { GlassCard, DarkCard } from "@/components/ui/card";
 import { showNotification } from "@/components/notifications/ToastContainer";
 import { TradeFormSkeleton } from "@/components/ui/skeleton-components";
-import TradeForm from "@/components/trading/TradeForm";
+import TradeForm from "@/components/trading/trade-form";
 import InstitutionalTrading from "@/components/trading/institutional/InstitutionalTrading";
 import LiquidityPoolInfo from "@/components/trading/liquidity-pool";
 import { PriceTicker } from "@/components/market/PriceTicker";
@@ -25,6 +25,8 @@ import {
   TradingOrders,
   AdvancedOrderSection
 } from "@/components/trading-dashboard";
+import { Button } from "@/components/ui/button";
+import { ArrowUpDown, Briefcase, Database, LineChart, Loader2 } from "lucide-react";
 
 const Trading = () => {
   const { user } = useAuth();
@@ -76,15 +78,10 @@ const Trading = () => {
       <LayoutShell>
         <DashboardShell>
           <div className="flex justify-center items-center min-h-[60vh]">
-            <div className="animate-pulse flex space-x-4">
-              <div className="rounded-full bg-[#2D3748] h-12 w-12"></div>
-              <div className="flex-1 space-y-4 py-1">
-                <div className="h-4 bg-[#2D3748] rounded w-3/4"></div>
-                <div className="space-y-2">
-                  <div className="h-4 bg-[#2D3748] rounded"></div>
-                  <div className="h-4 bg-[#2D3748] rounded w-5/6"></div>
-                </div>
-              </div>
+            <div className="flex flex-col items-center">
+              <Loader2 className="h-12 w-12 text-[#3AA0FF] animate-spin mb-4" />
+              <div className="text-lg font-medium text-white">Loading Trading Terminal...</div>
+              <div className="text-sm text-[#8A9CCC] mt-2">Connecting to market data</div>
             </div>
           </div>
         </DashboardShell>
@@ -97,10 +94,19 @@ const Trading = () => {
       <LayoutShell>
         <DashboardShell>
           <div className="flex justify-center items-center min-h-[60vh]">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">No trading assets available</h2>
-              <p className="text-gray-400">Please check back later or contact support.</p>
-            </div>
+            <DarkCard className="p-8 max-w-md text-center">
+              <Database className="h-16 w-16 mx-auto mb-4 text-[#3AA0FF]/50" />
+              <h2 className="text-xl font-semibold mb-2 text-white">No Trading Assets Available</h2>
+              <p className="text-[#8A9CCC] mb-6">We couldn't find any trading assets in your account. Please check back later or contact support.</p>
+              <div className="flex space-x-4 justify-center">
+                <Button variant="outline" className="border-[#1A2747] text-[#8A9CCC] hover:text-white">
+                  Contact Support
+                </Button>
+                <Button onClick={() => window.location.reload()} className="bg-[#3AA0FF] hover:bg-[#2D7DD2] text-white">
+                  Refresh
+                </Button>
+              </div>
+            </DarkCard>
           </div>
         </DashboardShell>
       </LayoutShell>
@@ -111,10 +117,36 @@ const Trading = () => {
     <LayoutShell>
       <DashboardShell>
         <div className="max-w-7xl mx-auto">
-          <TradingHeader 
-            title="Trading Dashboard"
-            isConnected={isConnected}
-          />
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white flex items-center">
+                <LineChart className="h-6 w-6 mr-2 text-[#3AA0FF]" /> 
+                Advanced Trading
+              </h1>
+              <p className="text-[#8A9CCC]">Professional trading tools with institutional-grade features</p>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <div className={`flex items-center px-3 py-1 rounded-full text-sm ${
+                isConnected ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+              }`}>
+                <div className={`h-2 w-2 rounded-full ${
+                  isConnected ? 'bg-green-400' : 'bg-red-400'
+                } mr-2`}></div>
+                {isConnected ? 'Connected' : 'Disconnected'}
+              </div>
+              
+              <Button className="bg-[#1A2747] hover:bg-[#243760] text-white">
+                <ArrowUpDown className="h-4 w-4 mr-2" />
+                Open Positions
+              </Button>
+              
+              <Button className="bg-[#3AA0FF] hover:bg-[#2D7DD2] text-white">
+                <Briefcase className="h-4 w-4 mr-2" />
+                Portfolio
+              </Button>
+            </div>
+          </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
@@ -157,17 +189,13 @@ const Trading = () => {
                 />
               </GlassCard>
               
-              <GlassCard className="p-4">
-                <OrderBookSection 
-                  symbol={selectedIPO.symbol}
-                  currentPrice={selectedIPO.currentPrice}
-                  ipoId={selectedIPO.id}
-                />
-              </GlassCard>
+              <OrderBookSection 
+                symbol={selectedIPO.symbol}
+                currentPrice={selectedIPO.currentPrice}
+                ipoId={selectedIPO.id}
+              />
               
-              <GlassCard className="p-4">
-                <MetricsGrid creatorId={selectedIPO.id} />
-              </GlassCard>
+              <MetricsGrid creatorId={selectedIPO.id} />
               
               {user && (user.role === 'admin' || user.role === 'investor') && (
                 <GlassCard className="p-4">

@@ -5,7 +5,7 @@ import { LayoutShell } from "@/components/layout/LayoutShell";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { CreatorHeader } from "@/components/market/CreatorHeader";
 import { LiveChart } from "@/components/market/LiveChart";
-import { BuySellSection } from "@/components/market/BuySellSection";
+import { BuySellSection } from "@/components/market/buy-sell/BuySellSection";
 import { OrderBookTable } from "@/components/market/OrderBookTable";
 import { TradeHistory } from "@/components/market/TradeHistory";
 import { AIInsightsCard } from "@/components/market/AIInsightsCard";
@@ -18,7 +18,7 @@ import { mockIPOAPI } from "@/utils/mockApi";
 import { SearchBar } from "@/components/dashboard/SearchBar";
 import { useAnomalyDetection, useAnomalyAlerts } from "@/hooks/ai/useAnomalyDetection";
 import { useAIValuation } from "@/hooks/ai";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, BarChart4, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Dashboard = () => {
@@ -77,13 +77,15 @@ const Dashboard = () => {
   if (error) {
     return (
       <LayoutShell>
-        <div className="text-center py-12">
-          <AlertCircle className="mx-auto h-12 w-12 text-axium-error mb-4" />
-          <h2 className="text-2xl font-semibold text-white">Failed to load dashboard</h2>
-          <p className="mt-2 text-gray-400">There was an error loading the dashboard data. Please try again later.</p>
-          <Button className="mt-4" onClick={() => window.location.reload()}>
-            Refresh Page
-          </Button>
+        <div className="flex items-center justify-center min-h-screen bg-[#0A0E17]">
+          <div className="text-center max-w-md px-6">
+            <AlertCircle className="mx-auto h-16 w-16 text-red-500 mb-6" />
+            <h2 className="text-2xl font-bold text-white mb-3">Connection Error</h2>
+            <p className="mb-6 text-[#8A9CCC]">We couldn't connect to the trading servers. Please check your connection and try again.</p>
+            <Button onClick={() => window.location.reload()} className="bg-[#3AA0FF] hover:bg-[#2D7DD2] text-white">
+              Reconnect
+            </Button>
+          </div>
         </div>
       </LayoutShell>
     );
@@ -94,8 +96,22 @@ const Dashboard = () => {
       <DashboardShell>
         <div className="max-w-7xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-white">Trading Dashboard</h1>
-            <p className="text-gray-400">Real-time creator token trading with AI-powered insights</p>
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold text-white flex items-center">
+                  <BarChart4 className="inline-block mr-2 text-[#3AA0FF]" /> 
+                  Trading Terminal
+                </h1>
+                <p className="text-[#8A9CCC]">Real-time creator token trading with AI-powered insights</p>
+              </div>
+              
+              <div className="flex space-x-2">
+                <Button variant="outline" className="border-[#1A2747] text-[#8A9CCC] hover:text-white">
+                  <TrendingUp className="h-4 w-4 mr-2 text-[#3AA0FF]" />
+                  Market Overview
+                </Button>
+              </div>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -107,19 +123,19 @@ const Dashboard = () => {
                     onChange={setSearchQuery}
                   />
                   
-                  <div className="mt-4 space-y-2">
+                  <div className="mt-4 space-y-1.5">
                     {isLoading ? (
                       Array(5).fill(0).map((_, i) => (
-                        <Skeleton key={i} className="h-14 w-full" />
+                        <Skeleton key={i} className="h-14 w-full bg-[#1A2747]/40" />
                       ))
                     ) : (
                       filteredCreators.map(creator => (
                         <div 
                           key={creator.id}
-                          className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${
+                          className={`flex items-center p-3 rounded-md cursor-pointer transition-all ${
                             selectedCreator?.id === creator.id 
-                              ? 'bg-[#1E3A8A]/20 border border-[#1EAEDB]/30' 
-                              : 'hover:bg-[#1E293B]/70'
+                              ? 'bg-gradient-to-r from-[#1A2747] to-[#1A2747]/40 border-l-2 border-[#3AA0FF]' 
+                              : 'hover:bg-[#1A2747]/40'
                           }`}
                           onClick={() => handleCreatorSelect(creator.id)}
                         >
@@ -127,12 +143,12 @@ const Dashboard = () => {
                             <img 
                               src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.creatorName}`}
                               alt={creator.creatorName}
-                              className="h-8 w-8 rounded-full"
+                              className="h-8 w-8 rounded-full bg-[#1A2747] p-0.5"
                             />
                           </div>
                           <div>
                             <div className="font-medium">{creator.creatorName}</div>
-                            <div className="text-sm text-gray-400">${creator.symbol}</div>
+                            <div className="text-sm text-[#8A9CCC]">${creator.symbol}</div>
                           </div>
                           <div className="ml-auto text-right">
                             <div className="font-medium">${creator.currentPrice.toFixed(2)}</div>

@@ -8,9 +8,9 @@ interface LayoutShellProps {
 
 export function LayoutShell({ children }: LayoutShellProps) {
   return (
-    <div className="flex min-h-screen bg-[#0B0F1A] text-white">
+    <div className="flex min-h-screen bg-[#0A0E17] text-white">
       <Sidebar />
-      <div className="flex-1 p-3 md:p-4">
+      <div className="flex-1 overflow-hidden flex flex-col">
         {children}
       </div>
     </div>
