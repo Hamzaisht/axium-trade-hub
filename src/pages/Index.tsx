@@ -24,7 +24,7 @@ const Index = () => {
   
   return (
     <div className={cn(
-      "min-h-screen bg-white transition-opacity duration-500",
+      "min-h-screen bg-axium-dark-bg text-white transition-opacity duration-500",
       isLoaded ? "opacity-100" : "opacity-0"
     )}>
       <Navbar />
