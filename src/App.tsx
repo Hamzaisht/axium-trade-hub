@@ -38,11 +38,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <TradingProvider>
-            <IPOProvider>
-              <UserActivityProvider>
-                <Router>
+        <Router>
+          <AuthProvider>
+            <TradingProvider>
+              <IPOProvider>
+                <UserActivityProvider>
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/index" element={<Index />} />
@@ -56,12 +56,12 @@ function App() {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
-                </Router>
-                <Toaster position="top-right" />
-              </UserActivityProvider>
-            </IPOProvider>
-          </TradingProvider>
-        </AuthProvider>
+                  <Toaster position="top-right" />
+                </UserActivityProvider>
+              </IPOProvider>
+            </TradingProvider>
+          </AuthProvider>
+        </Router>
       </ThemeProvider>
     </QueryClientProvider>
   );
