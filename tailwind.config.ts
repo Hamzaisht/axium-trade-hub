@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -62,31 +63,31 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom Axium colors
+				// Custom Axium colors - use RGB format to enable opacity modifiers
 				axium: {
-					blue: 'var(--axium-blue)',
-					'blue-light': 'var(--axium-blue-light)',
-					'blue-dark': 'var(--axium-blue-dark)',
-					'dark-bg': 'var(--axium-dark-bg)',
-					'neon-blue': 'var(--axium-neon-blue)',
-					'neon-gold': 'var(--axium-neon-gold)',
-					'neon-mint': 'var(--axium-neon-mint)',
+					blue: 'rgb(var(--axium-blue-rgb) / <alpha-value>)',
+					'blue-light': 'rgb(var(--axium-blue-light-rgb) / <alpha-value>)',
+					'blue-dark': 'rgb(var(--axium-blue-dark-rgb) / <alpha-value>)',
+					'dark-bg': 'rgb(var(--axium-dark-bg-rgb) / <alpha-value>)',
+					'neon-blue': 'rgb(var(--axium-neon-blue-rgb) / <alpha-value>)',
+					'neon-gold': 'rgb(var(--axium-neon-gold-rgb) / <alpha-value>)',
+					'neon-mint': 'rgb(var(--axium-neon-mint-rgb) / <alpha-value>)',
 					gray: {
-						100: 'var(--axium-gray-100)',
-						200: 'var(--axium-gray-200)',
-						300: 'var(--axium-gray-300)',
-						400: 'var(--axium-gray-400)',
-						500: 'var(--axium-gray-500)',
-						600: 'var(--axium-gray-600)',
-						700: 'var(--axium-gray-700)',
-						800: 'var(--axium-gray-800)',
-						900: 'var(--axium-gray-900)',
+						100: 'rgb(var(--axium-gray-100-rgb) / <alpha-value>)',
+						200: 'rgb(var(--axium-gray-200-rgb) / <alpha-value>)',
+						300: 'rgb(var(--axium-gray-300-rgb) / <alpha-value>)',
+						400: 'rgb(var(--axium-gray-400-rgb) / <alpha-value>)',
+						500: 'rgb(var(--axium-gray-500-rgb) / <alpha-value>)',
+						600: 'rgb(var(--axium-gray-600-rgb) / <alpha-value>)',
+						700: 'rgb(var(--axium-gray-700-rgb) / <alpha-value>)',
+						800: 'rgb(var(--axium-gray-800-rgb) / <alpha-value>)',
+						900: 'rgb(var(--axium-gray-900-rgb) / <alpha-value>)',
 					},
-					'success': 'var(--axium-success)',
-					'warning': 'var(--axium-warning)',
-					'error': 'var(--axium-error)',
-					'positive': 'var(--axium-positive)',
-					'negative': 'var(--axium-negative)',
+					'success': 'rgb(var(--axium-success-rgb) / <alpha-value>)',
+					'warning': 'rgb(var(--axium-warning-rgb) / <alpha-value>)',
+					'error': 'rgb(var(--axium-error-rgb) / <alpha-value>)',
+					'positive': 'rgb(var(--axium-positive-rgb) / <alpha-value>)',
+					'negative': 'rgb(var(--axium-negative-rgb) / <alpha-value>)',
 				}
 			},
 			borderRadius: {

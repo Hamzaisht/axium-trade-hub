@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -38,28 +37,49 @@
 
     /* Axium Custom Colors - Light Mode */
     --axium-blue: #0070f3;
+    --axium-blue-rgb: 0 112 243;
     --axium-blue-light: #3B82F6;
+    --axium-blue-light-rgb: 59 130 246;
     --axium-blue-dark: #1E3A8A;
+    --axium-blue-dark-rgb: 30 58 138;
     --axium-dark-bg: #F7F8FA;
+    --axium-dark-bg-rgb: 247 248 250;
     --axium-neon-blue: #0070f3;
+    --axium-neon-blue-rgb: 0 112 243;
     --axium-neon-gold: #111111;
+    --axium-neon-gold-rgb: 17 17 17;
     --axium-neon-mint: #A855F7;
+    --axium-neon-mint-rgb: 168 85 247;
 
     --axium-gray-100: #F8F9FA;
+    --axium-gray-100-rgb: 248 249 250;
     --axium-gray-200: #E9ECEF;
+    --axium-gray-200-rgb: 233 236 239;
     --axium-gray-300: #DEE2E6;
+    --axium-gray-300-rgb: 222 226 230;
     --axium-gray-400: #CED4DA;
+    --axium-gray-400-rgb: 206 212 218;
     --axium-gray-500: #ADB5BD;
+    --axium-gray-500-rgb: 173 181 189;
     --axium-gray-600: #6C757D;
+    --axium-gray-600-rgb: 108 117 125;
     --axium-gray-700: #495057;
+    --axium-gray-700-rgb: 73 80 87;
     --axium-gray-800: #343A40;
+    --axium-gray-800-rgb: 52 58 64;
     --axium-gray-900: #212529;
+    --axium-gray-900-rgb: 33 37 41;
 
     --axium-success: #10B981;
+    --axium-success-rgb: 16 185 129;
     --axium-warning: #F59E0B;
+    --axium-warning-rgb: 245 158 11;
     --axium-error: #EF4444;
+    --axium-error-rgb: 239 68 68;
     --axium-positive: #22C55E;
+    --axium-positive-rgb: 34 197 94;
     --axium-negative: #F43F5E;
+    --axium-negative-rgb: 244 63 94;
 
     /* Shadows - Light Mode */
     --shadow-glass: 0 0 20px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.1);
@@ -105,28 +125,49 @@
 
     /* Axium Custom Colors - Dark Mode - Geek Art Studio Inspired */
     --axium-blue: #38BDF8;
+    --axium-blue-rgb: 56 189 248;
     --axium-blue-light: #60A5FA;
+    --axium-blue-light-rgb: 96 165 250;
     --axium-blue-dark: #0A0C14;
+    --axium-blue-dark-rgb: 10 12 20;
     --axium-dark-bg: #070B16;
+    --axium-dark-bg-rgb: 7 11 22;
     --axium-neon-blue: #38BDF8;
+    --axium-neon-blue-rgb: 56 189 248;
     --axium-neon-gold: #FFD700;
+    --axium-neon-gold-rgb: 255 215 0;
     --axium-neon-mint: #00FFD0;
+    --axium-neon-mint-rgb: 0 255 208;
 
     --axium-gray-100: #F8F9FA;
+    --axium-gray-100-rgb: 248 249 250;
     --axium-gray-200: #E9ECEF;
+    --axium-gray-200-rgb: 233 236 239;
     --axium-gray-300: #DEE2E6;
+    --axium-gray-300-rgb: 222 226 230;
     --axium-gray-400: #CED4DA;
+    --axium-gray-400-rgb: 206 212 218;
     --axium-gray-500: #ADB5BD;
+    --axium-gray-500-rgb: 173 181 189;
     --axium-gray-600: #6C757D;
+    --axium-gray-600-rgb: 108 117 125;
     --axium-gray-700: #495057;
+    --axium-gray-700-rgb: 73 80 87;
     --axium-gray-800: #12151E;
+    --axium-gray-800-rgb: 18 21 30;
     --axium-gray-900: #070B16;
+    --axium-gray-900-rgb: 7 11 22;
 
     --axium-success: #10B981;
+    --axium-success-rgb: 16 185 129;
     --axium-warning: #F59E0B;
+    --axium-warning-rgb: 245 158 11;
     --axium-error: #EF4444;
+    --axium-error-rgb: 239 68 68;
     --axium-positive: #22C55E;
+    --axium-positive-rgb: 34 197 94;
     --axium-negative: #F43F5E;
+    --axium-negative-rgb: 244 63 94;
 
     /* Shadows - Dark Mode - Enhanced Glow Effects */
     --shadow-glass: 0 0 20px rgba(0, 0, 0, 0.4), 0 0 4px rgba(0, 0, 0, 0.5);
@@ -176,7 +217,29 @@
 }
 
 @layer components {
-  /* ... keep existing code (glass-card, glass-card-dark, premium-card, text-balance, text-gradient-blue) */
+  /* Glass card effect */
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md rounded-lg border border-axium-gray-200/50 shadow-glass transition-all duration-300;
+  }
+  
+  .glass-card-dark {
+    @apply bg-axium-gray-800/70 backdrop-blur-md border border-axium-gray-700/30 shadow-glass dark:bg-black/40 dark:border-axium-gray-700/40 dark:shadow-glass-blue;
+  }
+  
+  /* Premium card with neon border */
+  .premium-card {
+    @apply rounded-lg p-6 neon-border transition-all duration-300 hover:shadow-lg;
+  }
+  
+  /* Text balance utility */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Gradient text utility */
+  .text-gradient-blue {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-axium-neon-blue to-axium-neon-mint;
+  }
   
   .button-primary {
     @apply bg-axium-blue text-white hover:bg-axium-blue/90 rounded-lg px-4 py-2 transition-all duration-300 shadow-button hover:shadow-button-hover dark:bg-axium-neon-blue dark:hover:bg-axium-neon-blue/90 dark:shadow-neon-blue;
@@ -228,11 +291,45 @@
     @apply border border-axium-neon-mint/50 dark:border-axium-neon-mint/70 shadow-neon-mint dark:shadow-[0_0_10px_rgba(0,255,208,0.4)];
   }
   
-  /* NASDAQ/Bloomberg style elements - Enhanced for Geek Studio Dark Mode */
-  /* ... keep existing code (ticker-item, terminal-header, data-row, table-header) */
+  /* Ticker item */
+  .ticker-item {
+    @apply px-4 py-2 rounded-md bg-axium-gray-100/80 dark:bg-axium-gray-800/80 shadow-sm border border-axium-gray-200 dark:border-axium-gray-700;
+  }
   
-  /* Futuristic UI elements - Enhanced for Geek Studio Dark Mode */
-  /* ... keep existing code (future-panel, future-input, future-button, future-card) */
+  /* Terminal header */
+  .terminal-header {
+    @apply flex items-center justify-between bg-axium-gray-800 text-axium-gray-400 px-4 py-2 rounded-t-md border-b border-axium-gray-700;
+  }
+  
+  /* Data row */
+  .data-row {
+    @apply flex items-center justify-between px-4 py-3 border-b border-axium-gray-200 dark:border-axium-gray-700;
+  }
+  
+  /* Table header */
+  .table-header {
+    @apply px-4 py-3 bg-axium-gray-100 text-left text-xs font-medium text-axium-gray-500 uppercase tracking-wider dark:bg-axium-gray-800 dark:text-axium-gray-400;
+  }
+  
+  /* Future panel */
+  .future-panel {
+    @apply bg-axium-gray-900 border border-axium-gray-700 rounded-md p-4 shadow-md;
+  }
+  
+  /* Future input */
+  .future-input {
+    @apply bg-axium-gray-800 text-axium-gray-300 border border-axium-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-axium-blue;
+  }
+  
+  /* Future button */
+  .future-button {
+    @apply bg-axium-blue text-white rounded-md px-4 py-2 hover:bg-axium-blue/90 transition-colors duration-300;
+  }
+  
+  /* Future card */
+  .future-card {
+    @apply bg-axium-gray-800 border border-axium-gray-700 rounded-md p-4 shadow-lg;
+  }
 
   /* Geek Art Studio Dark Mode Special Effects */
   .cyberpunk-grid {
@@ -401,239 +498,4 @@
   
   @keyframes flash-red {
     0%, 100% { background-color: transparent; }
-    50% { background-color: rgba(244, 63, 94, 0.2); }
-  }
-  
-  /* New animations for MarketFeed */
-  .animate-slide-left {
-    animation: slide-in-left 0.4s ease-out;
-  }
-  
-  @keyframes slide-in-left {
-    0% {
-      transform: translateX(-10px);
-      opacity: 0;
-    }
-    100% {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-  
-  .animate-float {
-    animation: float 2s ease-in-out;
-  }
-  
-  @keyframes float {
-    0% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-3px);
-    }
-    100% {
-      transform: translateY(0px);
-    }
-  }
-  
-  .animate-pulse-subtle {
-    animation: pulse-subtle 2s infinite;
-  }
-  
-  @keyframes pulse-subtle {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-    }
-  }
-  
-  /* Glassmorphism cursor effect */
-  .cursor-glow {
-    @apply relative;
-  }
-  
-  .cursor-glow::after {
-    content: '';
-    position: absolute;
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.3) 0%, rgba(56, 189, 248, 0) 70%);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
-  
-  .cursor-glow:hover::after {
-    opacity: 1;
-  }
-  
-  /* Theme transition effect */
-  .theme-transition {
-    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
-  }
-  
-  /* New Geek Art Studio Dark Mode Animations */
-  .dark-pulse {
-    animation: dark-pulse 4s infinite;
-  }
-  
-  @keyframes dark-pulse {
-    0%, 100% {
-      box-shadow: 0 0 5px rgba(0, 255, 208, 0.3);
-    }
-    50% {
-      box-shadow: 0 0 20px rgba(0, 255, 208, 0.6);
-    }
-  }
-  
-  .data-flow {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .data-flow::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -75%;
-    z-index: 2;
-    display: block;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(to right, rgba(56, 189, 248, 0) 0%, rgba(56, 189, 248, 0.3) 100%);
-    transform: skewX(-25deg);
-    animation: data-shine 6s infinite;
-  }
-  
-  @keyframes data-shine {
-    0% {
-      left: -75%;
-    }
-    20% {
-      left: 125%;
-    }
-    100% {
-      left: 125%;
-    }
-  }
-
-  /* New cyberpunk-inspired animations */
-  .cyber-flicker {
-    animation: flicker 5s linear infinite;
-  }
-
-  @keyframes flicker {
-    0%, 9.999%, 15%, 19.999%, 22%, 31.999%, 34%, 39.999%, 44%, 100% {
-      opacity: 0.99;
-      text-shadow: 0 0 5px rgba(56, 189, 248, 0.6), 0 0 10px rgba(56, 189, 248, 0.4), 0 0 15px rgba(56, 189, 248, 0.2);
-    }
-    10%, 14.999%, 20%, 21.999%, 32%, 33.999%, 40%, 43.999% {
-      opacity: 0.4;
-      text-shadow: none;
-    }
-  }
-
-  .cyber-glitch {
-    animation: glitch 3s steps(1) infinite;
-  }
-
-  @keyframes glitch-skew {
-    0% { transform: skew(0deg); }
-    20% { transform: skew(5deg); }
-    25% { transform: skew(-5deg); }
-    30% { transform: skew(0deg); }
-    100% { transform: skew(0deg); }
-  }
-
-  .cyber-loading::after {
-    content: "...";
-    display: inline-block;
-    animation: dots 1.5s steps(4, end) infinite;
-    width: 1.25em;
-    text-align: left;
-  }
-
-  @keyframes dots {
-    0%, 20% { content: "."; }
-    40% { content: ".."; }
-    60% { content: "..."; }
-    90%, 100% { content: ""; }
-  }
-
-  .cyber-scan {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .cyber-scan::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 15px;
-    background: linear-gradient(to bottom, 
-      rgba(56, 189, 248, 0) 0%,
-      rgba(56, 189, 248, 0.3) 50%,
-      rgba(56, 189, 248, 0) 100%
-    );
-    animation: cyber-scan 3s ease-in-out infinite;
-  }
-
-  @keyframes cyber-scan {
-    0% { top: -15px; }
-    100% { top: 100%; }
-  }
-
-  .digital-noise {
-    position: relative;
-  }
-
-  .digital-noise::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.1'/%3E%3C/svg%3E");
-    opacity: 0.05;
-    pointer-events: none;
-    z-index: 100;
-  }
-
-  .power-button {
-    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
-    animation: power-pulse 2s infinite;
-  }
-
-  @keyframes power-pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
-    }
-    70% {
-      box-shadow: 0 0 0 10px rgba(56, 189, 248, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
-    }
-  }
-
-  .cyber-typing::after {
-    content: "|";
-    animation: blink 1s infinite;
-  }
-
-  .cyber-breathe {
-    animation: breathe 4s ease-in-out infinite;
-  }
-
-  @keyframes breathe {
-    0%, 100% {
-      box-shadow: 0 0 10px 0 rgba(56, 189, 248, 0.5);
-    }
-    50% {
-      box-shadow: 0 0 20px 5px rgba(56, 189, 248, 0.8);
-    }
-  }
-}
+    50% { background-color: rgba(244, 63, 94, 0.2);
