@@ -17,10 +17,15 @@ export const PremiumScene = ({ scrollY, onButtonPress }: PremiumSceneProps) => {
   useEffect(() => {
     try {
       const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      const gl = canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      
       if (!gl) {
         console.warn('WebGL not supported, using fallback background');
         setCanvasLoaded(false);
+      } else {
+        // WebGL is supported, check for key capabilities
+        const extensions = gl.getSupportedExtensions();
+        console.log("WebGL supported with extensions:", extensions);
       }
     } catch (e) {
       console.error('Error checking WebGL support:', e);
@@ -32,7 +37,7 @@ export const PremiumScene = ({ scrollY, onButtonPress }: PremiumSceneProps) => {
   if (!canvasLoaded) {
     return (
       <div className="w-full h-full bg-gradient-to-b from-[#0A0E17] via-[#0D1424] to-[#0A0E17]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.1),transparent_70%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.2),transparent_70%)]"></div>
       </div>
     );
   }
@@ -44,28 +49,44 @@ export const PremiumScene = ({ scrollY, onButtonPress }: PremiumSceneProps) => {
           antialias: true,
           alpha: true,
           powerPreference: 'high-performance',
-          preserveDrawingBuffer: true // Helps with some rendering issues
+          preserveDrawingBuffer: true,
+          failIfMajorPerformanceCaveat: false, // Don't fail on low-end devices
+          premultipliedAlpha: false, // Better for transparent elements
         }}
-        dpr={[1, 2]} // Responsive to device pixel ratio
-        style={{ background: '#0A0E17', display: 'block' }}
-        shadows
+        dpr={[1, 1.5]} // Lower max DPR for better performance
+        style={{ 
+          background: 'transparent',
+          display: 'block',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: -5
+        }}
+        shadows={false} // Disable shadows for performance
+        onCreated={({ gl }) => {
+          // Set clear color with alpha=0 for transparency
+          gl.setClearColor(0x0A0E17, 0);
+          console.log("Three.js Canvas created successfully");
+        }}
       >
         {/* Enhanced lighting for better visibility */}
-        <ambientLight intensity={2.0} />
-        <directionalLight position={[5, 5, 5]} intensity={3.0} color="#ffffff" />
-        <pointLight position={[-3, 3, 3]} intensity={3.0} color="#D4AF37" />
+        <ambientLight intensity={3.0} />
+        <directionalLight position={[5, 5, 5]} intensity={5.0} color="#ffffff" />
+        <pointLight position={[-3, 3, 3]} intensity={5.0} color="#D4AF37" />
         <spotLight 
           position={[0, 5, 5]} 
-          angle={0.4} 
-          penumbra={0.8} 
-          intensity={5} 
+          angle={0.8} 
+          penumbra={0.5} 
+          intensity={8} 
           color="#D4AF37" 
-          castShadow 
+          castShadow={false}
         />
-        <hemisphereLight intensity={1.0} color="#D4AF37" groundColor="#0A0E17" />
+        <hemisphereLight intensity={2.0} color="#D4AF37" groundColor="#0A0E17" />
         
         {/* Camera setup with wider field of view */}
-        <PerspectiveCamera makeDefault position={[0, 0, 5.5]} fov={60} />
+        <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={70} />
         
         {/* Main 3D component */}
         <PremiumHead scrollY={scrollY} onButtonPress={onButtonPress} />
@@ -74,15 +95,15 @@ export const PremiumScene = ({ scrollY, onButtonPress }: PremiumSceneProps) => {
         <OrbitControls 
           enableZoom={false} 
           enablePan={false} 
-          rotateSpeed={0.2} 
-          minPolarAngle={Math.PI / 2 - 0.3}
-          maxPolarAngle={Math.PI / 2 + 0.3}
+          rotateSpeed={0.1} 
+          minPolarAngle={Math.PI / 2 - 0.2}
+          maxPolarAngle={Math.PI / 2 + 0.2}
           enableRotate={false}
         />
       </Canvas>
       
-      {/* Gradient overlay - make it more subtle to see the 3D model better */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0A0E17]/5 via-transparent to-[#0A0E17]/70 pointer-events-none"></div>
+      {/* Very subtle gradient overlay, more transparent than before */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0A0E17]/40 pointer-events-none"></div>
     </div>
   );
 };

@@ -53,9 +53,10 @@ const GoldVeins = ({ pulseEffect }: GoldVeinsProps) => {
     }
   });
 
+  // Use simpler materials for better performance
   return (
     <group ref={veinsRef}>
-      {/* Create more prominent gold vein patterns with higher intensity */}
+      {/* Create more prominent gold vein patterns with basic materials */}
       {[...Array(50)].map((_, i) => (
         <mesh key={i} position={[
           (Math.random() - 0.5) * 2.4,
@@ -66,18 +67,14 @@ const GoldVeins = ({ pulseEffect }: GoldVeinsProps) => {
           Math.random() * Math.PI,
           Math.random() * Math.PI
         ]}>
-          <boxGeometry args={[0.1, 0.1, Math.random() * 1.2 + 0.3]} />
-          <meshStandardMaterial 
+          <boxGeometry args={[0.15, 0.15, Math.random() * 1.5 + 0.5]} />
+          <meshBasicMaterial 
             color="#D4AF37" 
-            emissive="#D4AF37"
-            emissiveIntensity={2.0}
-            metalness={1}
-            roughness={0.2}
           />
         </mesh>
       ))}
       
-      {/* Add more complex patterns with increased visibility */}
+      {/* Add more complex patterns with basic materials */}
       {[...Array(25)].map((_, i) => (
         <mesh key={`curve-${i}`} position={[
           (Math.random() - 0.5) * 2.4,
@@ -88,13 +85,23 @@ const GoldVeins = ({ pulseEffect }: GoldVeinsProps) => {
           Math.random() * Math.PI,
           Math.random() * Math.PI
         ]}>
-          <torusGeometry args={[0.4, 0.05, 8, 16, Math.PI * (Math.random() * 0.5 + 0.5)]} />
-          <meshStandardMaterial 
+          <torusGeometry args={[0.4, 0.08, 8, 16, Math.PI * (Math.random() * 0.5 + 0.5)]} />
+          <meshBasicMaterial 
             color="#D4AF37" 
-            emissive="#D4AF37"
-            emissiveIntensity={2.0}
-            metalness={1}
-            roughness={0.2}
+          />
+        </mesh>
+      ))}
+      
+      {/* Add additional gold highlights for better visibility */}
+      {[...Array(30)].map((_, i) => (
+        <mesh key={`highlight-${i}`} position={[
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 0.8 + 1.6
+        ]}>
+          <sphereGeometry args={[0.06, 8, 8]} />
+          <meshBasicMaterial 
+            color="#FFD700" 
           />
         </mesh>
       ))}

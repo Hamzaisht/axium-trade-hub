@@ -18,46 +18,46 @@ export const BlackHead = ({ pulseEffect, mousePosition, hover }: BlackHeadProps)
       // More pronounced head rotation based on mouse movement
       headRef.current.rotation.y = THREE.MathUtils.lerp(
         headRef.current.rotation.y,
-        (mousePosition.x * 0.4),
+        (mousePosition.x * 0.5),
         0.05
       );
       headRef.current.rotation.x = THREE.MathUtils.lerp(
         headRef.current.rotation.x,
-        (mousePosition.y * 0.2),
+        (mousePosition.y * 0.3),
         0.05
       );
       
-      // Enhanced pulse effect
+      // Enhanced pulse effect with slower lerp for smoother transitions
       if (pulseEffect) {
         headRef.current.scale.x = THREE.MathUtils.lerp(
           headRef.current.scale.x,
-          1.08,
-          0.1
+          1.1,
+          0.08
         );
         headRef.current.scale.y = THREE.MathUtils.lerp(
           headRef.current.scale.y,
-          1.08,
-          0.1
+          1.1,
+          0.08
         );
         headRef.current.scale.z = THREE.MathUtils.lerp(
           headRef.current.scale.z,
-          1.08,
-          0.1
+          1.1,
+          0.08
         );
       } else {
         headRef.current.scale.x = THREE.MathUtils.lerp(
           headRef.current.scale.x,
-          1.0,
+          hover ? 1.05 : 1.0,
           0.05
         );
         headRef.current.scale.y = THREE.MathUtils.lerp(
           headRef.current.scale.y,
-          1.0,
+          hover ? 1.05 : 1.0,
           0.05
         );
         headRef.current.scale.z = THREE.MathUtils.lerp(
           headRef.current.scale.z,
-          1.0,
+          hover ? 1.05 : 1.0,
           0.05
         );
       }
@@ -66,27 +66,29 @@ export const BlackHead = ({ pulseEffect, mousePosition, hover }: BlackHeadProps)
 
   return (
     <group ref={headRef}>
-      {/* Head shape - enhanced with better material properties */}
+      {/* Head shape - simplified material for better performance */}
       <mesh>
-        <sphereGeometry args={[1.5, 64, 64]} />
-        <meshStandardMaterial 
+        <sphereGeometry args={[1.5, 32, 32]} />
+        <meshBasicMaterial 
           color="#111111"
-          metalness={0.9}
-          roughness={0.1}
-          emissive="#222222"
-          emissiveIntensity={0.5}
         />
       </mesh>
       
-      {/* Neck shape */}
+      {/* Add a glow effect layer around the head */}
+      <mesh>
+        <sphereGeometry args={[1.55, 32, 32]} />
+        <meshBasicMaterial 
+          color="#333333"
+          transparent={true}
+          opacity={0.3}
+        />
+      </mesh>
+      
+      {/* Neck shape - simplified material */}
       <mesh position={[0, -1.8, 0]}>
-        <cylinderGeometry args={[0.6, 0.8, 1.2, 32]} />
-        <meshStandardMaterial 
+        <cylinderGeometry args={[0.6, 0.8, 1.2, 24]} />
+        <meshBasicMaterial 
           color="#111111"
-          metalness={0.9}
-          roughness={0.1}
-          emissive="#222222"
-          emissiveIntensity={0.5}
         />
       </mesh>
     </group>

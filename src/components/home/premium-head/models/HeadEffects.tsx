@@ -15,28 +15,18 @@ const HeadEffects = ({ pulseEffect }: HeadEffectsProps) => {
     if (effectsRef.current) {
       effectsRef.current.rotation.y += delta * 0.1;
       
+      // Make the rings pulse in size for more visual interest
       effectsRef.current.children.forEach((child, i) => {
         if (child instanceof THREE.Mesh) {
           // Make particles float around with more movement
-          child.position.y = Math.sin(state.clock.elapsedTime * 0.5 + i) * 0.3;
+          if (i < 30) { // First 30 children are particles
+            child.position.y = Math.sin(state.clock.elapsedTime * 0.5 + i) * 0.3;
+          }
           
-          // Increase intensity when pulsing - higher values for better visibility
-          if (pulseEffect) {
-            if (child.material instanceof THREE.MeshStandardMaterial) {
-              child.material.emissiveIntensity = THREE.MathUtils.lerp(
-                child.material.emissiveIntensity,
-                3.0,
-                0.1
-              );
-            }
-          } else {
-            if (child.material instanceof THREE.MeshStandardMaterial) {
-              child.material.emissiveIntensity = THREE.MathUtils.lerp(
-                child.material.emissiveIntensity,
-                1.8,
-                0.05
-              );
-            }
+          // Apply scale pulse to ring elements (last two children)
+          if (i >= 30) {
+            const scaleFactor = Math.sin(state.clock.elapsedTime * 0.5) * 0.05 + 1;
+            child.scale.set(scaleFactor, scaleFactor, 1);
           }
         }
       });
@@ -45,47 +35,41 @@ const HeadEffects = ({ pulseEffect }: HeadEffectsProps) => {
 
   return (
     <group ref={effectsRef}>
-      {/* Ambient particles with increased size and brightness */}
+      {/* Ambient particles with basic materials for performance */}
       {[...Array(30)].map((_, i) => (
         <mesh key={i} position={[
-          (Math.random() - 0.5) * 4.5,
-          (Math.random() - 0.5) * 4.5,
-          (Math.random() - 0.5) * 4.5
+          (Math.random() - 0.5) * 5,
+          (Math.random() - 0.5) * 5,
+          (Math.random() - 0.5) * 5
         ]}>
-          <sphereGeometry args={[0.1, 8, 8]} />
-          <meshStandardMaterial 
-            color="#D4AF37" 
-            emissive="#D4AF37"
-            emissiveIntensity={2.0}
-            metalness={1}
-            roughness={0.2}
+          <sphereGeometry args={[0.15, 8, 8]} />
+          <meshBasicMaterial 
+            color="#FFD700" 
             transparent={true}
             opacity={0.9}
           />
         </mesh>
       ))}
       
-      {/* Multiple glowing halo effects for more visibility */}
+      {/* Larger outer ring for visibility */}
       <mesh position={[0, 0, 0]}>
-        <ringGeometry args={[2.0, 2.2, 32]} />
-        <meshStandardMaterial 
+        <ringGeometry args={[2.2, 2.4, 32]} />
+        <meshBasicMaterial 
           color="#D4AF37" 
-          emissive="#D4AF37"
-          emissiveIntensity={2.0}
           transparent={true}
           opacity={0.8}
+          side={THREE.DoubleSide}
         />
       </mesh>
       
-      {/* Add a second inner ring for more dramatic effect */}
+      {/* Inner ring */}
       <mesh position={[0, 0, 0]}>
-        <ringGeometry args={[1.7, 1.8, 32]} />
-        <meshStandardMaterial 
-          color="#D4AF37" 
-          emissive="#D4AF37"
-          emissiveIntensity={2.5}
+        <ringGeometry args={[1.8, 1.9, 32]} />
+        <meshBasicMaterial 
+          color="#FFD700" 
           transparent={true}
-          opacity={0.6}
+          opacity={0.7}
+          side={THREE.DoubleSide}
         />
       </mesh>
     </group>

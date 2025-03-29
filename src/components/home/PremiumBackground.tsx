@@ -8,6 +8,8 @@ export const PremiumBackground: React.FC = () => {
   const [buttonPress, setButtonPress] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const bgRef = useRef<HTMLDivElement>(null);
+  const recoveryAttempts = useRef(0);
+  const maxRecoveryAttempts = 5;
   
   // Track scroll position for interactivity
   useEffect(() => {
@@ -37,37 +39,64 @@ export const PremiumBackground: React.FC = () => {
     };
   }, []);
 
-  // Check if canvas is visible and handle WebGL issues
+  // Check if canvas is visible and handle WebGL issues with improved recovery
   useEffect(() => {
-    // Forcibly reset the component if it fails to render
-    const timer = setTimeout(() => {
-      if (bgRef.current && !isVisible) {
+    if (!isVisible && recoveryAttempts.current < maxRecoveryAttempts) {
+      const timer = setTimeout(() => {
         setIsVisible(true);
-        console.log("Attempting to recover PremiumBackground");
-      }
-    }, 2000);
+        recoveryAttempts.current += 1;
+        console.log(`Attempting to recover PremiumBackground (Attempt ${recoveryAttempts.current}/${maxRecoveryAttempts})`);
+      }, 500); // Faster recovery
 
-    return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
+    }
   }, [isVisible]);
 
-  // Handle WebGL context loss
+  // Reset recovery attempts periodically
   useEffect(() => {
-    const handleContextLost = () => {
-      console.log("WebGL context lost - attempting recovery");
-      setIsVisible(false);
-      setTimeout(() => setIsVisible(true), 1000);
-    };
-
-    window.addEventListener('webglcontextlost', handleContextLost, false);
-    return () => window.removeEventListener('webglcontextlost', handleContextLost);
+    const resetTimer = setInterval(() => {
+      recoveryAttempts.current = 0;
+    }, 60000); // Reset recovery attempts counter every minute
+    
+    return () => clearInterval(resetTimer);
   }, []);
 
-  // The PremiumScene component is rendered with a fixed position, full-screen
+  // Handle WebGL context loss with better recovery
+  useEffect(() => {
+    const handleContextLost = (e: Event) => {
+      e.preventDefault(); // Prevent default browser handling
+      console.log("WebGL context lost - attempting immediate recovery");
+      setIsVisible(false);
+      
+      // Force immediate recovery attempt
+      setTimeout(() => {
+        setIsVisible(true);
+        console.log("WebGL context recovery attempt initiated");
+      }, 100);
+    };
+    
+    // Use canvas element directly for more reliable context handling
+    const canvasElements = document.querySelectorAll('canvas');
+    canvasElements.forEach(canvas => {
+      canvas.addEventListener('webglcontextlost', handleContextLost, false);
+    });
+    
+    return () => {
+      canvasElements.forEach(canvas => {
+        canvas.removeEventListener('webglcontextlost', handleContextLost);
+      });
+    };
+  }, []);
+
+  // The PremiumScene component is rendered with a fixed position, full-screen with higher z-index
   return (
     <div 
       ref={bgRef} 
       className="fixed inset-0 w-full h-full -z-10 opacity-100"
-      style={{ pointerEvents: 'none' }}
+      style={{ 
+        pointerEvents: 'none',
+        willChange: 'transform', // Optimize performance
+      }}
     >
       {isVisible && <PremiumScene scrollY={scrollY} onButtonPress={buttonPress} />}
     </div>
