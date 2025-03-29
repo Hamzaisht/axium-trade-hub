@@ -14,7 +14,7 @@ export const OrderInputs = ({ price, quantity, orderType, onChange }: OrderInput
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="price">Price ($)</Label>
+        <Label htmlFor="price" className="text-[#8A9CCC]">Price ($)</Label>
         <Input
           id="price"
           name="price"
@@ -25,11 +25,12 @@ export const OrderInputs = ({ price, quantity, orderType, onChange }: OrderInput
           onChange={onChange}
           disabled={orderType === "market"}
           required
+          className="border-[#1E375F] bg-[#0D1424] text-white placeholder:text-[#4A5878] focus-visible:ring-[#3676FF]"
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="quantity">Quantity</Label>
+        <Label htmlFor="quantity" className="text-[#8A9CCC]">Quantity</Label>
         <Input
           id="quantity"
           name="quantity"
@@ -39,6 +40,7 @@ export const OrderInputs = ({ price, quantity, orderType, onChange }: OrderInput
           value={quantity}
           onChange={onChange}
           required
+          className="border-[#1E375F] bg-[#0D1424] text-white placeholder:text-[#4A5878] focus-visible:ring-[#3676FF]"
         />
       </div>
     </>
