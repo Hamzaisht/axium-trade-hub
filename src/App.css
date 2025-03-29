@@ -2,20 +2,21 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+@import './styles/design-system.css';
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  color: #333;
+  font-family: 'Inter', 'Space Grotesk', sans-serif;
+  color: #fff;
   min-height: 100vh;
 }
 
 /* Glassmorphism Cards */
 .glass-card {
-  @apply bg-white/70 backdrop-blur-md rounded-lg border border-axium-gray-200/50 shadow-glass transition-all duration-300;
+  @apply bg-white/5 backdrop-blur-md rounded-lg border border-white/10 shadow-glass transition-all duration-300;
 }
 
 /* Button Glow Effects */
@@ -87,4 +88,12 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(156, 163, 175, 0.7);
+}
+
+/* New Marble Avatar components */
+.gold-text {
+  color: #FFD700;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.8),
+               0 0 10px rgba(255, 215, 0, 0.6),
+               0 0 15px rgba(255, 215, 0, 0.4);
 }

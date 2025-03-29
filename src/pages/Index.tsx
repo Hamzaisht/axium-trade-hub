@@ -29,7 +29,7 @@ const Index = () => {
   
   return (
     <div className={cn(
-      "min-h-screen bg-[#0A0E17] text-white transition-opacity duration-1000",
+      "min-h-screen bg-axium-dark-bg text-white transition-opacity duration-1000",
       isLoaded ? "opacity-100" : "opacity-0"
     )}>
       <div className="relative h-screen w-full overflow-hidden">
@@ -43,17 +43,17 @@ const Index = () => {
               "flex flex-col justify-center z-10 transition-all duration-700 delay-300 transform",
               isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             )}>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-wide text-balance">
                 Trade <span className="gold-text">the Influence.</span>
               </h1>
               
-              <p className="text-base sm:text-lg text-zinc-400 mt-4 md:mt-6 max-w-xl">
+              <p className="text-base sm:text-lg text-zinc-400 mt-4 md:mt-6 max-w-xl tracking-wide text-balance">
                 Welcome to Axium — the world's first AI-powered exchange where creators become tradable assets.
               </p>
               
               <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-4">
                 <Button 
-                  className="bg-gradient-to-r from-[#D4AF37] to-[#B08C28] text-black hover:bg-gradient-to-r hover:from-[#E5C048] hover:to-[#C19D39] font-semibold shadow-lg hover:shadow-[#D4AF37]/30 transition-all px-6 py-6 h-auto"
+                  className="bg-gradient-to-r from-axium-gold to-[#D4AF37] text-black hover:bg-gradient-to-r hover:from-[#FFE14D] hover:to-[#D4AF37] font-semibold shadow-lg hover:shadow-gold-glow transition-all px-6 py-6 h-auto"
                   onClick={() => navigate('/creators/kol-superstar?demo=true')}
                 >
                   Try Demo
@@ -70,7 +70,7 @@ const Index = () => {
               </div>
               
               <div className="mt-12 pt-4 border-t border-zinc-800/50 text-zinc-500 text-sm">
-                <p>Trade influencers, artists, and public figures safely and securely on the blockchain.</p>
+                <p className="tracking-wide">Trade influencers, artists, and public figures safely and securely on the blockchain.</p>
               </div>
             </div>
             
@@ -91,7 +91,7 @@ const Index = () => {
               height="24" 
               viewBox="0 0 24 24" 
               fill="none" 
-              stroke="#D4AF37" 
+              stroke="#FFD700" 
               strokeWidth="2" 
               strokeLinecap="round" 
               strokeLinejoin="round"

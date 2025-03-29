@@ -64,12 +64,14 @@ export default {
 				},
 				// Custom Axium colors
 				axium: {
-					blue: '#0050FF',
-					'blue-light': '#3B82F6',
+					blue: '#38BDF8',
+					'blue-light': '#93C5FD',
 					'blue-dark': '#1E3A8A',
-					'dark-bg': '#0B0F1A',  // Added primary dark background
-					'neon-blue': '#1EAEDB', // Renamed for consistency
-					'gold': '#D4AF37', // Added gold color
+					'dark-bg': '#0B0F1A',
+					'dark-bg-alt': '#0E0F12',
+					'neon-blue': '#38BDF8',
+					'gold': '#FFD700',
+					'mint': '#00FFD0',
 					gray: {
 						100: '#F8F9FA',
 						200: '#E9ECEF',
@@ -96,11 +98,12 @@ export default {
 			boxShadow: {
 				'glass': '0 0 20px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.1)',
 				'glass-strong': '0 0 30px rgba(0, 0, 0, 0.1), 0 0 8px rgba(0, 0, 0, 0.1)',
-				'glass-blue': '0 0 20px rgba(0, 80, 255, 0.1), 0 0 4px rgba(0, 80, 255, 0.05)',
+				'glass-blue': '0 0 20px rgba(56, 189, 248, 0.1), 0 0 4px rgba(56, 189, 248, 0.05)',
 				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
 				'button-hover': '0 4px 12px rgba(0, 0, 0, 0.1)',
-				'glow': '0 0 15px rgba(30, 174, 219, 0.5)',
-				'gold-glow': '0 0 15px rgba(212, 175, 55, 0.5)',
+				'glow': '0 0 15px rgba(56, 189, 248, 0.5)',
+				'gold-glow': '0 0 15px rgba(255, 215, 0, 0.5)',
+				'mint-glow': '0 0 15px rgba(0, 255, 208, 0.5)',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -185,13 +188,13 @@ export default {
 				},
 				'glow-pulse': {
 					'0%': { 
-						boxShadow: '0 0 5px rgba(30, 174, 219, 0.5)' 
+						boxShadow: '0 0 5px rgba(56, 189, 248, 0.5)' 
 					},
 					'50%': { 
-						boxShadow: '0 0 20px rgba(30, 174, 219, 0.7)' 
+						boxShadow: '0 0 20px rgba(56, 189, 248, 0.7)' 
 					},
 					'100%': { 
-						boxShadow: '0 0 5px rgba(30, 174, 219, 0.5)' 
+						boxShadow: '0 0 5px rgba(56, 189, 248, 0.5)' 
 					}
 				},
 				'float-slow': {
@@ -212,18 +215,26 @@ export default {
 				},
 				'glow-pulse-blue': {
 					'0%, 100%': { 
-						textShadow: '0 0 5px rgba(30, 174, 219, 0.5)' 
+						textShadow: '0 0 5px rgba(56, 189, 248, 0.5)' 
 					},
 					'50%': { 
-						textShadow: '0 0 15px rgba(30, 174, 219, 0.8), 0 0 20px rgba(30, 174, 219, 0.5)' 
+						textShadow: '0 0 15px rgba(56, 189, 248, 0.8), 0 0 20px rgba(56, 189, 248, 0.5)' 
 					}
 				},
 				'glow-pulse-gold': {
 					'0%, 100%': { 
-						textShadow: '0 0 5px rgba(212, 175, 55, 0.5)' 
+						textShadow: '0 0 5px rgba(255, 215, 0, 0.5)' 
 					},
 					'50%': { 
-						textShadow: '0 0 15px rgba(212, 175, 55, 0.8), 0 0 20px rgba(212, 175, 55, 0.5)' 
+						textShadow: '0 0 15px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5)' 
+					}
+				},
+				'glow-pulse-mint': {
+					'0%, 100%': { 
+						textShadow: '0 0 5px rgba(0, 255, 208, 0.5)' 
+					},
+					'50%': { 
+						textShadow: '0 0 15px rgba(0, 255, 208, 0.8), 0 0 20px rgba(0, 255, 208, 0.5)' 
 					}
 				}
 			},
@@ -242,6 +253,7 @@ export default {
 				'rotate-slow': 'rotate-slow 20s linear infinite',
 				'glow-pulse-blue': 'glow-pulse-blue 2s infinite',
 				'glow-pulse-gold': 'glow-pulse-gold 2s infinite',
+				'glow-pulse-mint': 'glow-pulse-mint 2s infinite',
 			},
 			backdropFilter: {
 				'none': 'none',

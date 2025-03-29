@@ -6,6 +6,7 @@ import * as THREE from 'three';
 export function OracleLighting() {
   const spotLightRef = useRef<THREE.SpotLight>(null);
   const pointLightRef = useRef<THREE.PointLight>(null);
+  const goldLightRef = useRef<THREE.PointLight>(null);
   
   useFrame((state) => {
     if (spotLightRef.current) {
@@ -19,6 +20,12 @@ export function OracleLighting() {
       pointLightRef.current.position.x = Math.sin(state.clock.elapsedTime * 0.3) * 3;
       pointLightRef.current.position.z = Math.cos(state.clock.elapsedTime * 0.2) * 2;
     }
+
+    if (goldLightRef.current) {
+      // Make the gold light pulse with a different frequency
+      const goldIntensity = 0.8 + Math.sin(state.clock.elapsedTime * 0.7) * 0.3;
+      goldLightRef.current.intensity = goldIntensity;
+    }
   });
   
   return (
@@ -27,7 +34,7 @@ export function OracleLighting() {
       <ambientLight intensity={0.2} color="#ffffff" />
       
       {/* Golden ambient light */}
-      <ambientLight intensity={0.1} color="#D4AF37" />
+      <ambientLight intensity={0.15} color="#FFD700" />
       
       {/* Main directional light */}
       <directionalLight 
@@ -41,20 +48,30 @@ export function OracleLighting() {
       
       {/* Golden accent light */}
       <pointLight 
-        ref={pointLightRef}
+        ref={goldLightRef}
         position={[-3, 2, 3]} 
-        intensity={0.5} 
-        color="#D4AF37" 
-        distance={10}
+        intensity={0.8} 
+        color="#FFD700" 
+        distance={12}
         decay={2}
       />
       
       {/* Blue accent light for contrast */}
       <pointLight 
+        ref={pointLightRef}
         position={[3, -3, -5]} 
-        intensity={0.2} 
-        color="#3AA0FF" 
+        intensity={0.3} 
+        color="#38BDF8" 
         distance={10}
+        decay={2}
+      />
+
+      {/* Mint accent light for additional color */}
+      <pointLight 
+        position={[0, -4, 2]} 
+        intensity={0.2} 
+        color="#00FFD0" 
+        distance={8}
         decay={2}
       />
       

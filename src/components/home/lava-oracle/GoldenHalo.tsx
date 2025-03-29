@@ -8,13 +8,15 @@ interface GoldenHaloProps {
   scale?: number;
   intensity?: number;
   rotationSpeed?: number;
+  color?: string;
 }
 
 export function GoldenHalo({ 
   position = [0, 0, 0], 
   scale = 1, 
   intensity = 1,
-  rotationSpeed = 0.5
+  rotationSpeed = 0.5,
+  color = "#FFD700" // Default to gold, but can be customized
 }: GoldenHaloProps) {
   const haloRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
@@ -75,7 +77,7 @@ export function GoldenHalo({
       >
         <torusGeometry args={[1, 0.1, 16, 50]} />
         <meshBasicMaterial 
-          color="#D4AF37" 
+          color={color} 
           transparent
           opacity={0.7}
         />
@@ -89,7 +91,7 @@ export function GoldenHalo({
       >
         <circleGeometry args={[0.9, 32]} />
         <meshBasicMaterial 
-          color="#FFC700" 
+          color={color} 
           transparent 
           opacity={0.3}
           side={THREE.DoubleSide}
@@ -103,7 +105,7 @@ export function GoldenHalo({
         scale={scale}
       >
         <pointsMaterial 
-          color="#FFDD66" 
+          color={color === "#FFD700" ? "#FFDD66" : color} 
           size={0.05} 
           transparent 
           opacity={0.8}
