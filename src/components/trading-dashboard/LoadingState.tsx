@@ -9,9 +9,12 @@ export const LoadingState = () => {
       <DashboardShell>
         <div className="flex justify-center items-center min-h-[60vh]">
           <div className="flex flex-col items-center">
-            <Loader2 className="h-12 w-12 text-[#3AA0FF] animate-spin mb-4" />
-            <div className="text-lg font-medium text-white">Loading Trading Terminal...</div>
-            <div className="text-sm text-[#8A9CCC] mt-2">Connecting to market data</div>
+            <Loader2 className="h-14 w-14 text-axium-neon-blue animate-spin mb-4" />
+            <div className="text-xl font-medium text-white">Loading Trading Terminal...</div>
+            <div className="text-sm text-[#8A9CCC] mt-2">
+              Connecting to market data
+              <span className="animate-pulse-subtle">...</span>
+            </div>
           </div>
         </div>
       </DashboardShell>

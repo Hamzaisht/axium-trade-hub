@@ -21,9 +21,9 @@ export const OrderSummary = ({ price, quantity }: OrderSummaryProps) => {
         <span className="text-[#8A9CCC]">Fee (0.1%):</span>
         <span className="font-medium text-white">${fee.toFixed(2)}</span>
       </div>
-      <div className="flex justify-between text-base font-semibold">
+      <div className="flex justify-between text-sm font-semibold mt-3 pt-2 border-t border-[#1E375F]/50">
         <span className="text-white">Total:</span>
-        <span className="text-white">${total.toFixed(2)}</span>
+        <span className="text-axium-neon-blue">${total.toFixed(2)}</span>
       </div>
     </div>
   );

@@ -17,8 +17,11 @@ const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
   const { formData, isLoading, handleChange, handleSubmit } = useTradeForm(ipo, onSuccess);
 
   return (
-    <GlassCard className="w-full p-6 bg-[#0D1424]/80 border border-[#1E375F]/50">
-      <h2 className="text-2xl font-bold mb-6 text-white">Trade {ipo.symbol}</h2>
+    <div className="w-full">
+      <h2 className="text-2xl font-bold mb-6 text-white flex items-center">
+        <span className="mr-2">Trade</span>
+        <span className="text-axium-neon-blue">{ipo.symbol}</span>
+      </h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <OrderTypeSelector 
@@ -46,7 +49,7 @@ const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
           isLoading={isLoading}
         />
       </form>
-    </GlassCard>
+    </div>
   );
 };
 

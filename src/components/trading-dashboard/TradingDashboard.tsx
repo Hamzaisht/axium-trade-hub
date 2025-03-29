@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { GlassCard } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Briefcase, LineChart } from "lucide-react";
 import { IPO } from "@/utils/mockApi";
@@ -63,19 +63,19 @@ export const TradingDashboard = ({
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white flex items-center">
-            <LineChart className="h-6 w-6 mr-2 text-[#3AA0FF]" /> 
+            <LineChart className="h-6 w-6 mr-2 text-axium-neon-blue" /> 
             Advanced Trading
           </h1>
           <p className="text-[#8A9CCC]">Professional trading tools with institutional-grade features</p>
         </div>
         
         <div className="flex items-center space-x-3">
-          <Button className="bg-[#1A2747] hover:bg-[#243760] text-white">
+          <Button className="bg-[#1A2747] hover:bg-[#243760] text-white border border-[#1E375F]/40">
             <ArrowUpDown className="h-4 w-4 mr-2" />
             Open Positions
           </Button>
           
-          <Button className="bg-[#3AA0FF] hover:bg-[#2D7DD2] text-white">
+          <Button className="bg-axium-neon-blue hover:bg-axium-neon-blue/80 text-white shadow-[0_0_10px_rgba(30,174,219,0.3)]">
             <Briefcase className="h-4 w-4 mr-2" />
             Portfolio
           </Button>
@@ -84,7 +84,7 @@ export const TradingDashboard = ({
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <GlassCard className="p-4">
+          <GlassCard className="p-4 border-[#1E375F]/40">
             <AssetSelector 
               ipos={ipos}
               selectedIPO={selectedIPO}
@@ -92,7 +92,7 @@ export const TradingDashboard = ({
             />
           </GlassCard>
           
-          <GlassCard className="p-4">
+          <GlassCard className="p-4 border-[#1E375F]/40">
             <div className="flex justify-between items-center">
               <PriceHeader 
                 symbol={selectedIPO.symbol}
@@ -115,7 +115,7 @@ export const TradingDashboard = ({
             onToggleIndicator={onToggleIndicator}
           />
           
-          <GlassCard className="p-4">
+          <GlassCard className="p-4 border-[#1E375F]/40">
             <TradePanelSection 
               creatorId={selectedIPO.id}
               currentPrice={selectedIPO.currentPrice}
@@ -132,18 +132,18 @@ export const TradingDashboard = ({
           <MetricsGrid creatorId={selectedIPO.id} />
           
           {user && (user.role === 'admin' || user.role === 'investor') && (
-            <GlassCard className="p-4">
+            <GlassCard className="p-4 border-[#1E375F]/40">
               <InstitutionalTrading />
             </GlassCard>
           )}
           
-          <GlassCard className="p-4">
+          <GlassCard className="p-4 border-[#1E375F]/40">
             <LiquidityPoolInfo symbol={selectedIPO.symbol} />
           </GlassCard>
         </div>
         
         <div className="space-y-6">
-          <GlassCard className="p-4">
+          <GlassCard className="p-4 border-[#1E375F]/40 backdrop-blur-lg">
             {tradingLoading ? (
               <TradeFormSkeleton />
             ) : (
@@ -151,18 +151,18 @@ export const TradingDashboard = ({
             )}
           </GlassCard>
           
-          <GlassCard className="p-4">
+          <GlassCard className="p-4 border-[#1E375F]/40">
             <AdvancedOrderSection 
               symbol={selectedIPO.symbol}
               currentPrice={selectedIPO.currentPrice}
             />
           </GlassCard>
           
-          <GlassCard className="p-4">
+          <GlassCard className="p-4 border-[#1E375F]/40">
             <TradingOrders />
           </GlassCard>
           
-          <GlassCard className="p-4">
+          <GlassCard className="p-4 border-[#1E375F]/40">
             <TradingSettings />
           </GlassCard>
         </div>
