@@ -50,11 +50,11 @@ export function TabbedPanel({ creatorId }: TabbedPanelProps) {
                 >
                   <div className="flex justify-between items-start mb-1.5">
                     <Badge 
-                      variant={insight.sentiment === 'positive' ? 'success' : insight.sentiment === 'negative' ? 'destructive' : 'outline'} 
+                      variant={insight.impact === 'positive' ? 'default' : insight.impact === 'negative' ? 'destructive' : 'outline'} 
                       className="text-[10px] h-5"
                     >
-                      {insight.sentiment === 'positive' ? 'BULLISH' : 
-                       insight.sentiment === 'negative' ? 'BEARISH' : 'NEUTRAL'}
+                      {insight.impact === 'positive' ? 'BULLISH' : 
+                       insight.impact === 'negative' ? 'BEARISH' : 'NEUTRAL'}
                     </Badge>
                     <span className="text-xs text-zinc-400">
                       {format(new Date(insight.timestamp), 'MMM dd, HH:mm')}
@@ -63,10 +63,12 @@ export function TabbedPanel({ creatorId }: TabbedPanelProps) {
                   <p className="text-sm leading-snug text-zinc-100">{insight.message}</p>
                   <div className="mt-2 flex items-center justify-between">
                     <span className="text-xs text-zinc-400">
-                      AI Confidence: {insight.confidence}%
+                      AI Confidence: {insight.confidence || 85}%
                     </span>
                     <span className="text-xs font-medium text-primary">
-                      Source: {insight.source}
+                      Source: {insight.type === 'news' ? 'News' : 
+                              insight.type === 'sentiment' ? 'Sentiment' : 
+                              insight.type === 'prediction' ? 'AI Model' : 'Market Data'}
                     </span>
                   </div>
                 </div>

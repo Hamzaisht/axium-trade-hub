@@ -8,12 +8,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface DashboardShellProps {
   children: ReactNode;
+  className?: string;
 }
 
-export function DashboardShell({ children }: DashboardShellProps) {
+export function DashboardShell({ children, className = "" }: DashboardShellProps) {
   return (
     <TooltipProvider>
-      <div className="flex flex-col min-h-screen bg-zinc-900 text-white">
+      <div className={`flex flex-col min-h-screen bg-zinc-900 text-white ${className}`}>
         <div className="bg-zinc-800 border-b border-zinc-700 py-1 px-2">
           <div className="flex items-center gap-2 h-10 px-4">
             <svg width="20" height="20" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-cyan-400">
