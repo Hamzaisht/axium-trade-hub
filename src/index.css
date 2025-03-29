@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -71,11 +72,31 @@
   }
   
   .glass-card-dark {
-    @apply bg-axium-gray-800/70 backdrop-blur-md rounded-lg border border-axium-gray-700/30 shadow-glass transition-all duration-300;
+    @apply bg-axium-dark-card/80 backdrop-blur-md rounded-lg border border-axium-gray-700/30 shadow-glass transition-all duration-300;
   }
   
   .premium-card {
     @apply bg-gradient-to-b from-white/80 to-white/60 backdrop-blur-md rounded-lg border border-axium-gray-200/50 shadow-glass-strong;
+  }
+  
+  .terminal-card {
+    @apply bg-axium-dark-bg/90 backdrop-blur-md rounded-lg border border-axium-gray-700/50 shadow-[0_4px_20px_rgba(0,0,0,0.25)] transition-all duration-300;
+  }
+  
+  .terminal-header {
+    @apply bg-axium-dark-bg text-white p-2 rounded-t-md border-b border-axium-gray-700 flex justify-between items-center;
+  }
+  
+  .neon-border {
+    @apply relative;
+    box-shadow: 0 0 5px rgba(30, 174, 219, 0.3), 0 0 10px rgba(30, 174, 219, 0.2), inset 0 0 5px rgba(30, 174, 219, 0.1);
+  }
+  
+  .neon-border::before {
+    content: '';
+    @apply absolute -inset-[1px] rounded-lg pointer-events-none;
+    background: linear-gradient(90deg, rgba(30, 174, 219, 0.3), rgba(30,, 174, 219, 0), rgba(30, 174, 219, 0.3));
+    animation: border-flow 4s linear infinite;
   }
   
   .text-balance {
@@ -84,6 +105,10 @@
 
   .text-gradient-blue {
     @apply text-transparent bg-clip-text bg-gradient-to-r from-axium-blue to-axium-blue-light;
+  }
+  
+  .text-gradient-neon {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-axium-neon-blue to-axium-neon-teal;
   }
   
   .button-primary {
@@ -116,16 +141,30 @@
     @apply px-2 py-1 rounded flex items-center space-x-2 border-r border-border last:border-0;
   }
   
-  .terminal-header {
-    @apply bg-axium-dark-bg text-white p-2 rounded-t-md border-b border-axium-gray-700 flex justify-between items-center;
-  }
-  
   .data-row {
     @apply flex justify-between py-1.5 border-b border-border/50 last:border-0;
   }
   
   .table-header {
     @apply text-xs text-muted-foreground uppercase tracking-wider py-2;
+  }
+  
+  /* New interactive elements */
+  .interactive-card {
+    @apply transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg;
+  }
+  
+  .data-highlight {
+    @apply relative overflow-hidden;
+  }
+  
+  .data-highlight::after {
+    content: '';
+    @apply absolute inset-0 bg-axium-blue/10 pointer-events-none opacity-0 transition-opacity duration-300;
+  }
+  
+  .data-highlight:hover::after {
+    @apply opacity-100;
   }
 }
 
@@ -162,7 +201,7 @@
     50% { background-color: rgba(244, 63, 94, 0.2); }
   }
   
-  /* New animations for MarketFeed */
+  /* New animations for interactive UI */
   .animate-slide-left {
     animation: slide-in-left 0.4s ease-out;
   }
@@ -179,7 +218,7 @@
   }
   
   .animate-float {
-    animation: float 2s ease-in-out;
+    animation: float 4s ease-in-out infinite;
   }
   
   @keyframes float {
@@ -187,7 +226,7 @@
       transform: translateY(0px);
     }
     50% {
-      transform: translateY(-3px);
+      transform: translateY(-5px);
     }
     100% {
       transform: translateY(0px);
@@ -195,7 +234,7 @@
   }
   
   .animate-pulse-subtle {
-    animation: pulse-subtle 2s infinite;
+    animation: pulse-subtle 3s infinite;
   }
   
   @keyframes pulse-subtle {
@@ -205,5 +244,10 @@
     50% {
       opacity: 0.7;
     }
+  }
+  
+  @keyframes border-flow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
   }
 }

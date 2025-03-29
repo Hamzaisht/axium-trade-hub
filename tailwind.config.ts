@@ -68,8 +68,11 @@ export default {
 					blue: '#0050FF',
 					'blue-light': '#3B82F6',
 					'blue-dark': '#1E3A8A',
-					'dark-bg': '#0B0F1A',  // Added primary dark background
-					'neon-blue': '#1EAEDB', // Added neon blue accent
+					'dark-bg': '#0B0F1A',  // Primary dark background
+					'dark-card': '#121825', // Slightly lighter dark for cards
+					'neon-blue': '#1EAEDB', // Neon blue accent
+					'neon-teal': '#36EEE0', // Neon teal accent
+					'neon-purple': '#9333EA', // Neon purple accent
 					gray: {
 						100: '#F8F9FA',
 						200: '#E9ECEF',
