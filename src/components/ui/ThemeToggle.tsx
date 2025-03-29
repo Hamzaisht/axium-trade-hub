@@ -1,15 +1,10 @@
-
+import React, { useState } from 'react';
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
 
-interface ThemeToggleProps {
-  className?: string;
-}
-
-export function ThemeToggle({ className = "" }: ThemeToggleProps) {
+export function ThemeToggle({ className = "" }: { className?: string }) {
   const { theme, toggleTheme } = useTheme();
   const [isHovering, setIsHovering] = useState(false);
   
@@ -61,7 +56,9 @@ export function ThemeToggle({ className = "" }: ThemeToggleProps) {
       )}
       
       {/* Background glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-axium-neon-blue/10 to-axium-neon-mint/10 dark:from-axium-neon-blue/20 dark:to-axium-neon-mint/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-md 
+        bg-gradient-to-tr from-axium-neon-blue/10 to-axium-neon-mint/10 
+        dark:from-axium-neon-blue/20 dark:to-axium-neon-mint/20"></div>
       
       {/* Sun icon with animation */}
       <motion.div
