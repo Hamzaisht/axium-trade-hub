@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LayoutShell } from "@/components/layout/LayoutShell";
@@ -9,7 +10,7 @@ import { OrderBookTable } from "@/components/market/OrderBookTable";
 import { TradeHistory } from "@/components/market/TradeHistory";
 import { AIInsightsCard } from "@/components/market/AIInsightsCard";
 import { MarketFeed } from "@/components/market/MarketFeed";
-import { GlassCard } from "@/components/ui/GlassCard";
+import { GlassCard } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { showNotification } from "@/components/notifications/ToastContainer";
@@ -78,8 +79,8 @@ const Dashboard = () => {
       <LayoutShell>
         <div className="text-center py-12">
           <AlertCircle className="mx-auto h-12 w-12 text-axium-error mb-4" />
-          <h2 className="text-2xl font-semibold text-axium-gray-900">Failed to load dashboard</h2>
-          <p className="mt-2 text-axium-gray-600">There was an error loading the dashboard data. Please try again later.</p>
+          <h2 className="text-2xl font-semibold text-white">Failed to load dashboard</h2>
+          <p className="mt-2 text-gray-400">There was an error loading the dashboard data. Please try again later.</p>
           <Button className="mt-4" onClick={() => window.location.reload()}>
             Refresh Page
           </Button>
@@ -93,14 +94,14 @@ const Dashboard = () => {
       <DashboardShell>
         <div className="max-w-7xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-axium-gray-900">Trading Dashboard</h1>
-            <p className="text-axium-gray-600">Real-time creator token trading with AI-powered insights</p>
+            <h1 className="text-3xl font-bold text-white">Trading Dashboard</h1>
+            <p className="text-gray-400">Real-time creator token trading with AI-powered insights</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
             <div className="md:col-span-1">
               <div className="space-y-6">
-                <GlassCard>
+                <GlassCard className="p-4">
                   <SearchBar 
                     value={searchQuery}
                     onChange={setSearchQuery}
@@ -117,8 +118,8 @@ const Dashboard = () => {
                           key={creator.id}
                           className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${
                             selectedCreator?.id === creator.id 
-                              ? 'bg-primary/10 border border-primary/20' 
-                              : 'hover:bg-accent'
+                              ? 'bg-[#1E3A8A]/20 border border-[#1EAEDB]/30' 
+                              : 'hover:bg-[#1E293B]/70'
                           }`}
                           onClick={() => handleCreatorSelect(creator.id)}
                         >
@@ -131,14 +132,14 @@ const Dashboard = () => {
                           </div>
                           <div>
                             <div className="font-medium">{creator.creatorName}</div>
-                            <div className="text-sm text-muted-foreground">${creator.symbol}</div>
+                            <div className="text-sm text-gray-400">${creator.symbol}</div>
                           </div>
                           <div className="ml-auto text-right">
                             <div className="font-medium">${creator.currentPrice.toFixed(2)}</div>
                             <div className={`text-xs ${
                               creator.currentPrice > creator.initialPrice 
-                                ? 'text-axium-positive' 
-                                : 'text-axium-negative'
+                                ? 'text-green-400' 
+                                : 'text-red-400'
                             }`}>
                               {((creator.currentPrice - creator.initialPrice) / creator.initialPrice * 100).toFixed(2)}%
                             </div>
@@ -165,27 +166,35 @@ const Dashboard = () => {
                   aiValuation={aiValuationResult?.pricePrediction?.targetPrice} 
                 />
                 
-                <LiveChart 
-                  creatorId={selectedCreator?.id} 
-                  symbol={selectedCreator?.symbol} 
-                />
+                <GlassCard className="p-4">
+                  <LiveChart 
+                    creatorId={selectedCreator?.id} 
+                    symbol={selectedCreator?.symbol} 
+                  />
+                </GlassCard>
                 
-                <BuySellSection 
-                  creatorId={selectedCreator?.id} 
-                  symbol={selectedCreator?.symbol} 
-                  currentPrice={selectedCreator?.currentPrice} 
-                />
+                <GlassCard className="p-4">
+                  <BuySellSection 
+                    creatorId={selectedCreator?.id} 
+                    symbol={selectedCreator?.symbol} 
+                    currentPrice={selectedCreator?.currentPrice} 
+                  />
+                </GlassCard>
               </div>
             </div>
             
             <div className="md:col-span-3 lg:col-span-1">
               <div className="space-y-6">
-                <OrderBookTable 
-                  creatorId={selectedCreator?.id} 
-                  symbol={selectedCreator?.symbol} 
-                />
+                <GlassCard className="p-4">
+                  <OrderBookTable 
+                    creatorId={selectedCreator?.id} 
+                    symbol={selectedCreator?.symbol} 
+                  />
+                </GlassCard>
                 
-                <AIInsightsCard creatorId={selectedCreator?.id} />
+                <GlassCard className="p-4">
+                  <AIInsightsCard creatorId={selectedCreator?.id} />
+                </GlassCard>
               </div>
             </div>
           </div>

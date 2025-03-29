@@ -24,7 +24,7 @@ const Index = () => {
   
   return (
     <div className={cn(
-      "min-h-screen bg-axium-dark-bg text-white transition-opacity duration-500",
+      "min-h-screen bg-[#0B0F1A] text-white transition-opacity duration-500",
       isLoaded ? "opacity-100" : "opacity-0"
     )}>
       <Navbar />
@@ -36,7 +36,7 @@ const Index = () => {
         
         <Features />
         
-        <section className="section-padding bg-axium-blue text-white">
+        <section className="section-padding bg-[#1E3A8A] text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
               Ready to invest in the creator economy?
@@ -47,7 +47,7 @@ const Index = () => {
             </p>
             <Button 
               size="lg" 
-              className="bg-white text-axium-blue hover:bg-white/90 font-medium"
+              className="bg-white text-[#1E3A8A] hover:bg-white/90 font-medium"
             >
               Get Started Now
               <ArrowRight className="ml-2 h-4 w-4" />

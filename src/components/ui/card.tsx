@@ -84,7 +84,7 @@ const DarkCard = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border border-zinc-800 bg-zinc-900/80 text-white shadow-md",
+      "rounded-lg border border-[#2D3748] bg-[#1E293B]/80 text-white shadow-lg backdrop-blur-sm",
       className
     )}
     {...props}
@@ -92,4 +92,19 @@ const DarkCard = React.forwardRef<
 ))
 DarkCard.displayName = "DarkCard"
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, DarkCard }
+const GlassCard = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-lg border border-[#2D3748]/50 bg-[#111827]/70 backdrop-blur-sm text-white shadow-lg",
+      className
+    )}
+    {...props}
+  />
+))
+GlassCard.displayName = "GlassCard"
+
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, DarkCard, GlassCard }

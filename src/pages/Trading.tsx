@@ -4,13 +4,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTrading } from "@/contexts/TradingContext";
 import { useIPO } from "@/contexts/IPOContext";
 import { useMarketData } from "@/hooks/useMarketData";
-import { GlassCard } from "@/components/ui/GlassCard";
+import { GlassCard } from "@/components/ui/card";
 import { showNotification } from "@/components/notifications/ToastContainer";
 import { TradeFormSkeleton } from "@/components/ui/skeleton-components";
 import TradeForm from "@/components/trading/TradeForm";
 import InstitutionalTrading from "@/components/trading/institutional/InstitutionalTrading";
 import LiquidityPoolInfo from "@/components/trading/liquidity-pool";
 import { PriceTicker } from "@/components/market/PriceTicker";
+import { LayoutShell } from "@/components/layout/LayoutShell";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 import { 
   TradingHeader, 
   AssetSelector,
@@ -70,90 +72,142 @@ const Trading = () => {
   const isLoading = iposLoading || tradingLoading;
 
   if (isLoading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+    return (
+      <LayoutShell>
+        <DashboardShell>
+          <div className="flex justify-center items-center min-h-[60vh]">
+            <div className="animate-pulse flex space-x-4">
+              <div className="rounded-full bg-[#2D3748] h-12 w-12"></div>
+              <div className="flex-1 space-y-4 py-1">
+                <div className="h-4 bg-[#2D3748] rounded w-3/4"></div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-[#2D3748] rounded"></div>
+                  <div className="h-4 bg-[#2D3748] rounded w-5/6"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DashboardShell>
+      </LayoutShell>
+    );
   }
 
   if (!selectedIPO) {
-    return <div className="flex justify-center items-center min-h-screen">No trading assets available</div>;
+    return (
+      <LayoutShell>
+        <DashboardShell>
+          <div className="flex justify-center items-center min-h-[60vh]">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold mb-2">No trading assets available</h2>
+              <p className="text-gray-400">Please check back later or contact support.</p>
+            </div>
+          </div>
+        </DashboardShell>
+      </LayoutShell>
+    );
   }
 
   return (
-    <div className="bg-axium-gray-100/30 min-h-screen">
-      <div className="container max-w-7xl mx-auto px-4 py-6">
-        <TradingHeader 
-          title="Trading Dashboard"
-          isConnected={isConnected}
-        />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <AssetSelector 
-              ipos={ipos}
-              selectedIPO={selectedIPO}
-              onSelectIPO={handleIPOChange}
-            />
-            
-            <div className="flex justify-between items-center">
-              <PriceHeader 
-                symbol={selectedIPO.symbol}
-                name={selectedIPO.creatorName}
-                currentPrice={selectedIPO.currentPrice}
-                priceChangePercent={priceChangePercent}
+    <LayoutShell>
+      <DashboardShell>
+        <div className="max-w-7xl mx-auto">
+          <TradingHeader 
+            title="Trading Dashboard"
+            isConnected={isConnected}
+          />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <GlassCard className="p-4">
+                <AssetSelector 
+                  ipos={ipos}
+                  selectedIPO={selectedIPO}
+                  onSelectIPO={handleIPOChange}
+                />
+              </GlassCard>
+              
+              <GlassCard className="p-4">
+                <div className="flex justify-between items-center">
+                  <PriceHeader 
+                    symbol={selectedIPO.symbol}
+                    name={selectedIPO.creatorName}
+                    currentPrice={selectedIPO.currentPrice}
+                    priceChangePercent={priceChangePercent}
+                  />
+                  <PriceTicker creatorId={selectedIPO.id} symbol={selectedIPO.symbol} />
+                </div>
+              </GlassCard>
+              
+              <ChartSection 
+                isLoading={marketDataLoading}
+                selectedIPO={selectedIPO}
+                chartType={chartType}
+                timeframe={timeframe}
+                showIndicators={showIndicators}
+                onChartTypeChange={setChartType}
+                onTimeframeChange={setTimeframe}
+                onToggleIndicator={handleToggleIndicator}
               />
-              <PriceTicker creatorId={selectedIPO.id} symbol={selectedIPO.symbol} />
+              
+              <GlassCard className="p-4">
+                <TradePanelSection 
+                  creatorId={selectedIPO.id}
+                  currentPrice={selectedIPO.currentPrice}
+                  symbol={selectedIPO.symbol}
+                />
+              </GlassCard>
+              
+              <GlassCard className="p-4">
+                <OrderBookSection 
+                  symbol={selectedIPO.symbol}
+                  currentPrice={selectedIPO.currentPrice}
+                  ipoId={selectedIPO.id}
+                />
+              </GlassCard>
+              
+              <GlassCard className="p-4">
+                <MetricsGrid creatorId={selectedIPO.id} />
+              </GlassCard>
+              
+              {user && (user.role === 'admin' || user.role === 'investor') && (
+                <GlassCard className="p-4">
+                  <InstitutionalTrading />
+                </GlassCard>
+              )}
+              
+              <GlassCard className="p-4">
+                <LiquidityPoolInfo symbol={selectedIPO.symbol} />
+              </GlassCard>
             </div>
             
-            <ChartSection 
-              isLoading={marketDataLoading}
-              selectedIPO={selectedIPO}
-              chartType={chartType}
-              timeframe={timeframe}
-              showIndicators={showIndicators}
-              onChartTypeChange={setChartType}
-              onTimeframeChange={setTimeframe}
-              onToggleIndicator={handleToggleIndicator}
-            />
-            
-            <TradePanelSection 
-              creatorId={selectedIPO.id}
-              currentPrice={selectedIPO.currentPrice}
-              symbol={selectedIPO.symbol}
-            />
-            
-            <OrderBookSection 
-              symbol={selectedIPO.symbol}
-              currentPrice={selectedIPO.currentPrice}
-              ipoId={selectedIPO.id}
-            />
-            
-            <MetricsGrid creatorId={selectedIPO.id} />
-            
-            {user && (user.role === 'admin' || user.role === 'investor') && (
-              <InstitutionalTrading />
-            )}
-            
-            <LiquidityPoolInfo symbol={selectedIPO.symbol} />
-          </div>
-          
-          <div className="space-y-6">
-            {tradingLoading ? (
-              <TradeFormSkeleton />
-            ) : (
-              <TradeForm ipo={selectedIPO} />
-            )}
-            
-            <AdvancedOrderSection 
-              symbol={selectedIPO.symbol}
-              currentPrice={selectedIPO.currentPrice}
-            />
-            
-            <TradingOrders />
-            
-            <TradingSettings />
+            <div className="space-y-6">
+              <GlassCard className="p-4">
+                {tradingLoading ? (
+                  <TradeFormSkeleton />
+                ) : (
+                  <TradeForm ipo={selectedIPO} />
+                )}
+              </GlassCard>
+              
+              <GlassCard className="p-4">
+                <AdvancedOrderSection 
+                  symbol={selectedIPO.symbol}
+                  currentPrice={selectedIPO.currentPrice}
+                />
+              </GlassCard>
+              
+              <GlassCard className="p-4">
+                <TradingOrders />
+              </GlassCard>
+              
+              <GlassCard className="p-4">
+                <TradingSettings />
+              </GlassCard>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DashboardShell>
+    </LayoutShell>
   );
 };
 
