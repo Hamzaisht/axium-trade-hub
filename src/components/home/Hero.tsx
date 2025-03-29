@@ -1,12 +1,13 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, Shield, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const { theme } = useTheme();
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -17,17 +18,20 @@ export const Hero = () => {
   }, []);
   
   return (
-    <section className="relative min-h-[90vh] flex items-center pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden">
-      {/* Cyberpunk Background Elements */}
-      <div className="absolute inset-0 z-0 dark:bg-[radial-gradient(ellipse_at_top_right,rgba(0,207,255,0.15),transparent_70%)]"></div>
-      <div className="absolute inset-0 z-0 dark:bg-[radial-gradient(circle_at_bottom_left,rgba(0,255,208,0.1),transparent_70%)]"></div>
-      <div className="absolute inset-0 z-0 dark:cyberpunk-grid"></div>
+    <section className={cn(
+      "relative min-h-[90vh] flex items-center py-16 overflow-hidden",
+      theme === 'dark' ? "bg-[#0B0F1A]" : "bg-[#F7F9FB]",
+      "max-w-7xl mx-auto px-8"
+    )}>
+      {/* Cyberpunk Background Elements - Kept for aesthetic */}
+      {theme === 'dark' && (
+        <>
+          <div className="absolute inset-0 z-0 dark:bg-[radial-gradient(ellipse_at_top_right,rgba(0,207,255,0.15),transparent_70%)]"></div>
+          <div className="absolute inset-0 z-0 dark:bg-[radial-gradient(circle_at_bottom_left,rgba(0,255,208,0.1),transparent_70%)]"></div>
+        </>
+      )}
       
-      {/* Animated Glowing Lines */}
-      <div className="absolute top-20 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-axium-neon-blue/30 to-transparent z-0"></div>
-      <div className="absolute bottom-20 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-axium-neon-mint/30 to-transparent z-0"></div>
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
+      <div className="w-full relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
