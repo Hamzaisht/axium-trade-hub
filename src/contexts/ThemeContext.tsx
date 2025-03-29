@@ -27,14 +27,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Apply theme class to document and save to localStorage
   useEffect(() => {
+    const root = document.documentElement;
+    
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('light');
+    }
+    
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('axium-theme', theme);
     
+    // Set the background color on the body
     if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
       document.body.style.backgroundColor = 'rgb(11, 15, 26)'; // Obsidian black (#0B0F1A)
     } else {
-      document.documentElement.classList.remove('dark');
       document.body.style.backgroundColor = 'rgb(247, 249, 251)'; // Light white/gray (#F7F9FB)
     }
   }, [theme]);
