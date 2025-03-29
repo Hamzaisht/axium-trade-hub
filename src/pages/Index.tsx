@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
@@ -39,7 +38,9 @@ const Index = () => {
         
         <LiveTicker />
         
-        <section className="py-24 bg-[#0D1424]">
+        {/* Remove AnimatedCubeExample since we're using PremiumBackground */}
+        
+        <section className="py-24 bg-[#0D1424]/80">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Trade on Axium?</h2>
@@ -80,8 +81,6 @@ const Index = () => {
             </div>
           </div>
         </section>
-        
-        <AnimatedCubeExample />
         
         <section className="py-24 relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('/bg-dots.svg')] bg-center opacity-5"></div>
@@ -136,7 +135,7 @@ const Index = () => {
           </div>
         </section>
         
-        <section className="py-24 bg-gradient-to-b from-[#0D1424] to-[#0A0E17] text-white">
+        <section className="py-24 bg-gradient-to-b from-[#0D1424]/80 to-[#0A0E17] text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
               Ready to invest in the creator economy?

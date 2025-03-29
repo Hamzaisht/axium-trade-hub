@@ -74,7 +74,7 @@ export const BlackHead = ({ pulseEffect, mousePosition, hover }: BlackHeadProps)
           metalness={0.9}
           roughness={0.1}
           emissive="#111111"
-          emissiveIntensity={0.1}
+          emissiveIntensity={0.2}
         />
       </mesh>
       
@@ -86,7 +86,7 @@ export const BlackHead = ({ pulseEffect, mousePosition, hover }: BlackHeadProps)
           metalness={0.9}
           roughness={0.1}
           emissive="#111111"
-          emissiveIntensity={0.1}
+          emissiveIntensity={0.2}
         />
       </mesh>
     </group>

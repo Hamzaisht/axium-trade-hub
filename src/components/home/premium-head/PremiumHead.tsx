@@ -15,6 +15,22 @@ export const PremiumHead = ({ scrollY, onButtonPress }: PremiumHeadProps) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [pulseEffect, setPulseEffect] = useState(false);
   const lastScrollY = useRef(0);
+  const groupRef = useRef<THREE.Group>(null);
+
+  // Auto-pulse the effect periodically to draw attention
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPulseEffect(true);
+      
+      const timer = setTimeout(() => {
+        setPulseEffect(false);
+      }, 800);
+      
+      return () => clearTimeout(timer);
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   // Handle scroll events for interactive effects
   useEffect(() => {
@@ -57,12 +73,21 @@ export const PremiumHead = ({ scrollY, onButtonPress }: PremiumHeadProps) => {
     };
   }, []);
 
+  // Add subtle floating animation
+  useFrame((state) => {
+    if (groupRef.current) {
+      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+    }
+  });
+
   return (
     <group 
+      ref={groupRef}
       onPointerOver={() => setHover(true)}
       onPointerOut={() => setHover(false)}
       rotation={[0, 0, 0]}
       position={[0, -0.3, 0]}
+      scale={1.2} // Make everything bigger
     >
       {/* Black head core */}
       <BlackHead 

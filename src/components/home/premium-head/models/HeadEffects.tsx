@@ -25,7 +25,7 @@ const HeadEffects = ({ pulseEffect }: HeadEffectsProps) => {
             if (child.material instanceof THREE.MeshStandardMaterial) {
               child.material.emissiveIntensity = THREE.MathUtils.lerp(
                 child.material.emissiveIntensity,
-                1.5,
+                2.0,
                 0.1
               );
             }
@@ -33,7 +33,7 @@ const HeadEffects = ({ pulseEffect }: HeadEffectsProps) => {
             if (child.material instanceof THREE.MeshStandardMaterial) {
               child.material.emissiveIntensity = THREE.MathUtils.lerp(
                 child.material.emissiveIntensity,
-                0.8,
+                1.2,
                 0.05
               );
             }
@@ -45,35 +45,35 @@ const HeadEffects = ({ pulseEffect }: HeadEffectsProps) => {
 
   return (
     <group ref={effectsRef}>
-      {/* Ambient particles floating around the head */}
-      {[...Array(15)].map((_, i) => (
+      {/* Ambient particles floating around the head - make them more visible */}
+      {[...Array(20)].map((_, i) => (
         <mesh key={i} position={[
           (Math.random() - 0.5) * 4,
           (Math.random() - 0.5) * 4,
           (Math.random() - 0.5) * 4
         ]}>
-          <sphereGeometry args={[0.05, 8, 8]} />
+          <sphereGeometry args={[0.07, 8, 8]} />
           <meshStandardMaterial 
             color="#D4AF37" 
             emissive="#D4AF37"
-            emissiveIntensity={0.8}
+            emissiveIntensity={1.2}
             metalness={1}
             roughness={0.2}
             transparent={true}
-            opacity={0.8}
+            opacity={0.9}
           />
         </mesh>
       ))}
       
-      {/* Glowing halo effect */}
+      {/* Glowing halo effect - made larger and more intense */}
       <mesh position={[0, 0, 0]}>
-        <ringGeometry args={[1.7, 1.8, 32]} />
+        <ringGeometry args={[1.8, 2.0, 32]} />
         <meshStandardMaterial 
           color="#D4AF37" 
           emissive="#D4AF37"
-          emissiveIntensity={0.8}
+          emissiveIntensity={1.2}
           transparent={true}
-          opacity={0.4}
+          opacity={0.6}
         />
       </mesh>
     </group>

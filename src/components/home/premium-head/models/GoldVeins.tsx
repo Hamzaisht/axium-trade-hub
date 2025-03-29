@@ -55,22 +55,22 @@ const GoldVeins = ({ pulseEffect }: GoldVeinsProps) => {
 
   return (
     <group ref={veinsRef}>
-      {/* Create gold vein patterns using small lines and curves */}
-      {[...Array(20)].map((_, i) => (
+      {/* Create gold vein patterns using small lines and curves - make them bigger and more visible */}
+      {[...Array(30)].map((_, i) => (
         <mesh key={i} position={[
-          (Math.random() - 0.5) * 2,
-          (Math.random() - 0.5) * 2,
+          (Math.random() - 0.5) * 2.2,
+          (Math.random() - 0.5) * 2.2,
           (Math.random() - 0.5) * 0.5 + 1.4
         ]} rotation={[
           Math.random() * Math.PI,
           Math.random() * Math.PI,
           Math.random() * Math.PI
         ]}>
-          <boxGeometry args={[0.05, 0.05, Math.random() * 1 + 0.1]} />
+          <boxGeometry args={[0.08, 0.08, Math.random() * 1 + 0.2]} />
           <meshStandardMaterial 
             color="#D4AF37" 
             emissive="#D4AF37"
-            emissiveIntensity={0.8}
+            emissiveIntensity={1.2}
             metalness={1}
             roughness={0.2}
           />
@@ -78,21 +78,21 @@ const GoldVeins = ({ pulseEffect }: GoldVeinsProps) => {
       ))}
       
       {/* Add more complex patterns */}
-      {[...Array(10)].map((_, i) => (
+      {[...Array(15)].map((_, i) => (
         <mesh key={`curve-${i}`} position={[
-          (Math.random() - 0.5) * 2,
-          (Math.random() - 0.5) * 2,
+          (Math.random() - 0.5) * 2.2,
+          (Math.random() - 0.5) * 2.2,
           (Math.random() - 0.5) * 0.5 + 1.4
         ]} rotation={[
           Math.random() * Math.PI,
           Math.random() * Math.PI,
           Math.random() * Math.PI
         ]}>
-          <torusGeometry args={[0.2, 0.02, 8, 12, Math.PI * (Math.random() * 0.5 + 0.5)]} />
+          <torusGeometry args={[0.3, 0.03, 8, 12, Math.PI * (Math.random() * 0.5 + 0.5)]} />
           <meshStandardMaterial 
             color="#D4AF37" 
             emissive="#D4AF37"
-            emissiveIntensity={0.8}
+            emissiveIntensity={1.2}
             metalness={1}
             roughness={0.2}
           />

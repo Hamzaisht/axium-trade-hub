@@ -37,7 +37,7 @@ export const PremiumBackground: React.FC = () => {
 
   // The PremiumScene component is rendered with a fixed position, full-screen
   return (
-    <div className="fixed inset-0 w-full h-full -z-10">
+    <div className="fixed inset-0 w-full h-full -z-10 opacity-100">
       <PremiumScene scrollY={scrollY} onButtonPress={buttonPress} />
     </div>
   );

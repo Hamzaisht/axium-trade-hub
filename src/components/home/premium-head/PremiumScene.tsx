@@ -48,14 +48,14 @@ export const PremiumScene = ({ scrollY, onButtonPress }: PremiumSceneProps) => {
         style={{ background: '#0A0E17' }}
       >
         {/* Main lights */}
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[5, 5, 5]} intensity={1} color="#ffffff" />
-        <pointLight position={[-3, 3, 3]} intensity={1} color="#D4AF37" />
+        <ambientLight intensity={1.0} />
+        <directionalLight position={[5, 5, 5]} intensity={1.5} color="#ffffff" />
+        <pointLight position={[-3, 3, 3]} intensity={1.5} color="#D4AF37" />
         <spotLight 
           position={[0, 5, 5]} 
           angle={0.3} 
           penumbra={0.8} 
-          intensity={2} 
+          intensity={3} 
           color="#D4AF37" 
           castShadow 
         />
@@ -66,18 +66,19 @@ export const PremiumScene = ({ scrollY, onButtonPress }: PremiumSceneProps) => {
         {/* Main 3D component */}
         <PremiumHead scrollY={scrollY} onButtonPress={onButtonPress} />
         
-        {/* Interactive controls */}
+        {/* Interactive controls - limit rotation to make it subtle */}
         <OrbitControls 
           enableZoom={false} 
           enablePan={false} 
           rotateSpeed={0.2} 
-          minPolarAngle={Math.PI / 2 - 0.5}
-          maxPolarAngle={Math.PI / 2 + 0.5}
+          minPolarAngle={Math.PI / 2 - 0.3}
+          maxPolarAngle={Math.PI / 2 + 0.3}
+          enableRotate={false}
         />
       </Canvas>
       
       {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0A0E17]/30 via-transparent to-[#0A0E17]/90 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0A0E17]/10 via-transparent to-[#0A0E17]/70 pointer-events-none"></div>
     </div>
   );
 };
