@@ -48,3 +48,5 @@ export const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
     </div>
   );
 };
+
+export default TradeForm;
