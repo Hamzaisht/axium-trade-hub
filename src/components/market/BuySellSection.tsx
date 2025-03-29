@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowRightLeft, TrendingDown, TrendingUp } from "lucide-react";
 import { showNotification } from "@/components/notifications/ToastContainer";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface BuySellSectionProps {
   creatorId: string;
@@ -21,6 +24,7 @@ export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuyS
   const [quantity, setQuantity] = useState<string>("1");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Only allow numbers and decimals
@@ -37,18 +41,40 @@ export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuyS
     return (qty * currentPrice).toFixed(2);
   };
 
-  const handleSubmitOrder = () => {
+  const handleSubmitOrder = async () => {
     if (!quantity || parseFloat(quantity) <= 0) {
       showNotification.warning("Please enter a valid quantity");
       return;
     }
 
+    if (!isAuthenticated || !user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to place orders",
+        variant: "destructive",
+      });
+      showNotification.error("Please log in to place orders");
+      return;
+    }
+
     setIsProcessing(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsProcessing(false);
-      
+    try {
+      // Insert order into Supabase
+      const { data, error } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          creator_id: creatorId,
+          type: orderType,
+          quantity: parseInt(quantity, 10),
+          price: currentPrice
+        });
+
+      if (error) {
+        throw error;
+      }
+
       toast({
         title: `${orderType === "buy" ? "Buy" : "Sell"} Order Submitted`,
         description: `${quantity} ${symbol} at $${currentPrice} ($${calculateTotal()})`,
@@ -58,7 +84,14 @@ export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuyS
       showNotification.success(
         `${orderType === "buy" ? "Buy" : "Sell"} order executed successfully!`
       );
-    }, 1000);
+    } catch (error) {
+      console.error("Error submitting order:", error);
+      showNotification.error(
+        "Failed to place order. Please try again."
+      );
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useTrading } from "@/contexts/TradingContext";
 import { usePortfolio } from "@/contexts/PortfolioContext";
@@ -8,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { toast } from "sonner";
 import { IPO } from "@/utils/mockApi";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface TradeFormProps {
   ipo: IPO;
@@ -17,6 +18,7 @@ interface TradeFormProps {
 export const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
   const { placeOrder, isLoading } = useTrading();
   const { portfolio, fetchPortfolio } = usePortfolio();
+  const { user, isAuthenticated } = useAuth();
   
   const [formData, setFormData] = useState({
     type: "buy" as "buy" | "sell",
@@ -52,6 +54,11 @@ export const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!isAuthenticated || !user) {
+      toast.error("Please log in to place orders");
+      return;
+    }
+    
     // Calculate total cost
     const totalCost = formData.price * formData.quantity;
     
@@ -73,6 +80,22 @@ export const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
     }
     
     try {
+      // Store order in Supabase
+      const { error: supabaseError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          creator_id: ipo.id,
+          type: formData.type,
+          quantity: formData.quantity,
+          price: formData.price
+        });
+        
+      if (supabaseError) {
+        throw supabaseError;
+      }
+      
+      // Also use the existing trading system
       await placeOrder({
         ipoId: ipo.id,
         type: formData.type,
@@ -83,6 +106,8 @@ export const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
       
       // Refresh portfolio after trade
       await fetchPortfolio();
+      
+      toast.success(`${formData.type === "buy" ? "Buy" : "Sell"} order placed successfully`);
       
       if (onSuccess) {
         onSuccess();
