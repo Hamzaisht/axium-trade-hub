@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrading } from "@/contexts/TradingContext";
@@ -37,8 +36,10 @@ import {
   ChartSkeleton,
   TradeFormSkeleton
 } from "@/components/ui/skeleton-components";
+import TradePanel from "@/components/market/TradePanel";
+import { EnhancedOrderBook } from "@/components/market/EnhancedOrderBook";
+import { PriceTicker } from "@/components/market/PriceTicker";
 
-// Helper for date formatting
 const formatDate = (timestamp: number): string => {
   const date = new Date(timestamp);
   return date.toLocaleDateString('en-US', { 
@@ -68,7 +69,6 @@ const Trading = () => {
     selectedIPO?.id
   );
 
-  // Select a different IPO
   const handleIPOChange = (ipoId: string) => {
     const ipo = ipos.find(i => i.id === ipoId);
     if (ipo) {
@@ -77,7 +77,6 @@ const Trading = () => {
     }
   };
 
-  // Toggle chart indicator
   const handleToggleIndicator = (indicator: keyof typeof showIndicators) => {
     setShowIndicators(prev => ({
       ...prev,
@@ -85,15 +84,13 @@ const Trading = () => {
     }));
   };
 
-  // Create mock candlestick data
   const generateMockCandlestickData = () => {
     const baseDate = new Date().getTime();
     const basePrice = selectedIPO?.currentPrice || 25;
-    // Use a default volatility value
-    const volatility = 5; // Default volatility
+    const volatility = 5;
     
     return Array.from({ length: 30 }, (_, i) => {
-      const timestamp = baseDate - (29 - i) * 86400000 / 6; // Going backwards from today
+      const timestamp = baseDate - (29 - i) * 86400000 / 6;
       const randomFactor = Math.random() * volatility * 0.2 - volatility * 0.1;
       const open = basePrice * (1 + randomFactor);
       const close = open * (1 + (Math.random() * 0.04 - 0.02));
@@ -101,7 +98,6 @@ const Trading = () => {
       const low = Math.min(open, close) * (1 - Math.random() * 0.01);
       const volume = Math.floor(Math.random() * 10000) + 1000;
       
-      // Calculate SMA, Bollinger Bands, and VWAP for visualization
       return {
         timestamp,
         open,
@@ -121,10 +117,8 @@ const Trading = () => {
 
   const candlestickData = generateMockCandlestickData();
 
-  // Calculate price change percentage for display
   const calculatePriceChange = () => {
     if (!selectedIPO) return 0;
-    // Using the initial price as a base for calculation
     const initialPrice = selectedIPO.initialPrice || 0;
     const currentPrice = selectedIPO.currentPrice || 0;
     if (initialPrice === 0) return 0;
@@ -146,32 +140,29 @@ const Trading = () => {
   return (
     <div className="bg-axium-gray-100/30 min-h-screen">
       <div className="container max-w-7xl mx-auto px-4 py-6">
-        {/* Header with navigation */}
         <TradingHeader 
           title="Trading Dashboard"
           isConnected={isConnected}
         />
         
-        {/* Main content layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column - Chart and trading controls */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Asset selector */}
             <AssetSelector 
               ipos={ipos}
               selectedIPO={selectedIPO}
               onSelectIPO={handleIPOChange}
             />
             
-            {/* Price header */}
-            <PriceHeader 
-              symbol={selectedIPO.symbol}
-              name={selectedIPO.creatorName}
-              currentPrice={selectedIPO.currentPrice}
-              priceChangePercent={priceChangePercent}
-            />
+            <div className="flex justify-between items-center">
+              <PriceHeader 
+                symbol={selectedIPO.symbol}
+                name={selectedIPO.creatorName}
+                currentPrice={selectedIPO.currentPrice}
+                priceChangePercent={priceChangePercent}
+              />
+              <PriceTicker creatorId={selectedIPO.id} symbol={selectedIPO.symbol} />
+            </div>
             
-            {/* Chart with controls */}
             <GlassCard className="p-4">
               <ChartControls 
                 chartType={chartType}
@@ -209,7 +200,19 @@ const Trading = () => {
               />
             </GlassCard>
             
-            {/* Order book & trades */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <TradePanel 
+                creatorId={selectedIPO.id}
+                currentPrice={selectedIPO.currentPrice}
+                symbol={selectedIPO.symbol}
+              />
+              
+              <EnhancedOrderBook 
+                creatorId={selectedIPO.id}
+                symbol={selectedIPO.symbol}
+              />
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <GlassCard className="p-4">
                 <h3 className="text-lg font-semibold mb-2">Order Book</h3>
@@ -229,31 +232,25 @@ const Trading = () => {
               </GlassCard>
             </div>
             
-            {/* External data and sentiment */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <SentimentInsights creatorId={selectedIPO.id} className="h-full" />
               <ExternalMetricsCard creatorId={selectedIPO.id} className="h-full" />
             </div>
             
-            {/* Institutional features (conditional) */}
             {user && (user.role === 'admin' || user.role === 'investor') && (
               <InstitutionalTrading />
             )}
             
-            {/* Liquidity pool info */}
             <LiquidityPoolInfo symbol={selectedIPO.symbol} />
           </div>
           
-          {/* Right column - Trading form and order management */}
           <div className="space-y-6">
-            {/* Trading form */}
             {tradingLoading ? (
               <TradeFormSkeleton />
             ) : (
               <TradeForm ipo={selectedIPO} />
             )}
             
-            {/* Advanced order types */}
             <Tabs defaultValue="standard" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="standard">Standard</TabsTrigger>
@@ -280,7 +277,6 @@ const Trading = () => {
               </TabsContent>
             </Tabs>
             
-            {/* User's open orders & positions */}
             <GlassCard className="p-4">
               <Tabs defaultValue="orders">
                 <TabsList className="grid w-full grid-cols-3">
@@ -315,7 +311,6 @@ const Trading = () => {
               </Tabs>
             </GlassCard>
             
-            {/* Trading settings */}
             <GlassCard className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Trading Settings</h3>
