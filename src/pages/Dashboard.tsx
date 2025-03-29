@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LayoutShell } from "@/components/layout/LayoutShell";
@@ -8,6 +7,7 @@ import { BuySellSection } from "@/components/market/BuySellSection";
 import { OrderBookTable } from "@/components/market/OrderBookTable";
 import { TradeHistory } from "@/components/market/TradeHistory";
 import { AIInsightsCard } from "@/components/market/AIInsightsCard";
+import { PriceTickerScroll } from "@/components/market/PriceTickerScroll";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -60,7 +60,6 @@ const Dashboard = () => {
     enabled: true
   });
 
-  // Fix: Remove the .data property access and the enabled prop
   const aiValuationResult = useAIValuation({
     ipoId: selectedCreator?.id
   });
@@ -91,16 +90,16 @@ const Dashboard = () => {
   return (
     <LayoutShell>
       <div className="max-w-7xl mx-auto">
+        <PriceTickerScroll className="mb-6 -mx-6 md:-mx-6" />
+        
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-axium-gray-900">Trading Dashboard</h1>
           <p className="text-axium-gray-600">Real-time creator token trading with AI-powered insights</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {/* Left Sidebar */}
           <div className="md:col-span-1">
             <div className="space-y-6">
-              {/* Search Bar */}
               <GlassCard>
                 <SearchBar 
                   value={searchQuery}
@@ -159,7 +158,6 @@ const Dashboard = () => {
             </div>
           </div>
           
-          {/* Center Panel */}
           <div className="md:col-span-2">
             <div className="space-y-6">
               <CreatorHeader 
@@ -180,7 +178,6 @@ const Dashboard = () => {
             </div>
           </div>
           
-          {/* Right Sidebar */}
           <div className="md:col-span-3 lg:col-span-1">
             <div className="space-y-6">
               <OrderBookTable 

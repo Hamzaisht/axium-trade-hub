@@ -7,5 +7,6 @@ export * from './LiveChart';
 export * from './LivePriceChart';
 export * from './OrderBookTable';
 export * from './PriceTicker';
+export * from './PriceTickerScroll';
 export * from './TradeHistory';
 export * from './TradePanel';
