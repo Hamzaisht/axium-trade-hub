@@ -128,17 +128,24 @@ export default function CreatorProfile() {
     );
   }
 
+  // Generate engagement and AI scores for the creator based on their metrics
+  const generateEngagementScore = () => Math.min(99, Math.floor((creatorData.followers / 1000000) * 10 + (creatorData.engagement || 0) * 15));
+  const generateAIScore = () => Math.min(95, Math.floor((creatorData.monthly_income / 50000) * 10 + (creatorData.followers / 1000000) * 5 + (creatorData.engagement || 0) * 10));
+
   return (
     <DashboardShell>
       <div className="container mx-auto p-4 space-y-6">
         {/* Adapt CreatorHeader to work with Creator type */}
         <CreatorHeader creator={{
+          id: creatorData.id,
           creatorName: creatorData.name,
           symbol: creatorData.handle || creatorData.slug,
           initialPrice: 10, // Default values since Creator doesn't have these
           currentPrice: 15,
           totalSupply: 1000000,
-          availableSupply: 500000
+          availableSupply: 500000,
+          engagementScore: generateEngagementScore(),
+          aiScore: generateAIScore()
         }} />
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
