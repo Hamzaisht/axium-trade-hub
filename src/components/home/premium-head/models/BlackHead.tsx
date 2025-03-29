@@ -2,7 +2,6 @@
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useGLTF } from '@react-three/drei';
 
 interface BlackHeadProps {
   pulseEffect: boolean;
@@ -65,7 +64,6 @@ export const BlackHead = ({ pulseEffect, mousePosition, hover }: BlackHeadProps)
     }
   });
 
-  // Since we don't have an actual mannequin head model, we'll create one from primitives
   return (
     <group ref={headRef}>
       {/* Head shape */}
@@ -73,9 +71,10 @@ export const BlackHead = ({ pulseEffect, mousePosition, hover }: BlackHeadProps)
         <sphereGeometry args={[1.5, 64, 64]} />
         <meshStandardMaterial 
           color="#111111"
-          metalness={0.7}
-          roughness={0.2}
-          envMapIntensity={1}
+          metalness={0.9}
+          roughness={0.1}
+          emissive="#111111"
+          emissiveIntensity={0.1}
         />
       </mesh>
       
@@ -84,8 +83,10 @@ export const BlackHead = ({ pulseEffect, mousePosition, hover }: BlackHeadProps)
         <cylinderGeometry args={[0.6, 0.8, 1.2, 32]} />
         <meshStandardMaterial 
           color="#111111"
-          metalness={0.7}
-          roughness={0.2}
+          metalness={0.9}
+          roughness={0.1}
+          emissive="#111111"
+          emissiveIntensity={0.1}
         />
       </mesh>
     </group>

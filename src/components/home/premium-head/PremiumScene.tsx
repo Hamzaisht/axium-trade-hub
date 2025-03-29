@@ -30,14 +30,14 @@ export const PremiumScene = ({ scrollY, onButtonPress }: PremiumSceneProps) => {
   // Fallback gradient background if WebGL not supported
   if (!canvasLoaded) {
     return (
-      <div className="fixed inset-0 w-full h-full -z-10 bg-gradient-to-b from-[#0A0E17] via-[#0D1424] to-[#0A0E17]">
+      <div className="w-full h-full bg-gradient-to-b from-[#0A0E17] via-[#0D1424] to-[#0A0E17]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.1),transparent_70%)]"></div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 w-full h-full -z-10 opacity-90">
+    <div className="w-full h-full">
       <Canvas
         gl={{ 
           antialias: true,
@@ -45,9 +45,7 @@ export const PremiumScene = ({ scrollY, onButtonPress }: PremiumSceneProps) => {
           powerPreference: 'high-performance'
         }}
         dpr={[1, 2]} // Responsive to device pixel ratio
-        onError={(e) => {
-          console.error('Canvas error:', e);
-        }}
+        style={{ background: '#0A0E17' }}
       >
         {/* Main lights */}
         <ambientLight intensity={0.5} />
@@ -79,7 +77,7 @@ export const PremiumScene = ({ scrollY, onButtonPress }: PremiumSceneProps) => {
       </Canvas>
       
       {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0A0E17]/30 via-transparent to-[#0A0E17]/90"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0A0E17]/30 via-transparent to-[#0A0E17]/90 pointer-events-none"></div>
     </div>
   );
 };
