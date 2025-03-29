@@ -58,9 +58,18 @@ export const Navbar = () => {
       isScrolled ? "py-3 bg-white/80 backdrop-blur-md shadow-sm" : "py-5 bg-transparent"
     )}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center space-x-2 font-bold text-xl">
-          <span className="text-axium-blue">Axium</span>
-          <span className="text-axium-gray-800">.io</span>
+        <Link to="/" className="flex items-center space-x-2">
+          {/* Axium Logo */}
+          <div className="flex items-center gap-2">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-axium-blue">
+              <path d="M14 3L25 20H3L14 3Z" stroke="currentColor" strokeWidth="2" fill="none" />
+              <path d="M14 8L20 18H8L14 8Z" fill="currentColor" />
+            </svg>
+            <div className="font-bold text-xl">
+              <span className="text-axium-blue">Axium</span>
+              <span className="text-axium-gray-800">.io</span>
+            </div>
+          </div>
         </Link>
         
         {/* Desktop Navigation */}
