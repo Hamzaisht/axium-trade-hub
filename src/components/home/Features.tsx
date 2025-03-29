@@ -1,139 +1,176 @@
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { BarChart3, TrendingUp, Shield, Activity, Zap, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useTheme } from "@/contexts/ThemeContext";
+import { useEffect, useRef, useState } from "react";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { cn } from "@/lib/utils";
+import { 
+  BarChart3, 
+  TrendingUp, 
+  Users, 
+  ShieldCheck,
+  Lightbulb, 
+  Sparkles,
+  Cpu // Replacing Chip with Cpu which is available in lucide-react
+} from "lucide-react";
 
-const FEATURES = [
-  {
-    icon: BarChart3,
-    title: "AI-Powered Valuations",
-    description: "Our proprietary AI models analyze social metrics, engagement rates, and market trends to determine accurate creator token valuations.",
-    color: "blue"
-  },
+const features = [
   {
     icon: TrendingUp,
-    title: "Real-Time Trading",
-    description: "Execute trades instantly with minimal slippage on our high-performance exchange designed specifically for creator assets.",
-    color: "mint"
+    title: "Creator IPO System",
+    description: "Celebrities and influencers launch their own tradable CLC tokens with customizable parameters and initial valuation."
   },
   {
-    icon: Shield,
-    title: "Secure Blockchain",
-    description: "All transactions are secured by advanced blockchain technology, ensuring transparency and immutability of ownership records.",
-    color: "gold"
+    icon: Sparkles,
+    title: "AI-Powered Valuation",
+    description: "Tokens are priced using real-time social media engagement, streaming data, and brand partnerships."
   },
   {
-    icon: Activity,
-    title: "Market Analytics",
-    description: "Access detailed market insights, historical data, and performance metrics to make informed investment decisions.",
-    color: "magenta"
+    icon: BarChart3,
+    title: "Live Trading Marketplace",
+    description: "Invest in creators with advanced order types including limit, market, and stop-loss orders."
   },
   {
-    icon: Zap,
-    title: "Creator IPOs",
-    description: "Launch creator tokens with customizable parameters and initial valuation, with full control over token distribution.",
-    color: "blue"
+    icon: ShieldCheck,
+    title: "Smart Contract Integration",
+    description: "All transactions are secured through blockchain technology on Ethereum Layer 2 or Solana."
+  },
+  {
+    icon: Users,
+    title: "Portfolio Management",
+    description: "Track your investments with real-time analytics, custom watchlists, and price alerts."
+  },
+  {
+    icon: Cpu,  // Changed from Chip to Cpu
+    title: "Advanced Analytics",
+    description: "Access sentiment analysis and predictive models to make informed investment decisions."
   }
 ];
 
 export const Features = () => {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const [activeFeature, setActiveFeature] = useState(0);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.2 }
+    );
+    
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
+  
+  useEffect(() => {
+    if (isVisible) {
+      const interval = setInterval(() => {
+        setActiveFeature((prev) => (prev + 1) % features.length);
+      }, 4000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isVisible]);
+
+  // Get the current feature's icon component
+  const ActiveFeatureIcon = features[activeFeature].icon;
   
   return (
-    <section className="relative py-20 overflow-hidden">
-      {/* Background Elements */}
-      {isDark && (
-        <>
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,207,255,0.05),transparent_70%)]"></div>
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-axium-neon-blue/20 to-transparent"></div>
-          <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-axium-neon-mint/20 to-transparent"></div>
-        </>
-      )}
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <section ref={sectionRef} className="section-padding bg-gradient-to-b from-white to-axium-gray-100/30">
+      <div className="section-container">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-axium-neon-blue via-axium-neon-mint to-axium-neon-blue bg-clip-text text-transparent">
-              Revolutionary
-            </span> Trading Features
+          <div className="inline-flex items-center px-3 py-1 bg-axium-blue/10 text-axium-blue rounded-full text-sm font-medium mb-4">
+            <Lightbulb className="w-4 h-4 mr-2" />
+            Platform Features
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-axium-gray-900 mb-4">
+            The most advanced <span className="text-gradient-blue">creator economy</span> platform
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            Axium.io combines cutting-edge technology with financial innovation to create the ultimate creator economy trading platform.
+          <p className="text-axium-gray-600 max-w-2xl mx-auto text-lg">
+            Our AI-powered platform combines financial technology with the creator economy 
+            to revolutionize how fans invest in their favorite celebrities and influencers.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {FEATURES.map((feature, index) => (
-            <motion.div
-              key={feature.title}
-              className="cyber-panel cursor-pointer relative overflow-hidden"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-            >
-              {/* Gradient overlay based on feature color */}
-              <div className={`absolute inset-0 opacity-30 bg-gradient-to-br ${
-                feature.color === 'blue' ? 'from-axium-neon-blue/20' :
-                feature.color === 'mint' ? 'from-axium-neon-mint/20' :
-                feature.color === 'gold' ? 'from-axium-neon-gold/20' :
-                'from-axium-neon-magenta/20'
-              } to-transparent transition-opacity duration-300 ${
-                hoveredIndex === index ? 'opacity-50' : 'opacity-30'
-              }`}></div>
-              
-              {/* Top border */}
-              <div className={`absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent ${
-                feature.color === 'blue' ? 'via-axium-neon-blue/70' :
-                feature.color === 'mint' ? 'via-axium-neon-mint/70' :
-                feature.color === 'gold' ? 'via-axium-neon-gold/70' :
-                'via-axium-neon-magenta/70'
-              } to-transparent`}></div>
-              
-              <div className="relative p-6 z-10">
-                <div className={`rounded-full p-3 inline-block mb-4 ${
-                  feature.color === 'blue' ? 'bg-axium-neon-blue/10 text-axium-neon-blue' :
-                  feature.color === 'mint' ? 'bg-axium-neon-mint/10 text-axium-neon-mint' :
-                  feature.color === 'gold' ? 'bg-axium-neon-gold/10 text-axium-neon-gold' :
-                  'bg-axium-neon-magenta/10 text-axium-neon-magenta'
-                }`}>
-                  <feature.icon className="h-6 w-6" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          <div className="order-2 lg:order-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {features.map((feature, index) => (
+                <div 
+                  key={feature.title}
+                  className={cn(
+                    "cursor-pointer transition-all duration-300 transform",
+                    index === activeFeature ? "scale-105" : "scale-100 opacity-80",
+                    isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10",
+                    `animation-delay-${index * 200}`
+                  )}
+                  onClick={() => setActiveFeature(index)}
+                >
+                  <GlassCard
+                    variant={index === activeFeature ? "blue" : "default"}
+                    className="h-full"
+                  >
+                    <div className="flex flex-col h-full">
+                      <feature.icon className={cn(
+                        "h-6 w-6 mb-4",
+                        index === activeFeature ? "text-axium-blue" : "text-axium-gray-700"
+                      )} />
+                      <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                      <p className={cn(
+                        "text-sm leading-relaxed",
+                        index === activeFeature ? "text-axium-blue/80" : "text-axium-gray-600"
+                      )}>
+                        {feature.description}
+                      </p>
+                    </div>
+                  </GlassCard>
                 </div>
-                
-                <h3 className="text-xl font-bold mb-3 text-foreground">{feature.title}</h3>
-                
-                <p className="text-muted-foreground mb-4">{feature.description}</p>
-                
-                <div className={`flex items-center text-sm font-medium transition-transform duration-300 ${
-                  hoveredIndex === index ? 'translate-x-2' : ''
-                } ${
-                  feature.color === 'blue' ? 'text-axium-neon-blue' :
-                  feature.color === 'mint' ? 'text-axium-neon-mint' :
-                  feature.color === 'gold' ? 'text-axium-neon-gold' :
-                  'text-axium-neon-magenta'
-                }`}>
-                  <span>Learn more</span>
-                  <ArrowRight className="ml-1 h-4 w-4" />
-                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className={cn(
+            "order-1 lg:order-2 transition-all duration-700 transform",
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          )}>
+            <div className="relative aspect-square max-w-lg mx-auto">
+              <div className="absolute inset-0 bg-gradient-radial from-axium-blue/10 to-transparent rounded-full" />
+              
+              <div className="absolute inset-0 flex items-center justify-center">
+                <GlassCard 
+                  variant="premium" 
+                  size="xl"
+                  className="w-[90%] h-[90%] shadow-glass-blue"
+                >
+                  <div className="h-full flex flex-col">
+                    <div className="mb-6">
+                      <h3 className="text-xl font-semibold text-axium-gray-800">
+                        {features[activeFeature].title}
+                      </h3>
+                      <div className="w-16 h-1 bg-axium-blue rounded-full mt-2" />
+                    </div>
+                    
+                    <div className="flex-1 flex items-center justify-center">
+                      <ActiveFeatureIcon className="h-24 w-24 text-axium-blue/20" />
+                    </div>
+                    
+                    <p className="text-axium-gray-600 mt-auto">
+                      {features[activeFeature].description}
+                    </p>
+                  </div>
+                </GlassCard>
               </div>
-            </motion.div>
-          ))}
-        </div>
-        
-        <div className="text-center">
-          <Button 
-            size="lg"
-            className="bg-background border border-axium-neon-blue text-axium-neon-blue hover:bg-axium-neon-blue/10 hover-glow-blue"
-          >
-            Explore All Features
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+            </div>
+          </div>
         </div>
       </div>
     </section>

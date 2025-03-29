@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -9,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, TrendingUp, TrendingDown, ArrowUpDown, Star, Sparkles, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Mock data for creators
 const allCreators = [
   {
     id: "1",
@@ -474,7 +476,7 @@ const Creators = () => {
                   {upcomingIPOs.map((ipo) => (
                     <GlassCard 
                       key={ipo.id}
-                      variant="gold"
+                      variant="premium"
                       interactive={true}
                       className="flex flex-col h-full"
                     >

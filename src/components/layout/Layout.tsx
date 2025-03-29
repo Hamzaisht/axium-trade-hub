@@ -1,18 +1,20 @@
 
-import { ReactNode } from "react";
-import { LayoutShell } from "@/components/layout/LayoutShell";
-import { Outlet } from "react-router-dom";
+import React, { ReactNode } from 'react';
+import { Navbar } from './Navbar';
+import { Footer } from './Footer';
 
 interface LayoutProps {
-  children?: ReactNode;
+  children: ReactNode;
 }
 
-const Layout = ({ children }: LayoutProps) => {
+export const Layout = ({ children }: LayoutProps) => {
   return (
-    <LayoutShell>
-      {children || <Outlet />}
-    </LayoutShell>
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-1">
+        {children}
+      </main>
+      <Footer />
+    </div>
   );
 };
-
-export default Layout;

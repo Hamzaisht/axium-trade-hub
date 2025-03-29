@@ -1,13 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { ArrowRight, TrendingUp, Shield, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { useTheme } from "@/contexts/ThemeContext";
 
 export const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const { theme } = useTheme();
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -18,162 +17,140 @@ export const Hero = () => {
   }, []);
   
   return (
-    <section className={cn(
-      "relative min-h-[90vh] flex items-center py-16 overflow-hidden",
-      theme === 'dark' ? "bg-[#0B0F1A]" : "bg-[#F7F9FB]",
-      "max-w-7xl mx-auto px-8"
-    )}>
-      {/* Cyberpunk Background Elements - Kept for aesthetic */}
-      {theme === 'dark' && (
-        <>
-          <div className="absolute inset-0 z-0 dark:bg-[radial-gradient(ellipse_at_top_right,rgba(0,207,255,0.15),transparent_70%)]"></div>
-          <div className="absolute inset-0 z-0 dark:bg-[radial-gradient(circle_at_bottom_left,rgba(0,255,208,0.1),transparent_70%)]"></div>
-        </>
-      )}
+    <section className="min-h-[90vh] flex items-center pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden relative">
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-radial from-axium-blue/5 to-transparent opacity-40 pointer-events-none" />
       
-      <div className="w-full relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            className="relative z-10"
-          >
-            <div className="inline-flex items-center px-3 py-1 bg-axium-neon-blue/10 text-axium-neon-blue rounded-full text-sm font-medium mb-6 border border-axium-neon-blue/20 shadow-neon-blue">
+          <div className={cn(
+            "transition-all duration-700 transform",
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          )}>
+            <div className="inline-flex items-center px-3 py-1 bg-axium-blue/10 text-axium-blue rounded-full text-sm font-medium mb-6">
               <TrendingUp className="w-4 h-4 mr-2" />
-              Creator Economy Revolution
+              Revolutionizing Creator Economy
             </div>
-            
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-              <span className="block relative">
-                <span className="text-gradient-blue cyber-flicker">Trade Creator Tokens</span>
-                <span className="absolute -bottom-2 left-0 w-1/2 h-[2px] bg-gradient-to-r from-axium-neon-blue via-axium-neon-mint to-transparent"></span>
-              </span>
-              <span className="text-foreground mt-2 block">Powered by AI Valuation</span>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-axium-gray-900 leading-tight mb-6">
+              Trade <span className="text-gradient-blue">Creator Tokens</span> Powered by AI Valuation
             </h1>
-            
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl leading-relaxed">
+            <p className="text-lg md:text-xl text-axium-gray-600 mb-8 max-w-xl leading-relaxed">
               Axium.io transforms creator influence into tradable assets. 
               Invest in your favorite creators and watch your portfolio grow with their success.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                size="lg" 
-                className="group bg-axium-neon-blue hover:bg-axium-neon-blue/90 text-black dark:text-black font-medium hover-glow-blue"
-              >
-                <span>Get Started</span>
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <Button size="lg" className="bg-axium-blue hover:bg-axium-blue/90 font-medium text-white">
+                Get Started
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-axium-neon-mint/50 text-axium-neon-mint hover:bg-axium-neon-mint/10 hover:text-axium-neon-mint font-medium hover-glow-mint"
-              >
+              <Button size="lg" variant="outline" className="border-axium-gray-200 text-axium-gray-800 hover:bg-axium-gray-100 font-medium">
                 Explore Creators
               </Button>
             </div>
             
             <div className="mt-10 grid grid-cols-2 gap-4 max-w-lg">
-              <div className="flex items-center gap-3 bg-foreground/5 backdrop-blur-sm p-3 rounded-lg border border-axium-neon-blue/10">
-                <div className="bg-axium-neon-blue/10 p-2 rounded-full">
-                  <BarChart3 className="h-5 w-5 text-axium-neon-blue" />
+              <div className="flex items-center gap-3">
+                <div className="bg-axium-blue/10 p-2 rounded-full">
+                  <BarChart3 className="h-5 w-5 text-axium-blue" />
                 </div>
-                <p className="text-foreground/80 font-medium">AI-Powered Valuations</p>
+                <p className="text-axium-gray-700 font-medium">AI-Powered Valuations</p>
               </div>
-              <div className="flex items-center gap-3 bg-foreground/5 backdrop-blur-sm p-3 rounded-lg border border-axium-neon-mint/10">
-                <div className="bg-axium-neon-mint/10 p-2 rounded-full">
-                  <Shield className="h-5 w-5 text-axium-neon-mint" />
+              <div className="flex items-center gap-3">
+                <div className="bg-axium-blue/10 p-2 rounded-full">
+                  <Shield className="h-5 w-5 text-axium-blue" />
                 </div>
-                <p className="text-foreground/80 font-medium">Secure Blockchain</p>
+                <p className="text-axium-gray-700 font-medium">Secure Blockchain</p>
               </div>
             </div>
-          </motion.div>
+          </div>
           
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-            transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
-            className="relative z-10"
-          >
+          <div className={cn(
+            "relative transition-all duration-700 delay-300 transform",
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          )}>
             <div className="relative w-full aspect-square max-w-lg mx-auto">
-              <div className="absolute top-0 left-0 w-full h-full bg-gradient-conic from-axium-neon-blue/10 via-transparent to-axium-neon-mint/5 rounded-full animate-spin-slow [animation-duration:20s] opacity-70"></div>
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-conic from-axium-blue/10 via-transparent to-axium-blue-light/5 rounded-full animate-spin-slow [animation-duration:20s] opacity-70" />
               
-              {/* Trading Card - Emma Watson */}
-              <div className="absolute top-[5%] left-[10%] w-64 cyber-panel animate-float">
-                <div className="absolute inset-0 bg-gradient-to-r from-axium-neon-blue/20 to-transparent opacity-40"></div>
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-axium-neon-blue/70 to-transparent"></div>
-                <div className="relative p-5 z-10">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="bg-axium-neon-blue/10 text-axium-neon-blue text-xs font-semibold px-2 py-1 rounded border border-axium-neon-blue/30">
-                      TRENDING
+              <GlassCard 
+                variant="premium" 
+                size="lg" 
+                className="absolute top-[5%] left-[10%] h-52 w-64 animate-float"
+              >
+                <div className="h-full flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="bg-axium-blue/10 text-axium-blue text-xs font-semibold px-2 py-1 rounded">
+                        TRENDING
+                      </div>
+                      <TrendingUp className="h-4 w-4 text-axium-success" />
                     </div>
-                    <TrendingUp className="h-4 w-4 text-axium-success" />
+                    <h3 className="font-semibold text-lg">Emma Watson</h3>
+                    <p className="text-axium-gray-600 text-sm">$EMW</p>
                   </div>
-                  <h3 className="font-semibold text-lg text-white">Emma Watson</h3>
-                  <p className="text-axium-neon-blue text-sm">$EMW</p>
                   
-                  <div className="h-16 bg-gradient-to-r from-axium-neon-blue/5 to-axium-neon-blue/10 rounded-md my-3"></div>
-                  
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-xs text-axium-gray-400">Current Value</p>
-                      <p className="font-semibold text-lg text-white">$24.82</p>
-                    </div>
-                    <div className="bg-axium-success/10 text-axium-success text-xs font-medium px-2 py-1 rounded border border-axium-success/30">
-                      +12.5%
+                  <div>
+                    <div className="h-16 bg-gradient-to-r from-axium-blue/5 to-axium-blue/10 rounded-md mb-3"></div>
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <p className="text-xs text-axium-gray-500">Current Value</p>
+                        <p className="font-semibold text-lg">$24.82</p>
+                      </div>
+                      <div className="bg-axium-success/10 text-axium-success text-xs font-medium px-2 py-1 rounded">
+                        +12.5%
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </GlassCard>
               
-              {/* Trading Card - Zendaya */}
-              <div className="absolute bottom-[15%] right-[5%] w-64 cyber-panel animation-delay-200 animate-float">
-                <div className="absolute inset-0 bg-gradient-to-l from-axium-neon-mint/20 to-transparent opacity-40"></div>
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-axium-neon-mint/70 to-transparent"></div>
-                <div className="relative p-5 z-10">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="bg-white/10 text-axium-neon-mint text-xs font-semibold px-2 py-1 rounded border border-axium-neon-mint/30">
-                      CREATOR IPO
+              <GlassCard 
+                variant="blue" 
+                size="lg" 
+                className="absolute bottom-[15%] right-[5%] h-56 w-64 animation-delay-200 animate-float"
+              >
+                <div className="h-full flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="bg-white/80 text-axium-blue text-xs font-semibold px-2 py-1 rounded">
+                        CREATOR IPO
+                      </div>
                     </div>
+                    <h3 className="font-semibold text-lg">Zendaya</h3>
+                    <p className="text-axium-blue/70 text-sm">$ZEN</p>
                   </div>
-                  <h3 className="font-semibold text-lg text-white">Zendaya</h3>
-                  <p className="text-axium-neon-mint text-sm">$ZEN</p>
                   
-                  <div className="h-16 bg-white/10 rounded-md my-3"></div>
-                  
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-xs text-axium-gray-400">Initial Price</p>
-                      <p className="font-semibold text-lg text-white">$18.40</p>
+                  <div>
+                    <div className="h-16 bg-white/30 rounded-md mb-3"></div>
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <p className="text-xs text-axium-blue/70">Initial Price</p>
+                        <p className="font-semibold text-lg">$18.40</p>
+                      </div>
+                      <Button size="sm" className="bg-white text-axium-blue hover:bg-white/90 px-3">
+                        Buy Now
+                      </Button>
                     </div>
-                    <Button size="sm" className="bg-axium-neon-mint text-black hover:bg-axium-neon-mint/90 px-3 hover-glow-mint">
-                      Buy Now
-                    </Button>
                   </div>
                 </div>
-              </div>
+              </GlassCard>
               
-              {/* Portfolio Value Card */}
-              <div className="absolute bottom-[10%] left-[5%] w-52 cyber-panel animation-delay-400 animate-float">
-                <div className="absolute inset-0 bg-gradient-to-t from-axium-neon-gold/20 to-transparent opacity-40"></div>
-                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-axium-neon-gold/70 to-transparent"></div>
-                <div className="relative p-4 z-10">
+              <GlassCard 
+                variant="default" 
+                size="md" 
+                className="absolute bottom-[10%] left-[5%] h-32 w-52 animation-delay-400 animate-float"
+              >
+                <div className="h-full flex flex-col justify-between">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-medium text-white">Portfolio Value</h3>
+                    <h3 className="font-medium">Portfolio Value</h3>
                   </div>
-                  <div className="mt-3">
-                    <p className="font-semibold text-2xl text-white">$142,580</p>
-                    <p className="text-axium-success text-sm font-medium flex items-center">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      +8.3% Today
-                    </p>
+                  <div>
+                    <p className="font-semibold text-2xl">$142,580</p>
+                    <p className="text-axium-success text-sm font-medium">+8.3% Today</p>
                   </div>
                 </div>
-              </div>
+              </GlassCard>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

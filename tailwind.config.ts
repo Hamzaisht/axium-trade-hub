@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,38 +20,38 @@ export default {
 		},
 		extend: {
 			colors: {
-				border: 'rgb(var(--border) / <alpha-value>)',
-				input: 'rgb(var(--input) / <alpha-value>)',
-				ring: 'rgb(var(--ring) / <alpha-value>)',
-				background: 'rgb(var(--background) / <alpha-value>)',
-				foreground: 'rgb(var(--foreground) / <alpha-value>)',
+				border: 'hsl(var(--border))',
+				input: 'hsl(var(--input))',
+				ring: 'hsl(var(--ring))',
+				background: 'hsl(var(--background))',
+				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: 'rgb(var(--primary) / <alpha-value>)',
-					foreground: 'rgb(var(--primary-foreground) / <alpha-value>)'
+					DEFAULT: 'hsl(var(--primary))',
+					foreground: 'hsl(var(--primary-foreground))'
 				},
 				secondary: {
-					DEFAULT: 'rgb(var(--secondary) / <alpha-value>)',
-					foreground: 'rgb(var(--secondary-foreground) / <alpha-value>)'
+					DEFAULT: 'hsl(var(--secondary))',
+					foreground: 'hsl(var(--secondary-foreground))'
 				},
 				destructive: {
-					DEFAULT: 'rgb(var(--destructive) / <alpha-value>)',
-					foreground: 'rgb(var(--destructive-foreground) / <alpha-value>)'
+					DEFAULT: 'hsl(var(--destructive))',
+					foreground: 'hsl(var(--destructive-foreground))'
 				},
 				muted: {
-					DEFAULT: 'rgb(var(--muted) / <alpha-value>)',
-					foreground: 'rgb(var(--muted-foreground) / <alpha-value>)'
+					DEFAULT: 'hsl(var(--muted))',
+					foreground: 'hsl(var(--muted-foreground))'
 				},
 				accent: {
-					DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
-					foreground: 'rgb(var(--accent-foreground) / <alpha-value>)'
+					DEFAULT: 'hsl(var(--accent))',
+					foreground: 'hsl(var(--accent-foreground))'
 				},
 				popover: {
-					DEFAULT: 'rgb(var(--popover) / <alpha-value>)',
-					foreground: 'rgb(var(--popover-foreground) / <alpha-value>)'
+					DEFAULT: 'hsl(var(--popover))',
+					foreground: 'hsl(var(--popover-foreground))'
 				},
 				card: {
-					DEFAULT: 'rgb(var(--card) / <alpha-value>)',
-					foreground: 'rgb(var(--card-foreground) / <alpha-value>)'
+					DEFAULT: 'hsl(var(--card))',
+					foreground: 'hsl(var(--card-foreground))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
@@ -62,50 +63,33 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom Axium colors - use RGB format to enable opacity modifiers
+				// Custom Axium colors
 				axium: {
-					blue: 'rgb(var(--axium-blue-rgb) / <alpha-value>)',
-					'blue-light': 'rgb(var(--axium-blue-light-rgb) / <alpha-value>)',
-					'blue-dark': 'rgb(var(--axium-blue-dark-rgb) / <alpha-value>)',
-					'dark-bg': 'rgb(var(--axium-dark-bg-rgb) / <alpha-value>)',
-					'neon-blue': 'rgb(var(--axium-neon-blue-rgb) / <alpha-value>)',
-					'neon-gold': 'rgb(var(--axium-neon-gold-rgb) / <alpha-value>)',
-					'neon-mint': 'rgb(var(--axium-neon-mint-rgb) / <alpha-value>)',
-					'neon-magenta': 'rgb(var(--axium-neon-magenta-rgb) / <alpha-value>)',
+					blue: '#0050FF',
+					'blue-light': '#3B82F6',
+					'blue-dark': '#1E3A8A',
 					gray: {
-						100: 'rgb(var(--axium-gray-100-rgb) / <alpha-value>)',
-						200: 'rgb(var(--axium-gray-200-rgb) / <alpha-value>)',
-						300: 'rgb(var(--axium-gray-300-rgb) / <alpha-value>)',
-						400: 'rgb(var(--axium-gray-400-rgb) / <alpha-value>)',
-						500: 'rgb(var(--axium-gray-500-rgb) / <alpha-value>)',
-						600: 'rgb(var(--axium-gray-600-rgb) / <alpha-value>)',
-						700: 'rgb(var(--axium-gray-700-rgb) / <alpha-value>)',
-						800: 'rgb(var(--axium-gray-800-rgb) / <alpha-value>)',
-						900: 'rgb(var(--axium-gray-900-rgb) / <alpha-value>)',
+						100: '#F8F9FA',
+						200: '#E9ECEF',
+						300: '#DEE2E6',
+						400: '#CED4DA',
+						500: '#ADB5BD',
+						600: '#6C757D',
+						700: '#495057',
+						800: '#343A40',
+						900: '#212529',
 					},
-					'success': 'rgb(var(--axium-success-rgb) / <alpha-value>)',
-					'warning': 'rgb(var(--axium-warning-rgb) / <alpha-value>)',
-					'error': 'rgb(var(--axium-error-rgb) / <alpha-value>)',
-					'positive': 'rgb(var(--axium-positive-rgb) / <alpha-value>)',
-					'negative': 'rgb(var(--axium-negative-rgb) / <alpha-value>)',
+					'success': '#10B981',
+					'warning': '#F59E0B',
+					'error': '#EF4444',
+					'positive': '#22C55E',
+					'negative': '#F43F5E',
 				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
-			},
-			boxShadow: {
-				'glass': 'var(--shadow-glass)',
-				'glass-strong': 'var(--shadow-glass-strong)',
-				'glass-blue': 'var(--shadow-glass-blue)',
-				'button': 'var(--shadow-button)',
-				'button-hover': 'var(--shadow-button-hover)',
-				'glow': 'var(--shadow-glow)',
-				'neon-gold': 'var(--shadow-neon-gold)',
-				'neon-blue': 'var(--shadow-neon-blue)',
-				'neon-mint': 'var(--shadow-neon-mint)',
-				'neon-magenta': 'var(--shadow-neon-magenta)',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -187,50 +171,6 @@ export default {
 					'100%': {
 						transform: 'translateX(-100%)'
 					}
-				},
-				'glow-pulse': {
-					'0%': { 
-						boxShadow: '0 0 5px rgba(0, 207, 255, 0.5)' 
-					},
-					'50%': { 
-						boxShadow: '0 0 20px rgba(0, 207, 255, 0.7)' 
-					},
-					'100%': { 
-						boxShadow: '0 0 5px rgba(0, 207, 255, 0.5)' 
-					}
-				},
-				'neon-pulse': {
-					'0%': { 
-						boxShadow: '0 0 5px rgba(0, 255, 208, 0.5)' 
-					},
-					'50%': { 
-						boxShadow: '0 0 20px rgba(0, 255, 208, 0.7)' 
-					},
-					'100%': { 
-						boxShadow: '0 0 5px rgba(0, 255, 208, 0.5)' 
-					}
-				},
-				'gold-pulse': {
-					'0%': { 
-						boxShadow: '0 0 5px rgba(255, 215, 0, 0.5)' 
-					},
-					'50%': { 
-						boxShadow: '0 0 20px rgba(255, 215, 0, 0.7)' 
-					},
-					'100%': { 
-						boxShadow: '0 0 5px rgba(255, 215, 0, 0.5)' 
-					}
-				},
-				'magenta-pulse': {
-					'0%': { 
-						boxShadow: '0 0 5px rgba(227, 78, 255, 0.5)' 
-					},
-					'50%': { 
-						boxShadow: '0 0 20px rgba(227, 78, 255, 0.7)' 
-					},
-					'100%': { 
-						boxShadow: '0 0 5px rgba(227, 78, 255, 0.5)' 
-					}
 				}
 			},
 			animation: {
@@ -242,11 +182,7 @@ export default {
 				'slide-down': 'slide-down 0.3s ease-out',
 				'slide-left': 'slide-left 0.3s ease-out',
 				'slide-right': 'slide-right 0.3s ease-out',
-				'ticker': 'ticker 30s linear infinite',
-				'glow-pulse': 'glow-pulse 3s infinite',
-				'neon-pulse': 'neon-pulse 3s infinite',
-				'gold-pulse': 'gold-pulse 3s infinite',
-				'magenta-pulse': 'magenta-pulse 3s infinite'
+				'ticker': 'ticker 30s linear infinite'
 			},
 			backdropFilter: {
 				'none': 'none',
@@ -256,30 +192,13 @@ export default {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
 				'glass-gradient': 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-				'futuristic-grid': 'linear-gradient(to right, rgba(0, 207, 255, 0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 207, 255, 0.07) 1px, transparent 1px)',
-				'tesla-gradient': 'linear-gradient(135deg, rgba(0, 207, 255, 0.05) 0%, rgba(0, 255, 208, 0.05) 100%)',
-				'blade-runner-gradient': 'linear-gradient(to right, rgba(227, 78, 255, 0.1) 0%, rgba(0, 207, 255, 0.1) 100%)',
 			},
-			typography: {
-				DEFAULT: {
-					css: {
-						maxWidth: '100ch',
-						color: 'hsl(var(--foreground))',
-						'h1, h2, h3, h4, h5, h6': {
-							color: 'hsl(var(--foreground))',
-							fontWeight: '700',
-						},
-						a: {
-							color: 'hsl(var(--primary))',
-							'&:hover': {
-								color: 'hsl(var(--primary))',
-							},
-						},
-						strong: {
-							color: 'hsl(var(--foreground))',
-						},
-					},
-				},
+			boxShadow: {
+				'glass': '0 0 20px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.1)',
+				'glass-strong': '0 0 30px rgba(0, 0, 0, 0.1), 0 0 8px rgba(0, 0, 0, 0.1)',
+				'glass-blue': '0 0 20px rgba(0, 80, 255, 0.1), 0 0 4px rgba(0, 80, 255, 0.05)',
+				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
+				'button-hover': '0 4px 12px rgba(0, 0, 0, 0.1)',
 			},
 		}
 	},

@@ -1,136 +1,80 @@
 
-import { useTheme } from "@/contexts/ThemeContext";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { useState } from "react";
 
-const TOKENS = [
-  { name: "Emma Watson", symbol: "EMW", price: 24.82, change: 12.5 },
-  { name: "Zendaya", symbol: "ZEN", price: 18.4, change: 5.7 },
-  { name: "Tom Holland", symbol: "THLD", price: 21.35, change: -2.3 },
-  { name: "Ryan Reynolds", symbol: "RYAN", price: 32.75, change: 8.9 },
-  { name: "Dwayne Johnson", symbol: "ROCK", price: 47.22, change: 15.2 },
-  { name: "Taylor Swift", symbol: "SWIFT", price: 56.89, change: 3.1 },
-  { name: "Kylie Jenner", symbol: "KYLJ", price: 29.11, change: -4.5 },
-  { name: "Lebron James", symbol: "KING", price: 43.65, change: 7.2 },
+// Mock data for ticker
+const mockTickerData = [
+  { id: 1, name: "Emma Watson", symbol: "$EMW", price: 24.82, change: 12.5 },
+  { id: 2, name: "Zendaya", symbol: "$ZEN", price: 18.40, change: 5.2 },
+  { id: 3, name: "Tom Holland", symbol: "$THLD", price: 21.35, change: -1.8 },
+  { id: 4, name: "LeBron James", symbol: "$LBJ", price: 56.78, change: 3.4 },
+  { id: 5, name: "Taylor Swift", symbol: "$SWIFT", price: 89.21, change: 8.7 },
+  { id: 6, name: "BTS", symbol: "$BTS", price: 45.63, change: -2.3 },
+  { id: 7, name: "Dua Lipa", symbol: "$DLIPA", price: 19.92, change: 6.1 },
+  { id: 8, name: "Cristiano Ronaldo", symbol: "$CR7", price: 72.15, change: 4.5 },
+  { id: 9, name: "Billie Eilish", symbol: "$BLSH", price: 31.47, change: -0.9 },
+  { id: 10, name: "Ryan Reynolds", symbol: "$RYNR", price: 42.36, change: 7.2 },
 ];
 
+type TickerItem = {
+  id: number;
+  name: string;
+  symbol: string;
+  price: number;
+  change: number;
+};
+
 export const LiveTicker = () => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [tickerData, setTickerData] = useState<TickerItem[]>(mockTickerData);
+  const [isPaused, setIsPaused] = useState(false);
   
+  // Update ticker data randomly every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isPaused) {
+        setTickerData(prev => 
+          prev.map(item => ({
+            ...item,
+            price: parseFloat((item.price + (Math.random() * 0.6 - 0.3)).toFixed(2)),
+            change: parseFloat((item.change + (Math.random() * 0.8 - 0.4)).toFixed(1))
+          }))
+        );
+      }
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [isPaused]);
+
   return (
-    <div className={`relative py-4 backdrop-blur-md border-y overflow-hidden ${
-      isDark ? 'bg-[#0B0F1A]/80 border-white/10' : 'bg-white/80 border-zinc-200'
-    }`}>
-      {isDark && (
-        <div className="absolute inset-0 bg-gradient-to-r from-axium-neon-blue/5 via-transparent to-axium-neon-mint/5"></div>
-      )}
-      
-      <div className="relative">
-        <div className="flex whitespace-nowrap animate-ticker">
-          {[...TOKENS, ...TOKENS].map((token, index) => (
-            <motion.div 
-              key={`${token.symbol}-${index}`} 
-              className={`flex items-center mx-4 py-2 px-4 rounded-2xl backdrop-blur-md ${
-                isDark ? 'bg-[#0F0F12]/90 border-white/10' : 'bg-white/90 border-zinc-200'
-              } border hover:bg-opacity-90 ${
-                token.change >= 0 
-                  ? 'border-axium-positive/20'
-                  : 'border-axium-negative/20'
-              }`}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-              animate={hoveredIndex === index ? {
-                y: [0, -5, 0],
-                scale: [1, 1.05, 1],
-                transition: { duration: 0.5 }
-              } : {}}
-              whileHover={{
-                z: 10
-              }}
-            >
-              <div className="flex items-center">
-                <span className="font-medium mr-2 text-foreground">{token.symbol}</span>
-                <span className="text-muted-foreground text-sm mr-3">{token.name}</span>
-                <span className="font-bold mr-2">${token.price.toFixed(2)}</span>
-                <span className={`flex items-center text-sm ${
-                  token.change >= 0 
-                    ? 'text-axium-positive' 
-                    : 'text-axium-negative'
-                }`}>
-                  {token.change >= 0 
-                    ? <TrendingUp className="h-3 w-3 mr-1" /> 
-                    : <TrendingDown className="h-3 w-3 mr-1" />
-                  }
-                  {Math.abs(token.change)}%
-                </span>
-              </div>
-              
-              {/* 3D Oracle hover effect */}
-              {hoveredIndex === index && (
-                <motion.div 
-                  className="absolute inset-0 rounded-md pointer-events-none"
-                  initial={{ opacity: 0 }}
-                  animate={{ 
-                    opacity: 1,
-                    boxShadow: token.change >= 0 
-                      ? "0 0 20px rgba(42, 255, 145, 0.3)" 
-                      : "0 0 20px rgba(255, 61, 94, 0.3)"
-                  }}
-                  transition={{ duration: 0.3 }}
-                />
+    <div 
+      className="relative overflow-hidden bg-axium-gray-100 py-4 border-y border-axium-gray-200"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div className={cn(
+        "flex items-center space-x-16 animate-ticker whitespace-nowrap",
+        isPaused && "animation-play-state-paused"
+      )}>
+        {/* Double the items to create seamless loop */}
+        {[...tickerData, ...tickerData].map((item, index) => (
+          <div key={`${item.id}-${index}`} className="flex items-center space-x-2">
+            <span className="font-medium text-axium-gray-800">{item.symbol}</span>
+            <span className="text-axium-gray-900">${item.price.toFixed(2)}</span>
+            <span className={cn(
+              "flex items-center text-sm",
+              item.change >= 0 ? "text-axium-success" : "text-axium-error"
+            )}>
+              {item.change >= 0 ? (
+                <TrendingUp className="h-3.5 w-3.5 mr-1" />
+              ) : (
+                <TrendingDown className="h-3.5 w-3.5 mr-1" />
               )}
-              
-              {/* Enhanced 3D Oracle effect on hover */}
-              {hoveredIndex === index && (
-                <motion.div 
-                  className="absolute inset-0 rounded-md pointer-events-none overflow-hidden"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                >
-                  <motion.div 
-                    className={`absolute inset-0 opacity-20 ${
-                      token.change >= 0 ? 'bg-axium-positive' : 'bg-axium-negative'
-                    }`}
-                    animate={{ 
-                      backgroundPosition: ['0% 0%', '100% 100%'],
-                      scale: [1, 1.05, 1]
-                    }}
-                    transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
-                  />
-                  <motion.div 
-                    className="absolute -inset-1 opacity-30"
-                    style={{ 
-                      background: `radial-gradient(circle at 50% 50%, ${
-                        token.change >= 0 ? 'rgba(42, 255, 145, 0.6)' : 'rgba(255, 61, 94, 0.6)'
-                      }, transparent 70%)` 
-                    }}
-                    animate={{ 
-                      rotate: [0, 360],
-                      scale: [1, 1.2, 1]
-                    }}
-                    transition={{ duration: 8, repeat: Infinity, repeatType: "reverse" }}
-                  />
-                </motion.div>
-              )}
-            </motion.div>
-          ))}
-        </div>
+              {Math.abs(item.change).toFixed(1)}%
+            </span>
+          </div>
+        ))}
       </div>
-      
-      {/* Gradient fade effect on edges */}
-      <div className={`absolute top-0 left-0 h-full w-20 z-10 ${
-        isDark 
-          ? 'bg-gradient-to-r from-[#0B0F1A] via-[#0B0F1A]/90 to-transparent' 
-          : 'bg-gradient-to-r from-[#F7F9FB] via-[#F7F9FB]/90 to-transparent'
-      }`}></div>
-      <div className={`absolute top-0 right-0 h-full w-20 z-10 ${
-        isDark 
-          ? 'bg-gradient-to-l from-[#0B0F1A] via-[#0B0F1A]/90 to-transparent' 
-          : 'bg-gradient-to-l from-[#F7F9FB] via-[#F7F9FB]/90 to-transparent'
-      }`}></div>
     </div>
   );
 };
