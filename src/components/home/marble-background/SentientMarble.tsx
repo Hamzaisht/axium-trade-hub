@@ -2,6 +2,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useTextureLoader } from '@/hooks/useTextureLoader';
 
 interface SentientMarbleProps {
   scrollY?: number;
@@ -14,94 +15,17 @@ export const SentientMarble = ({ scrollY, onButtonPress }: SentientMarbleProps) 
   const haloRef = useRef<THREE.Mesh>(null);
   const lavaRingRef = useRef<THREE.Mesh>(null);
   const goldRingRef = useRef<THREE.Group>(null);
-
-  // Create fallback textures
-  const fallbackTexture = new THREE.TextureLoader().load(
-    'https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=1000&auto=format&fit=crop',
-    undefined,
-    undefined,
-    (error) => {
-      console.error('Error loading fallback texture:', error);
-    }
-  );
   
-  // Try loading the textures with error handling
-  const [textureMap, setTextureMap] = useState<THREE.Texture | null>(null);
-  const [normalMap, setNormalMap] = useState<THREE.Texture | null>(null);
-  const [lavaMap, setLavaMap] = useState<THREE.Texture | null>(null);
-  const [texturesLoaded, setTexturesLoaded] = useState(false);
-  
-  useEffect(() => {
-    const textureLoader = new THREE.TextureLoader();
-    
-    // Load marble texture with fallback
-    textureLoader.load(
-      '/textures/black-marble.jpg',
-      (texture) => {
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        setTextureMap(texture);
-        console.info('Black marble texture loaded successfully');
-      },
-      undefined,
-      (error) => {
-        console.warn('Could not load black marble texture, using fallback:', error);
-        setTextureMap(fallbackTexture);
-      }
-    );
-    
-    // Load normal map with fallback
-    textureLoader.load(
-      '/textures/marble-normal.jpg',
-      (texture) => {
-        setNormalMap(texture);
-        console.info('Marble normal map loaded successfully');
-      },
-      undefined,
-      (error) => {
-        console.warn('Could not load normal map, creating default normal map:', error);
-        // Create a default normal map
-        const defaultNormal = new THREE.CanvasTexture(
-          new OffscreenCanvas(2, 2)
-        );
-        setNormalMap(defaultNormal);
-      }
-    );
-    
-    // Load lava texture for accents
-    textureLoader.load(
-      'https://images.unsplash.com/photo-1516476892398-bdcab4c8dab8?q=80&w=500&auto=format&fit=crop',
-      (texture) => {
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        setLavaMap(texture);
-        console.info('Lava texture loaded successfully');
-      },
-      undefined,
-      (error) => {
-        console.warn('Could not load lava texture, creating default texture:', error);
-        const defaultLava = new THREE.CanvasTexture(
-          new OffscreenCanvas(2, 2)
-        );
-        const ctx = defaultLava.image.getContext('2d');
-        if (ctx) {
-          ctx.fillStyle = '#D4AF37';
-          ctx.fillRect(0, 0, 2, 2);
-        }
-        setLavaMap(defaultLava);
-      }
-    );
-    
-    setTexturesLoaded(true);
-    
-    return () => {
-      // Clean up textures to prevent memory leaks
-      if (textureMap) textureMap.dispose();
-      if (normalMap) normalMap.dispose();
-      if (lavaMap) lavaMap.dispose();
-      fallbackTexture.dispose();
-    };
-  }, []);
+  // Load textures using our custom hook
+  const { texture: textureMap, normalMap, lavaMap } = useTextureLoader({
+    main: '/textures/black-marble.jpg',
+    normal: '/textures/marble-normal.jpg',
+    accent: 'https://images.unsplash.com/photo-1516476892398-bdcab4c8dab8?q=80&w=500&auto=format&fit=crop',
+    fallback: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=1000&auto=format&fit=crop'
+  }, {
+    main: { wrapS: THREE.RepeatWrapping, wrapT: THREE.RepeatWrapping },
+    accent: { wrapS: THREE.RepeatWrapping, wrapT: THREE.RepeatWrapping }
+  });
 
   // State for interactive movement
   const [hover, setHover] = useState(false);
@@ -229,8 +153,8 @@ export const SentientMarble = ({ scrollY, onButtonPress }: SentientMarbleProps) 
       lavaRingRef.current.rotation.z -= 0.003;
       
       if (lavaRingRef.current.material instanceof THREE.MeshStandardMaterial && lavaMap) {
-        lavaRingRef.current.material.map.offset.x += 0.001;
-        lavaRingRef.current.material.map.offset.y += 0.0005;
+        lavaMap.offset.x += 0.001;
+        lavaMap.offset.y += 0.0005;
         
         // Increase emissive intensity during pulse
         lavaRingRef.current.material.emissiveIntensity = pulseEffect ? 0.8 : 0.4;
@@ -268,6 +192,7 @@ export const SentientMarble = ({ scrollY, onButtonPress }: SentientMarbleProps) 
     }
   });
 
+  // The actual rendering is the same, just use the textures from our hook
   return (
     <group>
       {/* Marble sphere */}
@@ -278,7 +203,7 @@ export const SentientMarble = ({ scrollY, onButtonPress }: SentientMarbleProps) 
       >
         <sphereGeometry args={[1.5, 64, 64]} />
         <meshStandardMaterial 
-          map={textureMap || fallbackTexture}
+          map={textureMap}
           normalMap={normalMap}
           color="#111111"
           metalness={0.8}
