@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { PremiumHead } from './PremiumHead';
@@ -11,6 +11,7 @@ interface PremiumSceneProps {
 
 export const PremiumScene = ({ scrollY, onButtonPress }: PremiumSceneProps) => {
   const [canvasLoaded, setCanvasLoaded] = useState(true);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   
   // Check WebGL support
   useEffect(() => {
@@ -42,26 +43,29 @@ export const PremiumScene = ({ scrollY, onButtonPress }: PremiumSceneProps) => {
         gl={{ 
           antialias: true,
           alpha: true,
-          powerPreference: 'high-performance'
+          powerPreference: 'high-performance',
+          preserveDrawingBuffer: true // Helps with some rendering issues
         }}
         dpr={[1, 2]} // Responsive to device pixel ratio
-        style={{ background: '#0A0E17' }}
+        style={{ background: '#0A0E17', display: 'block' }}
+        shadows
       >
-        {/* Main lights */}
-        <ambientLight intensity={1.0} />
-        <directionalLight position={[5, 5, 5]} intensity={1.5} color="#ffffff" />
-        <pointLight position={[-3, 3, 3]} intensity={1.5} color="#D4AF37" />
+        {/* Enhanced lighting for better visibility */}
+        <ambientLight intensity={2.0} />
+        <directionalLight position={[5, 5, 5]} intensity={3.0} color="#ffffff" />
+        <pointLight position={[-3, 3, 3]} intensity={3.0} color="#D4AF37" />
         <spotLight 
           position={[0, 5, 5]} 
-          angle={0.3} 
+          angle={0.4} 
           penumbra={0.8} 
-          intensity={3} 
+          intensity={5} 
           color="#D4AF37" 
           castShadow 
         />
+        <hemisphereLight intensity={1.0} color="#D4AF37" groundColor="#0A0E17" />
         
-        {/* Camera setup */}
-        <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={50} />
+        {/* Camera setup with wider field of view */}
+        <PerspectiveCamera makeDefault position={[0, 0, 5.5]} fov={60} />
         
         {/* Main 3D component */}
         <PremiumHead scrollY={scrollY} onButtonPress={onButtonPress} />
@@ -77,8 +81,8 @@ export const PremiumScene = ({ scrollY, onButtonPress }: PremiumSceneProps) => {
         />
       </Canvas>
       
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0A0E17]/10 via-transparent to-[#0A0E17]/70 pointer-events-none"></div>
+      {/* Gradient overlay - make it more subtle to see the 3D model better */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0A0E17]/5 via-transparent to-[#0A0E17]/70 pointer-events-none"></div>
     </div>
   );
 };

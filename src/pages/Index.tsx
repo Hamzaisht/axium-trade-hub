@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
@@ -7,7 +8,6 @@ import LiveTicker from "@/components/home/LiveTicker";
 import Features from "@/components/home/Features";
 import FAQ from "@/components/home/FAQ";
 import PremiumBackground from "@/components/home/PremiumBackground";
-import AnimatedCubeExample from "@/components/home/AnimatedCubeExample";
 import { cn } from "@/lib/utils";
 import { ArrowRight, ChevronRight, ExternalLink, LineChart, Shield, Star, TrendingUp, Users } from "lucide-react";
 
@@ -28,7 +28,7 @@ const Index = () => {
       "min-h-screen bg-[#0A0E17] text-white transition-opacity duration-500",
       isLoaded ? "opacity-100" : "opacity-0"
     )}>
-      {/* The premium background needs to be the first component so it appears behind everything */}
+      {/* The premium background needs to be the first component */}
       <PremiumBackground />
       
       <Navbar />

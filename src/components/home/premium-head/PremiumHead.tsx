@@ -17,7 +17,7 @@ export const PremiumHead = ({ scrollY, onButtonPress }: PremiumHeadProps) => {
   const lastScrollY = useRef(0);
   const groupRef = useRef<THREE.Group>(null);
 
-  // Auto-pulse the effect periodically to draw attention
+  // Auto-pulse the effect more frequently to draw attention
   useEffect(() => {
     const interval = setInterval(() => {
       setPulseEffect(true);
@@ -27,14 +27,14 @@ export const PremiumHead = ({ scrollY, onButtonPress }: PremiumHeadProps) => {
       }, 800);
       
       return () => clearTimeout(timer);
-    }, 5000);
+    }, 3000); // More frequent pulsing
     
     return () => clearInterval(interval);
   }, []);
 
-  // Handle scroll events for interactive effects
+  // Handle scroll events for interactive effects - more responsive
   useEffect(() => {
-    if (scrollY !== undefined && Math.abs(scrollY - lastScrollY.current) > 30) {
+    if (scrollY !== undefined && Math.abs(scrollY - lastScrollY.current) > 15) { // More sensitive
       setPulseEffect(true);
       lastScrollY.current = scrollY;
       
@@ -58,6 +58,18 @@ export const PremiumHead = ({ scrollY, onButtonPress }: PremiumHeadProps) => {
     }
   }, [onButtonPress]);
 
+  // Initial pulse effect to draw attention when first loaded
+  useEffect(() => {
+    // Initial pulse to draw attention
+    setPulseEffect(true);
+    
+    const timer = setTimeout(() => {
+      setPulseEffect(false);
+    }, 1500); // Longer initial pulse
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   // Update head position on mouse move
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -76,7 +88,7 @@ export const PremiumHead = ({ scrollY, onButtonPress }: PremiumHeadProps) => {
   // Add subtle floating animation
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.15; // Enhanced movement
     }
   });
 
@@ -86,8 +98,8 @@ export const PremiumHead = ({ scrollY, onButtonPress }: PremiumHeadProps) => {
       onPointerOver={() => setHover(true)}
       onPointerOut={() => setHover(false)}
       rotation={[0, 0, 0]}
-      position={[0, -0.3, 0]}
-      scale={1.2} // Make everything bigger
+      position={[0, -0.2, 0]} // Raised position
+      scale={1.5} // Make everything bigger for better visibility
     >
       {/* Black head core */}
       <BlackHead 

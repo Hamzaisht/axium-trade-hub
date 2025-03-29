@@ -12,36 +12,36 @@ interface BlackHeadProps {
 export const BlackHead = ({ pulseEffect, mousePosition, hover }: BlackHeadProps) => {
   const headRef = useRef<THREE.Group>(null);
   
-  // Animation loop
+  // Animation loop with enhanced movement
   useFrame((state, delta) => {
     if (headRef.current) {
-      // Subtle head rotation based on mouse movement
+      // More pronounced head rotation based on mouse movement
       headRef.current.rotation.y = THREE.MathUtils.lerp(
         headRef.current.rotation.y,
-        (mousePosition.x * 0.3),
+        (mousePosition.x * 0.4),
         0.05
       );
       headRef.current.rotation.x = THREE.MathUtils.lerp(
         headRef.current.rotation.x,
-        (mousePosition.y * 0.1),
+        (mousePosition.y * 0.2),
         0.05
       );
       
-      // If user scrolls or clicks a button, add a pulse effect
+      // Enhanced pulse effect
       if (pulseEffect) {
         headRef.current.scale.x = THREE.MathUtils.lerp(
           headRef.current.scale.x,
-          1.05,
+          1.08,
           0.1
         );
         headRef.current.scale.y = THREE.MathUtils.lerp(
           headRef.current.scale.y,
-          1.05,
+          1.08,
           0.1
         );
         headRef.current.scale.z = THREE.MathUtils.lerp(
           headRef.current.scale.z,
-          1.05,
+          1.08,
           0.1
         );
       } else {
@@ -66,15 +66,15 @@ export const BlackHead = ({ pulseEffect, mousePosition, hover }: BlackHeadProps)
 
   return (
     <group ref={headRef}>
-      {/* Head shape */}
+      {/* Head shape - enhanced with better material properties */}
       <mesh>
         <sphereGeometry args={[1.5, 64, 64]} />
         <meshStandardMaterial 
           color="#111111"
           metalness={0.9}
           roughness={0.1}
-          emissive="#111111"
-          emissiveIntensity={0.2}
+          emissive="#222222"
+          emissiveIntensity={0.5}
         />
       </mesh>
       
@@ -85,8 +85,8 @@ export const BlackHead = ({ pulseEffect, mousePosition, hover }: BlackHeadProps)
           color="#111111"
           metalness={0.9}
           roughness={0.1}
-          emissive="#111111"
-          emissiveIntensity={0.2}
+          emissive="#222222"
+          emissiveIntensity={0.5}
         />
       </mesh>
     </group>

@@ -10,22 +10,22 @@ interface HeadEffectsProps {
 const HeadEffects = ({ pulseEffect }: HeadEffectsProps) => {
   const effectsRef = useRef<THREE.Group>(null);
   
-  // Animation for ambient effects
+  // Animation for ambient effects with enhanced visibility
   useFrame((state, delta) => {
     if (effectsRef.current) {
       effectsRef.current.rotation.y += delta * 0.1;
       
       effectsRef.current.children.forEach((child, i) => {
         if (child instanceof THREE.Mesh) {
-          // Make particles float around
-          child.position.y = Math.sin(state.clock.elapsedTime * 0.5 + i) * 0.2;
+          // Make particles float around with more movement
+          child.position.y = Math.sin(state.clock.elapsedTime * 0.5 + i) * 0.3;
           
-          // Increase intensity when pulsing
+          // Increase intensity when pulsing - higher values for better visibility
           if (pulseEffect) {
             if (child.material instanceof THREE.MeshStandardMaterial) {
               child.material.emissiveIntensity = THREE.MathUtils.lerp(
                 child.material.emissiveIntensity,
-                2.0,
+                3.0,
                 0.1
               );
             }
@@ -33,7 +33,7 @@ const HeadEffects = ({ pulseEffect }: HeadEffectsProps) => {
             if (child.material instanceof THREE.MeshStandardMaterial) {
               child.material.emissiveIntensity = THREE.MathUtils.lerp(
                 child.material.emissiveIntensity,
-                1.2,
+                1.8,
                 0.05
               );
             }
@@ -45,18 +45,18 @@ const HeadEffects = ({ pulseEffect }: HeadEffectsProps) => {
 
   return (
     <group ref={effectsRef}>
-      {/* Ambient particles floating around the head - make them more visible */}
-      {[...Array(20)].map((_, i) => (
+      {/* Ambient particles with increased size and brightness */}
+      {[...Array(30)].map((_, i) => (
         <mesh key={i} position={[
-          (Math.random() - 0.5) * 4,
-          (Math.random() - 0.5) * 4,
-          (Math.random() - 0.5) * 4
+          (Math.random() - 0.5) * 4.5,
+          (Math.random() - 0.5) * 4.5,
+          (Math.random() - 0.5) * 4.5
         ]}>
-          <sphereGeometry args={[0.07, 8, 8]} />
+          <sphereGeometry args={[0.1, 8, 8]} />
           <meshStandardMaterial 
             color="#D4AF37" 
             emissive="#D4AF37"
-            emissiveIntensity={1.2}
+            emissiveIntensity={2.0}
             metalness={1}
             roughness={0.2}
             transparent={true}
@@ -65,13 +65,25 @@ const HeadEffects = ({ pulseEffect }: HeadEffectsProps) => {
         </mesh>
       ))}
       
-      {/* Glowing halo effect - made larger and more intense */}
+      {/* Multiple glowing halo effects for more visibility */}
       <mesh position={[0, 0, 0]}>
-        <ringGeometry args={[1.8, 2.0, 32]} />
+        <ringGeometry args={[2.0, 2.2, 32]} />
         <meshStandardMaterial 
           color="#D4AF37" 
           emissive="#D4AF37"
-          emissiveIntensity={1.2}
+          emissiveIntensity={2.0}
+          transparent={true}
+          opacity={0.8}
+        />
+      </mesh>
+      
+      {/* Add a second inner ring for more dramatic effect */}
+      <mesh position={[0, 0, 0]}>
+        <ringGeometry args={[1.7, 1.8, 32]} />
+        <meshStandardMaterial 
+          color="#D4AF37" 
+          emissive="#D4AF37"
+          emissiveIntensity={2.5}
           transparent={true}
           opacity={0.6}
         />

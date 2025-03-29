@@ -10,27 +10,27 @@ interface GoldVeinsProps {
 const GoldVeins = ({ pulseEffect }: GoldVeinsProps) => {
   const veinsRef = useRef<THREE.Group>(null);
   
-  // Animation for the veins
+  // Animation for the veins with enhanced effects
   useFrame((state, delta) => {
     if (veinsRef.current) {
       // Rotate slowly for ambient effect
       veinsRef.current.rotation.y += delta * 0.05;
       
-      // Pulse effect when interacting
+      // Enhanced pulse effect
       if (pulseEffect) {
         veinsRef.current.scale.x = THREE.MathUtils.lerp(
           veinsRef.current.scale.x,
-          1.1,
+          1.15,
           0.1
         );
         veinsRef.current.scale.y = THREE.MathUtils.lerp(
           veinsRef.current.scale.y,
-          1.1,
+          1.15,
           0.1
         );
         veinsRef.current.scale.z = THREE.MathUtils.lerp(
           veinsRef.current.scale.z,
-          1.1,
+          1.15,
           0.1
         );
       } else {
@@ -55,44 +55,44 @@ const GoldVeins = ({ pulseEffect }: GoldVeinsProps) => {
 
   return (
     <group ref={veinsRef}>
-      {/* Create gold vein patterns using small lines and curves - make them bigger and more visible */}
-      {[...Array(30)].map((_, i) => (
+      {/* Create more prominent gold vein patterns with higher intensity */}
+      {[...Array(50)].map((_, i) => (
         <mesh key={i} position={[
-          (Math.random() - 0.5) * 2.2,
-          (Math.random() - 0.5) * 2.2,
+          (Math.random() - 0.5) * 2.4,
+          (Math.random() - 0.5) * 2.4,
           (Math.random() - 0.5) * 0.5 + 1.4
         ]} rotation={[
           Math.random() * Math.PI,
           Math.random() * Math.PI,
           Math.random() * Math.PI
         ]}>
-          <boxGeometry args={[0.08, 0.08, Math.random() * 1 + 0.2]} />
+          <boxGeometry args={[0.1, 0.1, Math.random() * 1.2 + 0.3]} />
           <meshStandardMaterial 
             color="#D4AF37" 
             emissive="#D4AF37"
-            emissiveIntensity={1.2}
+            emissiveIntensity={2.0}
             metalness={1}
             roughness={0.2}
           />
         </mesh>
       ))}
       
-      {/* Add more complex patterns */}
-      {[...Array(15)].map((_, i) => (
+      {/* Add more complex patterns with increased visibility */}
+      {[...Array(25)].map((_, i) => (
         <mesh key={`curve-${i}`} position={[
-          (Math.random() - 0.5) * 2.2,
-          (Math.random() - 0.5) * 2.2,
+          (Math.random() - 0.5) * 2.4,
+          (Math.random() - 0.5) * 2.4,
           (Math.random() - 0.5) * 0.5 + 1.4
         ]} rotation={[
           Math.random() * Math.PI,
           Math.random() * Math.PI,
           Math.random() * Math.PI
         ]}>
-          <torusGeometry args={[0.3, 0.03, 8, 12, Math.PI * (Math.random() * 0.5 + 0.5)]} />
+          <torusGeometry args={[0.4, 0.05, 8, 16, Math.PI * (Math.random() * 0.5 + 0.5)]} />
           <meshStandardMaterial 
             color="#D4AF37" 
             emissive="#D4AF37"
-            emissiveIntensity={1.2}
+            emissiveIntensity={2.0}
             metalness={1}
             roughness={0.2}
           />
