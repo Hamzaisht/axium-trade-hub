@@ -10,8 +10,7 @@ import {
   Tooltip,
   Line,
   ComposedChart,
-  Bar,
-  Legend
+  Bar
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +19,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartIndicators } from "@/components/trading-dashboard/ChartIndicators";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMarketData, PriceUpdate } from "@/hooks/useMarketData";
+import { PriceFlashIndicator } from "./PriceFlashIndicator";
+import { motion } from "framer-motion";
 
 interface ShowIndicators {
   volume: boolean;
@@ -45,21 +47,39 @@ export function LiveChart({ creatorId, symbol }: LiveChartProps) {
     bollingerBands: false,
     vwap: false
   });
-
+  
+  const { priceUpdates, recentTrades, isLoading: marketDataLoading } = useMarketData(creatorId);
+  
+  // Process real-time price updates
   useEffect(() => {
-    if (!creatorId) return;
-    
-    setIsLoading(true);
-    getChartData(creatorId, timeframe)
-      .then(data => {
-        setChartData(data);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error("Error fetching chart data:", error);
-        setIsLoading(false);
-      });
-  }, [creatorId, timeframe]);
+    if (priceUpdates && priceUpdates.length > 0) {
+      // Get chart data first, then combine with real-time updates
+      getChartData(creatorId, timeframe)
+        .then(baseData => {
+          const lastChartTimestamp = baseData.length > 0 
+            ? new Date(baseData[baseData.length - 1].timestamp).getTime() 
+            : 0;
+          
+          // Format recent updates and filter ones after the last chart point
+          const recentUpdates = priceUpdates
+            .filter(update => new Date(update.timestamp).getTime() > lastChartTimestamp)
+            .map(update => ({
+              timestamp: update.timestamp,
+              price: update.newPrice,
+              volume: Math.floor(Math.random() * 100) + 50 // Mock volume
+            }));
+          
+          // Combine base data with recent updates
+          const combinedData = [...baseData, ...recentUpdates];
+          setChartData(combinedData);
+          setIsLoading(false);
+        })
+        .catch(error => {
+          console.error("Error fetching chart data:", error);
+          setIsLoading(false);
+        });
+    }
+  }, [creatorId, timeframe, priceUpdates]);
 
   const handleToggleIndicator = (indicator: keyof ShowIndicators) => {
     setShowIndicators(prev => ({
@@ -72,6 +92,8 @@ export function LiveChart({ creatorId, symbol }: LiveChartProps) {
     const date = new Date(tickItem);
     
     switch (timeframe) {
+      case "1H":
+        return format(date, "HH:mm");
       case "1D":
         return format(date, "HH:mm");
       case "1W":
@@ -90,6 +112,8 @@ export function LiveChart({ creatorId, symbol }: LiveChartProps) {
     const date = new Date(tickItem);
     
     switch (timeframe) {
+      case "1H":
+        return format(date, "HH:mm:ss");
       case "1D":
         return format(date, "HH:mm:ss");
       case "1W":
@@ -129,13 +153,46 @@ export function LiveChart({ creatorId, symbol }: LiveChartProps) {
     return null;
   };
 
+  // Calculate latest price and change
+  const getLatestPrice = () => {
+    if (chartData.length === 0) return null;
+    return chartData[chartData.length - 1].price;
+  };
+
+  const calculatePriceChange = () => {
+    if (chartData.length < 2) return { value: 0, percentage: 0 };
+    
+    const latestPrice = chartData[chartData.length - 1].price;
+    const oldestPrice = chartData[0].price;
+    
+    const change = latestPrice - oldestPrice;
+    const percentage = (change / oldestPrice) * 100;
+    
+    return {
+      value: change,
+      percentage: percentage
+    };
+  };
+
+  const priceChange = calculatePriceChange();
+  const latestPrice = getLatestPrice();
+
   return (
     <Card className="shadow-sm">
       <CardHeader className="pb-2">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <CardTitle>{symbol || "Creator"} Price Chart</CardTitle>
+          <div className="flex items-center gap-3">
+            <CardTitle>{symbol || "Creator"} Price Chart</CardTitle>
+            {!isLoading && latestPrice && (
+              <PriceFlashIndicator 
+                creatorId={creatorId}
+                className="rounded px-2 py-1"
+              />
+            )}
+          </div>
           <Tabs defaultValue={timeframe} onValueChange={(v) => setTimeframe(v as TimeFrame)}>
             <TabsList>
+              <TabsTrigger value="1H">1H</TabsTrigger>
               <TabsTrigger value="1D">1D</TabsTrigger>
               <TabsTrigger value="1W">1W</TabsTrigger>
               <TabsTrigger value="1M">1M</TabsTrigger>
@@ -144,9 +201,30 @@ export function LiveChart({ creatorId, symbol }: LiveChartProps) {
             </TabsList>
           </Tabs>
         </div>
+        {!isLoading && latestPrice && (
+          <div className="flex items-center mt-1.5 mb-1">
+            <motion.span 
+              className={`text-lg font-mono font-semibold mr-3 ${
+                priceChange.value >= 0 ? 'text-green-500' : 'text-red-500'
+              }`}
+            >
+              {formatPrice(latestPrice)}
+            </motion.span>
+            <motion.span 
+              className={`text-sm font-medium ${
+                priceChange.value >= 0 ? 'text-green-500' : 'text-red-500'
+              }`}
+            >
+              {priceChange.value >= 0 ? '+' : ''}
+              {formatPrice(priceChange.value)} 
+              ({priceChange.value >= 0 ? '+' : ''}
+              {priceChange.percentage.toFixed(2)}%)
+            </motion.span>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {isLoading || marketDataLoading ? (
           <div className="w-full aspect-[16/9]">
             <Skeleton className="w-full h-full" />
           </div>
@@ -188,7 +266,7 @@ export function LiveChart({ creatorId, symbol }: LiveChartProps) {
                       dataKey="price" 
                       yAxisId="price"
                       fill="url(#colorPrice)" 
-                      stroke="var(--primary)" 
+                      stroke={priceChange.value >= 0 ? "var(--primary)" : "#ef4444"} 
                       strokeWidth={2}
                       fillOpacity={0.1}
                     />
@@ -221,8 +299,8 @@ export function LiveChart({ creatorId, symbol }: LiveChartProps) {
                     )}
                     <defs>
                       <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+                        <stop offset="5%" stopColor={priceChange.value >= 0 ? "var(--primary)" : "#ef4444"} stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor={priceChange.value >= 0 ? "var(--primary)" : "#ef4444"} stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                   </ComposedChart>
@@ -250,7 +328,7 @@ export function LiveChart({ creatorId, symbol }: LiveChartProps) {
                       type="monotone" 
                       dataKey="price" 
                       fill="url(#colorPrice)" 
-                      stroke="var(--primary)" 
+                      stroke={priceChange.value >= 0 ? "var(--primary)" : "#ef4444"} 
                       strokeWidth={2}
                       fillOpacity={0.1}
                     />
@@ -274,8 +352,8 @@ export function LiveChart({ creatorId, symbol }: LiveChartProps) {
                     )}
                     <defs>
                       <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+                        <stop offset="5%" stopColor={priceChange.value >= 0 ? "var(--primary)" : "#ef4444"} stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor={priceChange.value >= 0 ? "var(--primary)" : "#ef4444"} stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                   </AreaChart>

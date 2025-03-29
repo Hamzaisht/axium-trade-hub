@@ -11,4 +11,5 @@ export * from './PriceTicker';
 export * from './PriceTickerScroll';
 export * from './TradeHistory';
 export * from './TabbedPanel';
+export * from './PriceFlashIndicator';
 export { default as TradePanel } from './TradePanel';
