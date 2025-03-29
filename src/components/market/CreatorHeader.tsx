@@ -6,6 +6,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { IPO } from "@/utils/mockApi";
 import { formatCurrency } from "@/lib/utils";
 import { HelpCircle, Sparkles, TrendingUp } from "lucide-react";
+import { calculateCreatorValuation } from "@/lib/valuationEngine";
+import { sampleCreatorMetrics } from "@/mock/creatorMetrics";
 
 interface CreatorHeaderProps {
   creator: IPO | null;
@@ -35,6 +37,11 @@ export function CreatorHeader({ creator, aiValuation }: CreatorHeaderProps) {
     notation: 'compact', 
     maximumFractionDigits: 1 
   }).format(followers);
+
+  // Calculate creator valuation using our engine
+  const calculatedValuation = calculateCreatorValuation(sampleCreatorMetrics);
+  // Use provided AI valuation or our calculated one
+  const displayedValuation = aiValuation || calculatedValuation;
 
   return (
     <GlassCard className="mb-6 backdrop-blur-md bg-background/70">
@@ -70,26 +77,24 @@ export function CreatorHeader({ creator, aiValuation }: CreatorHeaderProps) {
             </div>
           </div>
           
-          {aiValuation && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex flex-col items-end">
-                    <div className="flex items-center gap-1">
-                      <Sparkles className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium">AI Valuation</span>
-                    </div>
-                    <div className="text-xl font-bold text-primary">
-                      {formatCurrency(aiValuation)}
-                    </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex flex-col items-end">
+                  <div className="flex items-center gap-1">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">AI Valuation</span>
                   </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>AI-powered fair value estimation based on creator performance metrics and market data</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+                  <div className="text-xl font-bold text-primary">
+                    {formatCurrency(displayedValuation)}
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>AI-powered fair value estimation based on creator performance metrics and market data</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </GlassCard>
