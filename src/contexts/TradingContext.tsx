@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Order, Trade } from '@/utils/mockApi';
 import { toast } from 'sonner';
@@ -14,13 +15,14 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
   const [orderBook, setOrderBook] = useState<OrderBookData | null>(null);
   
   // Use the WebSocket hook to handle real-time trading data
+  // Now this is compatible because useWebSocketTrading accepts AuthenticatedUser
   const { 
     isConnected, 
     orders, 
     trades, 
     setOrders, 
     setTrades 
-  } = useWebSocketTrading(user ? { id: user.id } : null, orderBook);
+  } = useWebSocketTrading(user, orderBook);
 
   const placeOrderInContext = async (orderData: Partial<Order>): Promise<Order> => {
     if (!isAuthenticated || !user) {

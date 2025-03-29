@@ -8,10 +8,10 @@ const glassCardVariants = cva(
   {
     variants: {
       variant: {
-        default: "glass-card hover:shadow-glass-strong",
-        premium: "premium-card hover:shadow-glass-strong",
-        blue: "bg-gradient-to-b from-axium-blue/5 to-axium-blue/10 border border-axium-blue/20 shadow-glass-blue hover:shadow-glass-strong text-axium-blue-dark",
-        dark: "glass-card-dark text-white",
+        default: "bg-[#0D1424]/80 border border-[#1E375F]/50 shadow-lg hover:shadow-xl",
+        premium: "bg-gradient-to-b from-[#0D1424]/90 to-[#0D1424]/70 border border-[#1E375F]/60 shadow-lg hover:shadow-xl",
+        blue: "bg-gradient-to-b from-[#162A54]/80 to-[#162A54]/60 border border-[#3676FF]/30 shadow-[0_0_15px_rgba(54,118,255,0.15)] hover:shadow-[0_0_25px_rgba(54,118,255,0.25)]",
+        dark: "bg-[#080B14]/90 border border-[#1E375F]/40 text-white shadow-lg hover:shadow-xl",
       },
       size: {
         sm: "p-3 rounded-md",

@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -65,14 +64,14 @@ export default {
 				},
 				// Custom Axium colors
 				axium: {
-					blue: '#0050FF',
-					'blue-light': '#3B82F6',
+					blue: '#38BDF8',
+					'blue-light': '#93C5FD',
 					'blue-dark': '#1E3A8A',
-					'dark-bg': '#0B0F1A',  // Primary dark background
-					'dark-card': '#121825', // Slightly lighter dark for cards
-					'neon-blue': '#1EAEDB', // Neon blue accent
-					'neon-teal': '#36EEE0', // Neon teal accent
-					'neon-purple': '#9333EA', // Neon purple accent
+					'dark-bg': '#0B0F1A',
+					'dark-bg-alt': '#0E0F12',
+					'neon-blue': '#38BDF8',
+					'gold': '#FFD700',
+					'mint': '#00FFD0',
 					gray: {
 						100: '#F8F9FA',
 						200: '#E9ECEF',
@@ -99,10 +98,12 @@ export default {
 			boxShadow: {
 				'glass': '0 0 20px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.1)',
 				'glass-strong': '0 0 30px rgba(0, 0, 0, 0.1), 0 0 8px rgba(0, 0, 0, 0.1)',
-				'glass-blue': '0 0 20px rgba(0, 80, 255, 0.1), 0 0 4px rgba(0, 80, 255, 0.05)',
+				'glass-blue': '0 0 20px rgba(56, 189, 248, 0.1), 0 0 4px rgba(56, 189, 248, 0.05)',
 				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
 				'button-hover': '0 4px 12px rgba(0, 0, 0, 0.1)',
-				'glow': '0 0 15px rgba(30, 174, 219, 0.5)', // Added neon blue glow
+				'glow': '0 0 15px rgba(56, 189, 248, 0.5)',
+				'gold-glow': '0 0 15px rgba(255, 215, 0, 0.5)',
+				'mint-glow': '0 0 15px rgba(0, 255, 208, 0.5)',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -187,13 +188,53 @@ export default {
 				},
 				'glow-pulse': {
 					'0%': { 
-						boxShadow: '0 0 5px rgba(30, 174, 219, 0.5)' 
+						boxShadow: '0 0 5px rgba(56, 189, 248, 0.5)' 
 					},
 					'50%': { 
-						boxShadow: '0 0 20px rgba(30, 174, 219, 0.7)' 
+						boxShadow: '0 0 20px rgba(56, 189, 248, 0.7)' 
 					},
 					'100%': { 
-						boxShadow: '0 0 5px rgba(30, 174, 219, 0.5)' 
+						boxShadow: '0 0 5px rgba(56, 189, 248, 0.5)' 
+					}
+				},
+				'float-slow': {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'50%': {
+						transform: 'translateY(-10px)'
+					}
+				},
+				'rotate-slow': {
+					'0%': {
+						transform: 'rotate(0deg)'
+					},
+					'100%': {
+						transform: 'rotate(360deg)'
+					}
+				},
+				'glow-pulse-blue': {
+					'0%, 100%': { 
+						textShadow: '0 0 5px rgba(56, 189, 248, 0.5)' 
+					},
+					'50%': { 
+						textShadow: '0 0 15px rgba(56, 189, 248, 0.8), 0 0 20px rgba(56, 189, 248, 0.5)' 
+					}
+				},
+				'glow-pulse-gold': {
+					'0%, 100%': { 
+						textShadow: '0 0 5px rgba(255, 215, 0, 0.5)' 
+					},
+					'50%': { 
+						textShadow: '0 0 15px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5)' 
+					}
+				},
+				'glow-pulse-mint': {
+					'0%, 100%': { 
+						textShadow: '0 0 5px rgba(0, 255, 208, 0.5)' 
+					},
+					'50%': { 
+						textShadow: '0 0 15px rgba(0, 255, 208, 0.8), 0 0 20px rgba(0, 255, 208, 0.5)' 
 					}
 				}
 			},
@@ -207,7 +248,12 @@ export default {
 				'slide-left': 'slide-left 0.3s ease-out',
 				'slide-right': 'slide-right 0.3s ease-out',
 				'ticker': 'ticker 30s linear infinite',
-				'glow-pulse': 'glow-pulse 3s infinite'
+				'glow-pulse': 'glow-pulse 3s infinite',
+				'float-slow': 'float-slow 8s ease-in-out infinite',
+				'rotate-slow': 'rotate-slow 20s linear infinite',
+				'glow-pulse-blue': 'glow-pulse-blue 2s infinite',
+				'glow-pulse-gold': 'glow-pulse-gold 2s infinite',
+				'glow-pulse-mint': 'glow-pulse-mint 2s infinite',
 			},
 			backdropFilter: {
 				'none': 'none',
