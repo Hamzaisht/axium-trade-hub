@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -74,40 +73,40 @@
   }
 
   .dark {
-    /* Dark Mode */
-    --background: 222 47% 4%;
-    --foreground: 210 40% 98%;
+    /* Dark Mode - Geek Art Studio Inspired */
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
 
-    --card: 222 47% 6%;
-    --card-foreground: 210 40% 98%;
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
 
-    --popover: 222 47% 6%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 213 31% 91%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 4%;
+    --primary: 210 100% 66%;
+    --primary-foreground: 222 47% 11%;
 
-    --secondary: 217 32% 17%;
+    --secondary: 222 47% 11%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217 32% 17%;
+    --muted: 223 47% 11%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 217 32% 17%;
+    --accent: 216 34% 17%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 32% 17%;
-    --input: 217 32% 17%;
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
     --ring: 224 76% 48%;
 
-    /* Axium Custom Colors - Dark Mode */
+    /* Axium Custom Colors - Dark Mode - Geek Art Studio Inspired */
     --axium-blue: #38BDF8;
     --axium-blue-light: #60A5FA;
-    --axium-blue-dark: #0E0F12;
-    --axium-dark-bg: #0B0F1A;
+    --axium-blue-dark: #0A0C14;
+    --axium-dark-bg: #070B16;
     --axium-neon-blue: #38BDF8;
     --axium-neon-gold: #FFD700;
     --axium-neon-mint: #00FFD0;
@@ -119,8 +118,8 @@
     --axium-gray-500: #ADB5BD;
     --axium-gray-600: #6C757D;
     --axium-gray-700: #495057;
-    --axium-gray-800: #1A1E26;
-    --axium-gray-900: #0B0F1A;
+    --axium-gray-800: #12151E;
+    --axium-gray-900: #070B16;
 
     --axium-success: #10B981;
     --axium-warning: #F59E0B;
@@ -128,16 +127,16 @@
     --axium-positive: #22C55E;
     --axium-negative: #F43F5E;
 
-    /* Shadows - Dark Mode */
-    --shadow-glass: 0 0 20px rgba(0, 0, 0, 0.3), 0 0 4px rgba(0, 0, 0, 0.4);
-    --shadow-glass-strong: 0 0 30px rgba(0, 0, 0, 0.4), 0 0 8px rgba(0, 0, 0, 0.3);
-    --shadow-glass-blue: 0 0 20px rgba(56, 189, 248, 0.2), 0 0 4px rgba(56, 189, 248, 0.1);
+    /* Shadows - Dark Mode - Enhanced Glow Effects */
+    --shadow-glass: 0 0 20px rgba(0, 0, 0, 0.4), 0 0 4px rgba(0, 0, 0, 0.5);
+    --shadow-glass-strong: 0 0 30px rgba(0, 0, 0, 0.5), 0 0 8px rgba(0, 0, 0, 0.4);
+    --shadow-glass-blue: 0 0 20px rgba(56, 189, 248, 0.25), 0 0 4px rgba(56, 189, 248, 0.15);
     --shadow-button: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-button-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
     --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.3);
-    --shadow-neon-gold: 0 0 20px rgba(255, 215, 0, 0.3);
-    --shadow-neon-blue: 0 0 20px rgba(56, 189, 248, 0.3);
-    --shadow-neon-mint: 0 0 20px rgba(0, 255, 208, 0.3);
+    --shadow-neon-gold: 0 0 25px rgba(255, 215, 0, 0.4);
+    --shadow-neon-blue: 0 0 25px rgba(56, 189, 248, 0.4);
+    --shadow-neon-mint: 0 0 25px rgba(0, 255, 208, 0.4);
   }
 
   * {
@@ -166,7 +165,7 @@
   }
   
   body::-webkit-scrollbar-thumb {
-    @apply bg-axium-gray-300 rounded-full hover:bg-axium-gray-400 transition-colors;
+    @apply bg-axium-gray-300 rounded-full hover:bg-axium-gray-400 transition-colors dark:bg-axium-gray-700 dark:hover:bg-axium-gray-600;
   }
 }
 
@@ -180,7 +179,7 @@
   }
   
   .premium-card {
-    @apply bg-gradient-to-b from-white/80 to-white/60 backdrop-blur-md rounded-lg border border-axium-gray-200/50 shadow-glass-strong dark:from-axium-gray-800/80 dark:to-axium-gray-800/60 dark:border-axium-gray-700/30;
+    @apply bg-gradient-to-b from-white/80 to-white/60 backdrop-blur-md rounded-lg border border-axium-gray-200/50 shadow-glass-strong dark:from-axium-gray-800/80 dark:to-axium-gray-800/60 dark:border-axium-gray-700/30 dark:shadow-glass-blue;
   }
   
   .text-balance {
@@ -192,7 +191,7 @@
   }
   
   .button-primary {
-    @apply bg-axium-blue text-white hover:bg-axium-blue/90 rounded-lg px-4 py-2 transition-all duration-300 shadow-button hover:shadow-button-hover;
+    @apply bg-axium-blue text-white hover:bg-axium-blue/90 rounded-lg px-4 py-2 transition-all duration-300 shadow-button hover:shadow-button-hover dark:bg-axium-neon-blue dark:hover:bg-axium-neon-blue/90 dark:shadow-neon-blue;
   }
   
   .button-secondary {
@@ -207,41 +206,41 @@
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
   
-  /* Glow effects for buttons and interactive elements */
+  /* Glow effects for buttons and interactive elements - Enhanced for Geek Studio Dark Mode */
   .glow-hover {
     @apply transition-all duration-300;
   }
   
   .glow-hover:hover {
-    @apply shadow-glow animate-glow-pulse;
+    @apply shadow-glow animate-glow-pulse dark:shadow-neon-blue;
   }
   
-  /* Neon effects */
+  /* Neon effects - Enhanced for Geek Studio Dark Mode */
   .neon-text-gold {
-    @apply text-axium-neon-gold drop-shadow-md dark:text-axium-neon-gold dark:drop-shadow-lg;
+    @apply text-axium-neon-gold drop-shadow-md dark:text-axium-neon-gold dark:drop-shadow-[0_0_5px_rgba(255,215,0,0.7)];
   }
   
   .neon-text-blue {
-    @apply text-axium-neon-blue drop-shadow-md dark:text-axium-neon-blue dark:drop-shadow-lg;
+    @apply text-axium-neon-blue drop-shadow-md dark:text-axium-neon-blue dark:drop-shadow-[0_0_5px_rgba(56,189,248,0.7)];
   }
   
   .neon-text-mint {
-    @apply text-axium-neon-mint drop-shadow-md dark:text-axium-neon-mint dark:drop-shadow-lg;
+    @apply text-axium-neon-mint drop-shadow-md dark:text-axium-neon-mint dark:drop-shadow-[0_0_5px_rgba(0,255,208,0.7)];
   }
   
   .neon-border {
-    @apply border border-axium-neon-blue/50 dark:border-axium-neon-blue shadow-neon-blue;
+    @apply border border-axium-neon-blue/50 dark:border-axium-neon-blue/70 shadow-neon-blue dark:shadow-[0_0_10px_rgba(56,189,248,0.4)];
   }
   
   .neon-gold-border {
-    @apply border border-axium-neon-gold/50 dark:border-axium-neon-gold shadow-neon-gold;
+    @apply border border-axium-neon-gold/50 dark:border-axium-neon-gold/70 shadow-neon-gold dark:shadow-[0_0_10px_rgba(255,215,0,0.4)];
   }
   
   .neon-mint-border {
-    @apply border border-axium-neon-mint/50 dark:border-axium-neon-mint shadow-neon-mint;
+    @apply border border-axium-neon-mint/50 dark:border-axium-neon-mint/70 shadow-neon-mint dark:shadow-[0_0_10px_rgba(0,255,208,0.4)];
   }
   
-  /* NASDAQ/Bloomberg style elements */
+  /* NASDAQ/Bloomberg style elements - Enhanced for Geek Studio Dark Mode */
   .ticker-item {
     @apply px-2 py-1 rounded flex items-center space-x-2 border-r border-border last:border-0;
   }
@@ -258,21 +257,52 @@
     @apply text-xs text-muted-foreground uppercase tracking-wider py-2;
   }
   
-  /* Futuristic UI elements */
+  /* Futuristic UI elements - Enhanced for Geek Studio Dark Mode */
   .future-panel {
-    @apply bg-white/10 backdrop-blur-xl rounded-lg border border-white/20 shadow-lg transition-all dark:bg-black/20 dark:border-white/10;
+    @apply bg-white/10 backdrop-blur-xl rounded-lg border border-white/20 shadow-lg transition-all dark:bg-black/30 dark:border-white/10 dark:shadow-glass-blue;
   }
   
   .future-input {
-    @apply bg-white/20 backdrop-blur-md border border-white/30 rounded-md px-4 py-2 focus:ring-2 focus:ring-axium-neon-blue/50 focus:border-axium-neon-blue/50 transition-all dark:bg-black/30 dark:border-white/10;
+    @apply bg-white/20 backdrop-blur-md border border-white/30 rounded-md px-4 py-2 focus:ring-2 focus:ring-axium-neon-blue/50 focus:border-axium-neon-blue/50 transition-all dark:bg-black/40 dark:border-axium-neon-blue/30 dark:focus:ring-axium-neon-blue/70 dark:focus:border-axium-neon-blue/70;
   }
   
   .future-button {
-    @apply bg-gradient-to-r from-axium-neon-blue to-axium-neon-blue/80 text-white rounded-md px-4 py-2 shadow-neon-blue hover:shadow-neon-blue hover:from-axium-neon-blue/90 hover:to-axium-neon-blue/70 transition-all;
+    @apply bg-gradient-to-r from-axium-neon-blue to-axium-neon-blue/80 text-white rounded-md px-4 py-2 shadow-neon-blue hover:shadow-neon-blue hover:from-axium-neon-blue/90 hover:to-axium-neon-blue/70 transition-all dark:from-axium-neon-blue dark:to-axium-blue-light;
   }
   
   .future-card {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg shadow-lg p-4 transition-all hover:border-white/20 dark:bg-black/20;
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg shadow-lg p-4 transition-all hover:border-white/20 dark:bg-black/20 dark:hover:border-axium-neon-blue/30 dark:shadow-glass-blue;
+  }
+
+  /* Geek Art Studio Dark Mode Special Effects */
+  .cyberpunk-grid {
+    @apply dark:bg-[linear-gradient(to_right,rgba(56,189,248,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(56,189,248,0.07)_1px,transparent_1px)] dark:bg-[size:24px_24px];
+  }
+  
+  .cyber-glow {
+    @apply dark:shadow-[0_0_40px_10px_rgba(0,255,208,0.1)] dark:hover:shadow-[0_0_40px_10px_rgba(0,255,208,0.2)] transition-shadow duration-500;
+  }
+  
+  .tech-border {
+    @apply dark:border dark:border-axium-neon-blue/20 dark:shadow-[inset_0_0_10px_rgba(56,189,248,0.1)] dark:rounded-md;
+  }
+  
+  .data-scanline {
+    @apply dark:relative dark:overflow-hidden;
+    position: relative;
+  }
+  
+  .data-scanline::after {
+    @apply dark:content-[''] dark:absolute dark:top-0 dark:left-0 dark:right-0 dark:h-[1px] dark:bg-axium-neon-blue/30 dark:animate-[scan_3s_linear_infinite];
+  }
+  
+  @keyframes scan {
+    0% {
+      top: 0;
+    }
+    100% {
+      top: 100%;
+    }
   }
 }
 
@@ -380,5 +410,50 @@
   /* Theme transition effect */
   .theme-transition {
     transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+  }
+  
+  /* New Geek Art Studio Dark Mode Animations */
+  .dark-pulse {
+    animation: dark-pulse 4s infinite;
+  }
+  
+  @keyframes dark-pulse {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(0, 255, 208, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(0, 255, 208, 0.6);
+    }
+  }
+  
+  .data-flow {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .data-flow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -75%;
+    z-index: 2;
+    display: block;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(56, 189, 248, 0) 0%, rgba(56, 189, 248, 0.3) 100%);
+    transform: skewX(-25deg);
+    animation: data-shine 6s infinite;
+  }
+  
+  @keyframes data-shine {
+    0% {
+      left: -75%;
+    }
+    20% {
+      left: 125%;
+    }
+    100% {
+      left: 125%;
+    }
   }
 }
