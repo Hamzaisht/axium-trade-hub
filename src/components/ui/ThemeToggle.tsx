@@ -16,7 +16,7 @@ export function ThemeToggle({ className = "" }: ThemeToggleProps) {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className={`relative transition-all duration-500 ${className} overflow-hidden group`}
+      className={`relative transition-all duration-500 overflow-hidden group ${className}`}
     >
       <div className="absolute inset-0 bg-gradient-to-tr from-axium-neon-blue/10 to-axium-neon-gold/10 dark:from-axium-neon-mint/20 dark:to-axium-neon-blue/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       

@@ -13,15 +13,15 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
 
-  // Initialize theme based on system preference
+  // Initialize theme based on saved preference or default to dark
   useEffect(() => {
     const savedTheme = localStorage.getItem('axium-theme') as Theme;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
     if (savedTheme) {
       setTheme(savedTheme);
     } else {
-      setTheme(prefersDark ? 'dark' : 'light');
+      // Default to dark mode (unlike browsers which typically default to light)
+      setTheme('dark');
     }
   }, []);
 

@@ -5,140 +5,145 @@
 
 @layer base {
   :root {
-    /* Light Mode */
-    --background: 0 0% 99%;
-    --foreground: 222 47% 11%;
+    /* Light Mode - Futuristic Premium Theme */
+    --background: 210 30% 98%;       /* #F7F9FB */
+    --foreground: 216 45% 8%;        /* #0B0F1A */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 0 0% 100%;               /* #FFFFFF */
+    --card-foreground: 216 45% 8%;   /* #0B0F1A */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;            /* #FFFFFF */
+    --popover-foreground: 216 45% 8%; /* #0B0F1A */
 
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 210 100% 50%;         /* #00B4FF */
+    --primary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 213 15% 36%;        /* #4F5B67 */
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 213 15% 36%; /* #4F5B67 */
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 210 20% 96%;
+    --accent-foreground: 213 15% 36%; /* #4F5B67 */
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 70% 62%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221 83% 53%;
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 210 100% 50%;            /* #00B4FF */
 
     --radius: 0.5rem;
 
     /* Axium Custom Colors - Light Mode */
-    --axium-blue: #0070f3;
-    --axium-blue-rgb: 0 112 243;
-    --axium-blue-light: #3B82F6;
-    --axium-blue-light-rgb: 59 130 246;
-    --axium-blue-dark: #1E3A8A;
-    --axium-blue-dark-rgb: 30 58 138;
-    --axium-dark-bg: #F7F8FA;
-    --axium-dark-bg-rgb: 247 248 250;
-    --axium-neon-blue: #0070f3;
-    --axium-neon-blue-rgb: 0 112 243;
-    --axium-neon-gold: #111111;
-    --axium-neon-gold-rgb: 17 17 17;
-    --axium-neon-mint: #A855F7;
-    --axium-neon-mint-rgb: 168 85 247;
+    --axium-blue: #00B4FF;
+    --axium-blue-rgb: 0 180 255;
+    --axium-blue-light: #3DB9FF;
+    --axium-blue-light-rgb: 61 185 255;
+    --axium-blue-dark: #0076A8;
+    --axium-blue-dark-rgb: 0 118 168;
+    --axium-dark-bg: #F7F9FB;
+    --axium-dark-bg-rgb: 247 249 251;
+    --axium-neon-blue: #00B4FF;
+    --axium-neon-blue-rgb: 0 180 255;
+    --axium-neon-gold: #E1B800;
+    --axium-neon-gold-rgb: 225 184 0;
+    --axium-neon-mint: #00EFCF;
+    --axium-neon-mint-rgb: 0 239 207;
+    --axium-neon-magenta: #A855F7;
+    --axium-neon-magenta-rgb: 168 85 247;
 
-    --axium-gray-100: #F8F9FA;
-    --axium-gray-100-rgb: 248 249 250;
-    --axium-gray-200: #E9ECEF;
-    --axium-gray-200-rgb: 233 236 239;
-    --axium-gray-300: #DEE2E6;
-    --axium-gray-300-rgb: 222 226 230;
+    --axium-gray-100: #F7F9FB;
+    --axium-gray-100-rgb: 247 249 251;
+    --axium-gray-200: #EDF1F5;
+    --axium-gray-200-rgb: 237 241 245;
+    --axium-gray-300: #E2E8ED;
+    --axium-gray-300-rgb: 226 232 237;
     --axium-gray-400: #CED4DA;
     --axium-gray-400-rgb: 206 212 218;
     --axium-gray-500: #ADB5BD;
     --axium-gray-500-rgb: 173 181 189;
     --axium-gray-600: #6C757D;
     --axium-gray-600-rgb: 108 117 125;
-    --axium-gray-700: #495057;
-    --axium-gray-700-rgb: 73 80 87;
+    --axium-gray-700: #4F5B67;
+    --axium-gray-700-rgb: 79 91 103;
     --axium-gray-800: #343A40;
     --axium-gray-800-rgb: 52 58 64;
-    --axium-gray-900: #212529;
-    --axium-gray-900-rgb: 33 37 41;
+    --axium-gray-900: #0B0F1A;
+    --axium-gray-900-rgb: 11 15 26;
 
-    --axium-success: #10B981;
-    --axium-success-rgb: 16 185 129;
-    --axium-warning: #F59E0B;
-    --axium-warning-rgb: 245 158 11;
-    --axium-error: #EF4444;
-    --axium-error-rgb: 239 68 68;
-    --axium-positive: #22C55E;
-    --axium-positive-rgb: 34 197 94;
-    --axium-negative: #F43F5E;
-    --axium-negative-rgb: 244 63 94;
+    --axium-success: #2AFF91;
+    --axium-success-rgb: 42 255 145;
+    --axium-warning: #FFB800;
+    --axium-warning-rgb: 255 184 0;
+    --axium-error: #FF3D5E;
+    --axium-error-rgb: 255 61 94;
+    --axium-positive: #2AFF91;
+    --axium-positive-rgb: 42 255 145;
+    --axium-negative: #FF3D5E;
+    --axium-negative-rgb: 255 61 94;
 
     /* Shadows - Light Mode */
     --shadow-glass: 0 0 20px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.1);
     --shadow-glass-strong: 0 0 30px rgba(0, 0, 0, 0.1), 0 0 8px rgba(0, 0, 0, 0.1);
-    --shadow-glass-blue: 0 0 20px rgba(0, 112, 243, 0.1), 0 0 4px rgba(0, 112, 243, 0.05);
+    --shadow-glass-blue: 0 0 20px rgba(0, 180, 255, 0.1), 0 0 4px rgba(0, 180, 255, 0.05);
     --shadow-button: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-button-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
-    --shadow-glow: 0 0 15px rgba(168, 85, 247, 0.3);
-    --shadow-neon-gold: 0 0 15px rgba(0, 0, 0, 0.2);
-    --shadow-neon-blue: 0 0 15px rgba(0, 112, 243, 0.3);
-    --shadow-neon-mint: 0 0 15px rgba(168, 85, 247, 0.3);
+    --shadow-glow: 0 0 15px rgba(0, 180, 255, 0.3);
+    --shadow-neon-gold: 0 0 15px rgba(225, 184, 0, 0.3);
+    --shadow-neon-blue: 0 0 15px rgba(0, 180, 255, 0.3);
+    --shadow-neon-mint: 0 0 15px rgba(0, 239, 207, 0.3);
+    --shadow-neon-magenta: 0 0 15px rgba(168, 85, 247, 0.3);
   }
 
   .dark {
-    /* Dark Mode - Geek Art Studio Inspired */
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    /* Dark Mode - Geex Arts Studio / Blade Runner / Tesla Inspired */
+    --background: 218 36% 8%;         /* #0B0F1A */
+    --foreground: 0 0% 100%;          /* #FFFFFF */
 
-    --card: 224 71% 4%;
-    --card-foreground: 213 31% 91%;
+    --card: 217 24% 11%;              /* #161B22 */
+    --card-foreground: 0 0% 100%;     /* #FFFFFF */
 
-    --popover: 224 71% 4%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 217 24% 11%;           /* #161B22 */
+    --popover-foreground: 0 0% 100%;  /* #FFFFFF */
 
-    --primary: 210 100% 66%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 196 100% 50%;          /* #00CFFF */
+    --primary-foreground: 216 45% 8%; /* #0B0F1A */
 
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 216 13% 16%;         /* #292F36 */
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --muted: 223 47% 11%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 216 13% 16%;             /* #292F36 */
+    --muted-foreground: 210 10% 70%;  /* #B0B6BE */
 
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 216 13% 16%;            /* #292F36 */
+    --accent-foreground: 0 0% 100%;   /* #FFFFFF */
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 70% 62%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-    --ring: 224 76% 48%;
+    --border: 216 13% 16%;            /* #292F36 */
+    --input: 216 13% 16%;             /* #292F36 */
+    --ring: 196 100% 50%;             /* #00CFFF */
 
-    /* Axium Custom Colors - Dark Mode - Geek Art Studio Inspired */
-    --axium-blue: #38BDF8;
-    --axium-blue-rgb: 56 189 248;
-    --axium-blue-light: #60A5FA;
-    --axium-blue-light-rgb: 96 165 250;
-    --axium-blue-dark: #0A0C14;
-    --axium-blue-dark-rgb: 10 12 20;
-    --axium-dark-bg: #070B16;
-    --axium-dark-bg-rgb: 7 11 22;
-    --axium-neon-blue: #38BDF8;
-    --axium-neon-blue-rgb: 56 189 248;
+    /* Axium Custom Colors - Dark Mode - Geex Arts Studio Inspired */
+    --axium-blue: #00CFFF;
+    --axium-blue-rgb: 0 207 255;
+    --axium-blue-light: #40D8FF;
+    --axium-blue-light-rgb: 64 216 255;
+    --axium-blue-dark: #0B0F1A;
+    --axium-blue-dark-rgb: 11 15 26;
+    --axium-dark-bg: #0B0F1A;
+    --axium-dark-bg-rgb: 11 15 26;
+    --axium-neon-blue: #00CFFF;
+    --axium-neon-blue-rgb: 0 207 255;
     --axium-neon-gold: #FFD700;
     --axium-neon-gold-rgb: 255 215 0;
     --axium-neon-mint: #00FFD0;
     --axium-neon-mint-rgb: 0 255 208;
+    --axium-neon-magenta: #E34EFF;
+    --axium-neon-magenta-rgb: 227 78 255;
 
     --axium-gray-100: #F8F9FA;
     --axium-gray-100-rgb: 248 249 250;
@@ -154,32 +159,33 @@
     --axium-gray-600-rgb: 108 117 125;
     --axium-gray-700: #495057;
     --axium-gray-700-rgb: 73 80 87;
-    --axium-gray-800: #12151E;
-    --axium-gray-800-rgb: 18 21 30;
-    --axium-gray-900: #070B16;
-    --axium-gray-900-rgb: 7 11 22;
+    --axium-gray-800: #161B22;
+    --axium-gray-800-rgb: 22 27 34;
+    --axium-gray-900: #0B0F1A;
+    --axium-gray-900-rgb: 11 15 26;
 
-    --axium-success: #10B981;
-    --axium-success-rgb: 16 185 129;
-    --axium-warning: #F59E0B;
-    --axium-warning-rgb: 245 158 11;
-    --axium-error: #EF4444;
-    --axium-error-rgb: 239 68 68;
-    --axium-positive: #22C55E;
-    --axium-positive-rgb: 34 197 94;
-    --axium-negative: #F43F5E;
-    --axium-negative-rgb: 244 63 94;
+    --axium-success: #2AFF91;
+    --axium-success-rgb: 42 255 145;
+    --axium-warning: #FFB800;
+    --axium-warning-rgb: 255 184 0;
+    --axium-error: #FF3D5E;
+    --axium-error-rgb: 255 61 94;
+    --axium-positive: #2AFF91;
+    --axium-positive-rgb: 42 255 145;
+    --axium-negative: #FF3D5E;
+    --axium-negative-rgb: 255 61 94;
 
     /* Shadows - Dark Mode - Enhanced Glow Effects */
     --shadow-glass: 0 0 20px rgba(0, 0, 0, 0.4), 0 0 4px rgba(0, 0, 0, 0.5);
     --shadow-glass-strong: 0 0 30px rgba(0, 0, 0, 0.5), 0 0 8px rgba(0, 0, 0, 0.4);
-    --shadow-glass-blue: 0 0 20px rgba(56, 189, 248, 0.25), 0 0 4px rgba(56, 189, 248, 0.15);
+    --shadow-glass-blue: 0 0 20px rgba(0, 207, 255, 0.25), 0 0 4px rgba(0, 207, 255, 0.15);
     --shadow-button: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-button-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.3);
+    --shadow-glow: 0 0 20px rgba(0, 207, 255, 0.3);
     --shadow-neon-gold: 0 0 25px rgba(255, 215, 0, 0.4);
-    --shadow-neon-blue: 0 0 25px rgba(56, 189, 248, 0.4);
+    --shadow-neon-blue: 0 0 25px rgba(0, 207, 255, 0.4);
     --shadow-neon-mint: 0 0 25px rgba(0, 255, 208, 0.4);
+    --shadow-neon-magenta: 0 0 25px rgba(227, 78, 255, 0.4);
   }
 
   * {
@@ -258,7 +264,7 @@
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
   
-  /* Glow effects for buttons and interactive elements - Enhanced for Geek Studio Dark Mode */
+  /* Glow effects for buttons and interactive elements - Enhanced for Geex Studio Dark Mode */
   .glow-hover {
     @apply transition-all duration-300;
   }
@@ -267,21 +273,25 @@
     @apply shadow-glow animate-glow-pulse dark:shadow-neon-blue;
   }
   
-  /* Neon effects - Enhanced for Geek Studio Dark Mode */
+  /* Neon effects - Enhanced for Geex Studio Dark Mode */
   .neon-text-gold {
     @apply text-axium-neon-gold drop-shadow-md dark:text-axium-neon-gold dark:drop-shadow-[0_0_5px_rgba(255,215,0,0.7)];
   }
   
   .neon-text-blue {
-    @apply text-axium-neon-blue drop-shadow-md dark:text-axium-neon-blue dark:drop-shadow-[0_0_5px_rgba(56,189,248,0.7)];
+    @apply text-axium-neon-blue drop-shadow-md dark:text-axium-neon-blue dark:drop-shadow-[0_0_5px_rgba(0,207,255,0.7)];
   }
   
   .neon-text-mint {
     @apply text-axium-neon-mint drop-shadow-md dark:text-axium-neon-mint dark:drop-shadow-[0_0_5px_rgba(0,255,208,0.7)];
   }
+
+  .neon-text-magenta {
+    @apply text-axium-neon-magenta drop-shadow-md dark:text-axium-neon-magenta dark:drop-shadow-[0_0_5px_rgba(227,78,255,0.7)];
+  }
   
   .neon-border {
-    @apply border border-axium-neon-blue/50 dark:border-axium-neon-blue/70 shadow-neon-blue dark:shadow-[0_0_10px_rgba(56,189,248,0.4)];
+    @apply border border-axium-neon-blue/50 dark:border-axium-neon-blue/70 shadow-neon-blue dark:shadow-[0_0_10px_rgba(0,207,255,0.4)];
   }
   
   .neon-gold-border {
@@ -290,6 +300,10 @@
   
   .neon-mint-border {
     @apply border border-axium-neon-mint/50 dark:border-axium-neon-mint/70 shadow-neon-mint dark:shadow-[0_0_10px_rgba(0,255,208,0.4)];
+  }
+
+  .neon-magenta-border {
+    @apply border border-axium-neon-magenta/50 dark:border-axium-neon-magenta/70 shadow-neon-magenta dark:shadow-[0_0_10px_rgba(227,78,255,0.4)];
   }
   
   /* Ticker item */
@@ -334,7 +348,7 @@
 
   /* Geek Art Studio Dark Mode Special Effects */
   .cyberpunk-grid {
-    @apply dark:bg-[linear-gradient(to_right,rgba(56,189,248,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(56,189,248,0.07)_1px,transparent_1px)] dark:bg-[size:24px_24px];
+    @apply dark:bg-[linear-gradient(to_right,rgba(0,207,255,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,207,255,0.07)_1px,transparent_1px)] dark:bg-[size:24px_24px];
   }
   
   .cyber-glow {
@@ -342,7 +356,7 @@
   }
   
   .tech-border {
-    @apply dark:border dark:border-axium-neon-blue/20 dark:shadow-[inset_0_0_10px_rgba(56,189,248,0.1)] dark:rounded-md;
+    @apply dark:border dark:border-axium-neon-blue/20 dark:shadow-[inset_0_0_10px_rgba(0,207,255,0.1)] dark:rounded-md;
   }
   
   .data-scanline {
@@ -362,13 +376,13 @@
 
   .cyber-panel {
     @apply dark:bg-gradient-to-br dark:from-axium-gray-900 dark:to-axium-gray-800 dark:border dark:border-axium-neon-blue/20 
-    dark:shadow-[0_0_15px_rgba(56,189,248,0.1)] dark:rounded-lg dark:backdrop-blur-sm;
+    dark:shadow-[0_0_15px_rgba(0,207,255,0.1)] dark:rounded-lg dark:backdrop-blur-sm;
   }
 
   .cyber-button {
     @apply dark:bg-axium-gray-800 dark:text-axium-neon-blue dark:border dark:border-axium-neon-blue/50 
     dark:hover:bg-axium-neon-blue/10 dark:hover:border-axium-neon-blue dark:transition-all dark:duration-300 
-    dark:rounded dark:px-4 dark:py-2 dark:shadow-neon-blue dark:hover:shadow-[0_0_15px_rgba(56,189,248,0.4)];
+    dark:rounded dark:px-4 dark:py-2 dark:shadow-neon-blue dark:hover:shadow-[0_0_15px_rgba(0,207,255,0.4)];
   }
 
   .hologram {
@@ -393,7 +407,7 @@
 
   .matrix-rain::before {
     @apply dark:content-[''] dark:absolute dark:inset-0 dark:pointer-events-none dark:opacity-20;
-    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='0' y='10' fill='%2338BDF8' font-family='monospace'%3E01101%3C/text%3E%3Ctext x='10' y='20' fill='%2338BDF8' font-family='monospace'%3E10110%3C/text%3E%3Ctext x='20' y='30' fill='%2338BDF8' font-family='monospace'%3E01011%3C/text%3E%3Ctext x='0' y='40' fill='%2338BDF8' font-family='monospace'%3E11010%3C/text%3E%3Ctext x='15' y='50' fill='%2338BDF8' font-family='monospace'%3E10101%3C/text%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='0' y='10' fill='%2300CFFF' font-family='monospace'%3E01101%3C/text%3E%3Ctext x='10' y='20' fill='%2300CFFF' font-family='monospace'%3E10110%3C/text%3E%3Ctext x='20' y='30' fill='%2300CFFF' font-family='monospace'%3E01011%3C/text%3E%3Ctext x='0' y='40' fill='%2300CFFF' font-family='monospace'%3E11010%3C/text%3E%3Ctext x='15' y='50' fill='%2300CFFF' font-family='monospace'%3E10101%3C/text%3E%3C/svg%3E");
     animation: matrixfall 30s linear infinite;
   }
 
@@ -407,7 +421,7 @@
 
   .retro-scanline::after {
     @apply dark:content-[''] dark:absolute dark:left-0 dark:right-0 dark:top-0 dark:bottom-0 dark:pointer-events-none;
-    background: linear-gradient(to bottom, rgba(56, 189, 248, 0) 50%, rgba(56, 189, 248, 0.025) 50%);
+    background: linear-gradient(to bottom, rgba(0, 207, 255, 0) 50%, rgba(0, 207, 255, 0.025) 50%);
     background-size: 100% 4px;
     z-index: 20;
   }
@@ -494,12 +508,12 @@
   
   @keyframes flash-green {
     0%, 100% { background-color: transparent; }
-    50% { background-color: rgba(34, 197, 94, 0.2); }
+    50% { background-color: rgba(42, 255, 145, 0.2); }
   }
   
   @keyframes flash-red {
     0%, 100% { background-color: transparent; }
-    50% { background-color: rgba(244, 63, 94, 0.2); }
+    50% { background-color: rgba(255, 61, 94, 0.2); }
   }
   
   /* New animations for MarketFeed */
@@ -558,7 +572,7 @@
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.3) 0%, rgba(56, 189, 248, 0) 70%);
+    background: radial-gradient(circle, rgba(0, 207, 255, 0.3) 0%, rgba(0, 207, 255, 0) 70%);
     transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 9999;
@@ -603,7 +617,7 @@
     display: block;
     width: 50%;
     height: 100%;
-    background: linear-gradient(to right, rgba(56, 189, 248, 0) 0%, rgba(56, 189, 248, 0.3) 100%);
+    background: linear-gradient(to right, rgba(0, 207, 255, 0) 0%, rgba(0, 207, 255, 0.3) 100%);
     transform: skewX(-25deg);
     animation: data-shine 6s infinite;
   }
@@ -628,7 +642,7 @@
   @keyframes flicker {
     0%, 9.999%, 15%, 19.999%, 22%, 31.999%, 34%, 39.999%, 44%, 100% {
       opacity: 0.99;
-      text-shadow: 0 0 5px rgba(56, 189, 248, 0.6), 0 0 10px rgba(56, 189, 248, 0.4), 0 0 15px rgba(56, 189, 248, 0.2);
+      text-shadow: 0 0 5px rgba(0, 207, 255, 0.6), 0 0 10px rgba(0, 207, 255, 0.4), 0 0 15px rgba(0, 207, 255, 0.2);
     }
     10%, 14.999%, 20%, 21.999%, 32%, 33.999%, 40%, 43.999% {
       opacity: 0.4;
@@ -674,9 +688,9 @@
     width: 100%;
     height: 15px;
     background: linear-gradient(to bottom, 
-      rgba(56, 189, 248, 0) 0%,
-      rgba(56, 189, 248, 0.3) 50%,
-      rgba(56, 189, 248, 0) 100%
+      rgba(0, 207, 255, 0) 0%,
+      rgba(0, 207, 255, 0.3) 50%,
+      rgba(0, 207, 255, 0) 100%
     );
     animation: cyber-scan 3s ease-in-out infinite;
   }
@@ -701,19 +715,19 @@
   }
 
   .power-button {
-    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
+    box-shadow: 0 0 0 0 rgba(0, 207, 255, 0.7);
     animation: power-pulse 2s infinite;
   }
 
   @keyframes power-pulse {
     0% {
-      box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
+      box-shadow: 0 0 0 0 rgba(0, 207, 255, 0.7);
     }
     70% {
-      box-shadow: 0 0 0 10px rgba(56, 189, 248, 0);
+      box-shadow: 0 0 0 10px rgba(0, 207, 255, 0);
     }
     100% {
-      box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+      box-shadow: 0 0 0 0 rgba(0, 207, 255, 0);
     }
   }
 
@@ -728,10 +742,64 @@
 
   @keyframes breathe {
     0%, 100% {
-      box-shadow: 0 0 10px 0 rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 10px 0 rgba(0, 207, 255, 0.5);
     }
     50% {
-      box-shadow: 0 0 20px 5px rgba(56, 189, 248, 0.8);
+      box-shadow: 0 0 20px 5px rgba(0, 207, 255, 0.8);
     }
+  }
+
+  /* Futuristic UI effects */
+  .tesla-gradient {
+    background: linear-gradient(135deg, rgba(0, 207, 255, 0.05) 0%, rgba(0, 255, 208, 0.05) 100%);
+  }
+
+  .blade-runner-glow {
+    box-shadow: 0 0 30px rgba(227, 78, 255, 0.3);
+  }
+
+  .premium-text {
+    @apply font-bold tracking-wide;
+    letter-spacing: 0.025em;
+  }
+
+  .futuristic-panel {
+    @apply bg-card border border-border rounded-lg shadow-md backdrop-blur-lg;
+  }
+
+  .futuristic-input {
+    @apply bg-transparent border-b border-axium-gray-600 px-3 py-2 focus:outline-none focus:border-axium-neon-blue;
+  }
+
+  .hover-glow-blue {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-glow-blue:hover {
+    @apply shadow-[0_0_10px_rgba(0,207,255,0.4)];
+  }
+  
+  .hover-glow-mint {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-glow-mint:hover {
+    @apply shadow-[0_0_10px_rgba(0,255,208,0.4)];
+  }
+  
+  .hover-glow-gold {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-glow-gold:hover {
+    @apply shadow-[0_0_10px_rgba(255,215,0,0.4)];
+  }
+  
+  .hover-glow-magenta {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-glow-magenta:hover {
+    @apply shadow-[0_0_10px_rgba(227,78,255,0.4)];
   }
 }
