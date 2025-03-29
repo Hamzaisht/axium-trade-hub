@@ -7,7 +7,7 @@ import { useMarketData } from "@/hooks/useMarketData";
 import { GlassCard, DarkCard } from "@/components/ui/card";
 import { showNotification } from "@/components/notifications/ToastContainer";
 import { TradeFormSkeleton } from "@/components/ui/skeleton-components";
-import TradeForm from "@/components/trading/trade-form";
+import { TradeForm } from "@/components/trading/trade-form";
 import InstitutionalTrading from "@/components/trading/institutional/InstitutionalTrading";
 import LiquidityPoolInfo from "@/components/trading/liquidity-pool";
 import { PriceTicker } from "@/components/market/PriceTicker";
