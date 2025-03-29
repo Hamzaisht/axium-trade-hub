@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Order, Trade } from '@/utils/mockApi';
 import { toast } from 'sonner';
@@ -21,7 +20,7 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
     trades, 
     setOrders, 
     setTrades 
-  } = useWebSocketTrading(user, orderBook);
+  } = useWebSocketTrading(user ? { id: user.id } : null, orderBook);
 
   const placeOrderInContext = async (orderData: Partial<Order>): Promise<Order> => {
     if (!isAuthenticated || !user) {
