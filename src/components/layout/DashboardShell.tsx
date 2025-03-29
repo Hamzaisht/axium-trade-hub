@@ -20,10 +20,10 @@ export function DashboardShell({ children, className = "" }: DashboardShellProps
     <TooltipProvider>
       <div className={cn(
         "flex flex-col min-h-screen transition-colors duration-500",
-        "bg-[#F7F9FB] dark:bg-[#0B0F1A]",
+        "bg-[#F7F9FB] dark:bg-[#0A0A0D]", // Updated to obsidian black in dark mode
         className
       )}>
-        <header className="bg-[#161B22] border-b border-[#292F36] py-2 relative">
+        <header className="bg-[#161B22] border-b border-[#292F36] py-2 relative dark:bg-[#0F0F12]"> {/* Slightly lighter obsidian */}
           {isDark && (
             <>
               <div className="absolute inset-0 bg-gradient-to-r from-axium-neon-blue/5 via-transparent to-axium-neon-mint/5 opacity-30"></div>

@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -54,36 +53,6 @@
     --axium-neon-magenta: #A855F7;
     --axium-neon-magenta-rgb: 168 85 247;
 
-    --axium-gray-100: #F7F9FB;
-    --axium-gray-100-rgb: 247 249 251;
-    --axium-gray-200: #EDF1F5;
-    --axium-gray-200-rgb: 237 241 245;
-    --axium-gray-300: #E2E8ED;
-    --axium-gray-300-rgb: 226 232 237;
-    --axium-gray-400: #CED4DA;
-    --axium-gray-400-rgb: 206 212 218;
-    --axium-gray-500: #ADB5BD;
-    --axium-gray-500-rgb: 173 181 189;
-    --axium-gray-600: #6C757D;
-    --axium-gray-600-rgb: 108 117 125;
-    --axium-gray-700: #4F5B67;
-    --axium-gray-700-rgb: 79 91 103;
-    --axium-gray-800: #343A40;
-    --axium-gray-800-rgb: 52 58 64;
-    --axium-gray-900: #0B0F1A;
-    --axium-gray-900-rgb: 11 15 26;
-
-    --axium-success: #2AFF91;
-    --axium-success-rgb: 42 255 145;
-    --axium-warning: #FFB800;
-    --axium-warning-rgb: 255 184 0;
-    --axium-error: #FF3D5E;
-    --axium-error-rgb: 255 61 94;
-    --axium-positive: #2AFF91;
-    --axium-positive-rgb: 42 255 145;
-    --axium-negative: #FF3D5E;
-    --axium-negative-rgb: 255 61 94;
-
     /* Shadows - Light Mode */
     --shadow-glass: 0 0 20px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.1);
     --shadow-glass-strong: 0 0 30px rgba(0, 0, 0, 0.1), 0 0 8px rgba(0, 0, 0, 0.1);
@@ -98,44 +67,44 @@
   }
 
   .dark {
-    /* Dark Mode - Geex Arts Studio / Blade Runner / Tesla Inspired */
-    --background: 218 36% 8%;         /* #0B0F1A */
+    /* Dark Mode - Obsidian Black Theme */
+    --background: 240 10% 4%;         /* #0A0A0D - Obsidian Black */
     --foreground: 0 0% 100%;          /* #FFFFFF */
 
-    --card: 217 24% 11%;              /* #161B22 */
+    --card: 240 10% 7%;              /* #121218 - Slightly lighter obsidian */
     --card-foreground: 0 0% 100%;     /* #FFFFFF */
 
-    --popover: 217 24% 11%;           /* #161B22 */
+    --popover: 240 10% 7%;           /* #121218 */
     --popover-foreground: 0 0% 100%;  /* #FFFFFF */
 
     --primary: 196 100% 50%;          /* #00CFFF */
-    --primary-foreground: 216 45% 8%; /* #0B0F1A */
+    --primary-foreground: 240 10% 4%; /* #0A0A0D */
 
-    --secondary: 216 13% 16%;         /* #292F36 */
+    --secondary: 240 10% 12%;         /* #1E1E24 */
     --secondary-foreground: 0 0% 100%; /* #FFFFFF */
 
-    --muted: 216 13% 16%;             /* #292F36 */
+    --muted: 240 10% 12%;             /* #1E1E24 */
     --muted-foreground: 210 10% 70%;  /* #B0B6BE */
 
-    --accent: 216 13% 16%;            /* #292F36 */
+    --accent: 240 10% 12%;            /* #1E1E24 */
     --accent-foreground: 0 0% 100%;   /* #FFFFFF */
 
     --destructive: 0 70% 62%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 216 13% 16%;            /* #292F36 */
-    --input: 216 13% 16%;             /* #292F36 */
+    --border: 240 10% 12%;            /* #1E1E24 */
+    --input: 240 10% 12%;             /* #1E1E24 */
     --ring: 196 100% 50%;             /* #00CFFF */
 
-    /* Axium Custom Colors - Dark Mode - Geex Arts Studio Inspired */
+    /* Axium Custom Colors - Dark Mode - Obsidian Black Theme */
     --axium-blue: #00CFFF;
     --axium-blue-rgb: 0 207 255;
     --axium-blue-light: #40D8FF;
     --axium-blue-light-rgb: 64 216 255;
-    --axium-blue-dark: #0B0F1A;
-    --axium-blue-dark-rgb: 11 15 26;
-    --axium-dark-bg: #0B0F1A;
-    --axium-dark-bg-rgb: 11 15 26;
+    --axium-blue-dark: #0A0A0D;
+    --axium-blue-dark-rgb: 10 10 13;
+    --axium-dark-bg: #0A0A0D;
+    --axium-dark-bg-rgb: 10 10 13;
     --axium-neon-blue: #00CFFF;
     --axium-neon-blue-rgb: 0 207 255;
     --axium-neon-gold: #FFD700;
@@ -159,21 +128,10 @@
     --axium-gray-600-rgb: 108 117 125;
     --axium-gray-700: #495057;
     --axium-gray-700-rgb: 73 80 87;
-    --axium-gray-800: #161B22;
-    --axium-gray-800-rgb: 22 27 34;
-    --axium-gray-900: #0B0F1A;
-    --axium-gray-900-rgb: 11 15 26;
-
-    --axium-success: #2AFF91;
-    --axium-success-rgb: 42 255 145;
-    --axium-warning: #FFB800;
-    --axium-warning-rgb: 255 184 0;
-    --axium-error: #FF3D5E;
-    --axium-error-rgb: 255 61 94;
-    --axium-positive: #2AFF91;
-    --axium-positive-rgb: 42 255 145;
-    --axium-negative: #FF3D5E;
-    --axium-negative-rgb: 255 61 94;
+    --axium-gray-800: #121218;
+    --axium-gray-800-rgb: 18 18 24;
+    --axium-gray-900: #0A0A0D;
+    --axium-gray-900-rgb: 10 10 13;
 
     /* Shadows - Dark Mode - Enhanced Glow Effects */
     --shadow-glass: 0 0 20px rgba(0, 0, 0, 0.4), 0 0 4px rgba(0, 0, 0, 0.5);
