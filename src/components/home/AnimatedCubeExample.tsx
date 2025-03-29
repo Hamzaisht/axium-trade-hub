@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import CubeScene from '../three-d/CubeScene'; 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Cube, RotateCcw, ZoomIn } from 'lucide-react';
+import { Box, RotateCcw, ZoomIn } from 'lucide-react';
 
 const AnimatedCubeExample = () => {
   const [cubeSize, setCubeSize] = useState(1.5);
@@ -44,7 +43,7 @@ const AnimatedCubeExample = () => {
           
           <div className="p-4 flex flex-wrap items-center justify-between gap-4 border-t border-[#1A2747]">
             <div className="flex items-center space-x-2">
-              <Cube className="h-5 w-5 text-[#3AA0FF]" />
+              <Box className="h-5 w-5 text-[#3AA0FF]" />
               <span className="text-sm text-white/80">Interactive Cube Demo</span>
             </div>
             
