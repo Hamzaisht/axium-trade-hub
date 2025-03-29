@@ -13,6 +13,7 @@ type FeedItem = {
   content: string;
   timestamp: string;
   impact?: 'positive' | 'negative' | 'neutral';
+  isNew?: boolean;
 };
 
 export function MarketFeed() {
@@ -29,7 +30,8 @@ export function MarketFeed() {
       type: 'trade',
       content: `${trade.side === 'buy' ? 'Buy' : 'Sell'} order executed: ${trade.quantity} $${trade.creatorSymbol} at $${trade.price.toFixed(2)}`,
       timestamp: trade.timestamp,
-      impact: trade.side === 'buy' ? 'positive' : 'negative'
+      impact: trade.side === 'buy' ? 'positive' : 'negative',
+      isNew: true
     }));
     
     setFeed(prevFeed => {
@@ -41,7 +43,7 @@ export function MarketFeed() {
       if (newTrades.length === 0) return prevFeed;
       
       // Combine with existing feed and sort by timestamp
-      const updatedFeed = [...newTrades, ...prevFeed]
+      const updatedFeed = [...newTrades, ...prevFeed.map(item => ({ ...item, isNew: false }))]
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 12); // Limit feed size
         
@@ -50,6 +52,17 @@ export function MarketFeed() {
     
     if (isLoading) setIsLoading(false);
   }, [recentTrades, isLoading]);
+  
+  // Reset isNew flag after animation completes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFeed(prevFeed => 
+        prevFeed.map(item => ({ ...item, isNew: false }))
+      );
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [feed]);
   
   // Add AI insights to feed
   useEffect(() => {
@@ -79,11 +92,12 @@ export function MarketFeed() {
         type: 'insight',
         content: insight.message,
         timestamp: new Date().toISOString(),
-        impact: insight.impact
+        impact: insight.impact,
+        isNew: true
       };
       
       setFeed(prevFeed => {
-        return [newInsight, ...prevFeed].slice(0, 12);
+        return [newInsight, ...prevFeed.map(item => ({ ...item, isNew: false }))].slice(0, 12);
       });
     }, 15000); // Add new insight every 15 seconds
     
@@ -118,12 +132,22 @@ export function MarketFeed() {
     if (item.impact === 'negative') return "text-red-400";
     return "text-blue-400";
   };
+
+  // Get animation class for feed item
+  const getAnimationClass = (item: FeedItem) => {
+    if (item.isNew) {
+      return item.type === 'trade' 
+        ? (item.impact === 'positive' ? 'animate-slide-left flash-positive' : 'animate-slide-left flash-negative')
+        : 'animate-slide-left';
+    }
+    return '';
+  };
   
   return (
     <div className="p-4 rounded-xl bg-zinc-800 border border-zinc-700 text-white space-y-3 max-h-[400px] overflow-y-auto">
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-lg font-bold text-cyan-400">Market Feed</h3>
-        <Badge variant="outline" className={isConnected ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}>
+        <Badge variant="outline" className={`transition-colors duration-300 ${isConnected ? "bg-green-500/20 text-green-400 animate-pulse-subtle" : "bg-red-500/20 text-red-400"}`}>
           {isConnected ? "Live" : "Connecting..."}
         </Badge>
       </div>
@@ -142,10 +166,13 @@ export function MarketFeed() {
         <p className="text-zinc-400 text-center py-4">No market events yet</p>
       ) : (
         feed.map((item) => (
-          <div key={item.id} className="flex items-start space-x-2 border-b border-zinc-700/50 pb-2 last:border-0">
-            <div className="mt-1">{getItemIcon(item)}</div>
+          <div 
+            key={item.id} 
+            className={`flex items-start space-x-2 border-b border-zinc-700/50 pb-2 last:border-0 transition-all duration-300 ${getAnimationClass(item)}`}
+          >
+            <div className={`mt-1 ${item.isNew ? 'animate-float' : ''}`}>{getItemIcon(item)}</div>
             <div className="flex-1">
-              <p className={`${item.type === 'insight' ? getItemColorClass(item) : 'text-zinc-300'}`}>
+              <p className={`${item.type === 'insight' ? getItemColorClass(item) : 'text-zinc-300'} transition-colors duration-300`}>
                 {item.content}
               </p>
               <p className="text-xs text-zinc-500 mt-1">
