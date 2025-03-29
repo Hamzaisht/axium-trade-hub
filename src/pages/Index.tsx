@@ -6,7 +6,6 @@ import Hero from "@/components/home/Hero";
 import LiveTicker from "@/components/home/LiveTicker";
 import Features from "@/components/home/Features";
 import FAQ from "@/components/home/FAQ";
-import PremiumBackground from "@/components/home/PremiumBackground";
 import { cn } from "@/lib/utils";
 import { ArrowRight, ChevronRight, ExternalLink, LineChart, Shield, Star, TrendingUp, Users } from "lucide-react";
 
@@ -14,7 +13,6 @@ const Index = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   
   useEffect(() => {
-    // Add a small delay to ensure smooth animations
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 100);
@@ -27,9 +25,6 @@ const Index = () => {
       "min-h-screen bg-[#0A0E17] text-white transition-opacity duration-500",
       isLoaded ? "opacity-100" : "opacity-0"
     )}>
-      {/* The premium background needs to be the first component */}
-      <PremiumBackground />
-      
       <div className="relative z-10">
         <Navbar />
         
