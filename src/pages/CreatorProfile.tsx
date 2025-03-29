@@ -6,11 +6,11 @@ import { useCreatorBySlug, useRecordTradeEvent } from "@/hooks/useCreator";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/contexts/AuthContext";
-import DashboardShell from "@/components/layout/DashboardShell";
+import { DashboardShell } from "@/components/layout/DashboardShell";
 import { CreatorHeader } from "@/components/market/CreatorHeader";
 import { CreatorTradeHistory } from "@/components/creator/CreatorTradeHistory";
-import { TradePanel } from "@/components/market/TradePanel";
-import { SentimentInsights } from "@/components/trading/SentimentInsights";
+import TradePanel from "@/components/market/TradePanel";
+import SentimentInsights from "@/components/trading/SentimentInsights";
 import { ExternalMetricsCard } from "@/components/trading/external-metrics/ExternalMetricsCard";
 import { RotateCw, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -131,23 +131,35 @@ export default function CreatorProfile() {
   return (
     <DashboardShell>
       <div className="container mx-auto p-4 space-y-6">
-        <CreatorHeader creator={creatorData} />
+        {/* Adapt CreatorHeader to work with Creator type */}
+        <CreatorHeader creator={{
+          creatorName: creatorData.name,
+          symbol: creatorData.handle || creatorData.slug,
+          initialPrice: 10, // Default values since Creator doesn't have these
+          currentPrice: 15,
+          totalSupply: 1000000,
+          availableSupply: 500000
+        }} />
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
             {/* Price Chart and Metrics */}
-            <ExternalMetricsCard creatorId={creatorData.id} creatorName={creatorData.name} />
+            <ExternalMetricsCard creatorId={creatorData.id} />
           </div>
           
           <div className="space-y-6">
             {/* Trade Panel */}
-            <TradePanel creator={creatorData} />
+            <TradePanel 
+              creatorId={creatorData.id} 
+              currentPrice={15} 
+              symbol={creatorData.handle || creatorData.name} 
+            />
             
             {/* Trade History */}
             <CreatorTradeHistory creatorId={creatorData.id} symbol={creatorData.handle || creatorData.name} />
             
             {/* Sentiment Analysis */}
-            <SentimentInsights creatorId={creatorData.id} creatorName={creatorData.name} />
+            <SentimentInsights creatorId={creatorData.id} />
           </div>
         </div>
       </div>

@@ -247,3 +247,5 @@ const SentimentInsights = ({ creatorId, className }: SentimentInsightsProps) => 
 };
 
 export default SentimentInsights;
+// Export as default and named for compatibility
+export { SentimentInsights };

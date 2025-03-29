@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { placeOrder } from "@/lib/placeOrder";
 import { useToast } from "@/hooks/use-toast";
@@ -186,3 +185,5 @@ export default function TradePanel({
     </Card>
   );
 }
+
+export { TradePanel };
