@@ -9,7 +9,125 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      creators: {
+        Row: {
+          avatar_url: string | null
+          engagement: number | null
+          followers: number | null
+          handle: string | null
+          id: string
+          monthly_income: number | null
+          name: string
+          net_worth: number | null
+          press_mentions: number | null
+          slug: string
+          sponsorships: number | null
+          stream_views: number | null
+          ticket_sales: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          engagement?: number | null
+          followers?: number | null
+          handle?: string | null
+          id?: string
+          monthly_income?: number | null
+          name: string
+          net_worth?: number | null
+          press_mentions?: number | null
+          slug: string
+          sponsorships?: number | null
+          stream_views?: number | null
+          ticket_sales?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          engagement?: number | null
+          followers?: number | null
+          handle?: string | null
+          id?: string
+          monthly_income?: number | null
+          name?: string
+          net_worth?: number | null
+          press_mentions?: number | null
+          slug?: string
+          sponsorships?: number | null
+          stream_views?: number | null
+          ticket_sales?: number | null
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          creator_id: string
+          id: string
+          price: number
+          quantity: number
+          timestamp: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          creator_id: string
+          id?: string
+          price: number
+          quantity: number
+          timestamp?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          creator_id?: string
+          id?: string
+          price?: number
+          quantity?: number
+          timestamp?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trade_events: {
+        Row: {
+          creator_id: string | null
+          event_type: string | null
+          id: string
+          metadata: Json | null
+          price: number | null
+          quantity: number | null
+          timestamp: string | null
+          user_id: string | null
+        }
+        Insert: {
+          creator_id?: string | null
+          event_type?: string | null
+          id?: string
+          metadata?: Json | null
+          price?: number | null
+          quantity?: number | null
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          creator_id?: string | null
+          event_type?: string | null
+          id?: string
+          metadata?: Json | null
+          price?: number | null
+          quantity?: number | null
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_events_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

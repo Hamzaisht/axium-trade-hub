@@ -1,39 +1,51 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 210 33% 99%;
-    --foreground: 222 47% 11%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-
+    --background: 247 249 251;
+    --foreground: 11 15 26;
+    --accent: 255 215 0;
+    --primary: 0 207 255;
+    --primary-foreground: 255 255 255;
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
-
+    --card: 255 255 255;
+    --card-foreground: 11 15 26;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
-
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
-
+    --accent-foreground: 11 15 26;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
+    --border: 226 232 240;
     --input: 214.3 31.8% 91.4%;
     --ring: 221 83% 53%;
-
     --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 11 15 26;
+    --foreground: 255 255 255;
+    --accent: 255 215 0;
+    --primary: 0 255 208;
+    --primary-foreground: 11 15 26;
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --card: 22 27 34;
+    --card-foreground: 255 255 255;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent-foreground: 11 15 26;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 41 47 54;
+    --input: 217 32% 17%;
+    --ring: 0 255 208;
   }
 
   * {
@@ -50,7 +62,7 @@
   }
   
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased transition-colors duration-300;
   }
 
   body::-webkit-scrollbar {
@@ -75,8 +87,8 @@
     @apply bg-axium-gray-800/70 backdrop-blur-md rounded-lg border border-axium-gray-700/30 shadow-glass transition-all duration-300;
   }
   
-  .premium-card {
-    @apply bg-gradient-to-b from-white/80 to-white/60 backdrop-blur-md rounded-lg border border-axium-gray-200/50 shadow-glass-strong;
+  .theme-card {
+    @apply bg-card border-border rounded-lg border shadow-sm transition-all duration-300;
   }
   
   .text-balance {
@@ -104,7 +116,6 @@
   }
 }
 
-/* Animation utilities */
 @layer utilities {
   .animation-delay-200 {
     animation-delay: 200ms;
