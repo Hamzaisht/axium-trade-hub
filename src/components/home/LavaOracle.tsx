@@ -7,10 +7,12 @@ import {
   useProgress, 
   Html, 
   ContactShadows,
-  Sparkles
+  Sparkles,
+  Text
 } from '@react-three/drei';
 import { LavaBeing } from './lava-oracle/LavaBeing';
 import { OracleLighting } from './lava-oracle/OracleLighting';
+import { GoldenHalo } from './lava-oracle/GoldenHalo';
 import CanvasErrorBoundary from './marble-background/CanvasErrorBoundary';
 
 // Loading indicator for 3D model
@@ -19,10 +21,36 @@ function Loader() {
   return (
     <Html center>
       <div className="text-center">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#D4AF37] border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-        <p className="mt-4 text-sm text-[#D4AF37]">{progress.toFixed(0)}% loaded</p>
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#38BDF8] border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+        <p className="mt-4 text-sm text-[#38BDF8]">{progress.toFixed(0)}% loaded</p>
       </div>
     </Html>
+  );
+}
+
+// Interactive floating text component
+function FloatingText({ position, text, color = "#38BDF8", size = 0.1, opacity = 0.8 }) {
+  const [hover, setHover] = useState(false);
+  
+  return (
+    <Text
+      position={position}
+      fontSize={size}
+      color={color}
+      anchorX="center"
+      anchorY="middle"
+      outlineWidth={0.004}
+      outlineColor="#000000"
+      outlineOpacity={0.5}
+      opacity={hover ? 1 : opacity}
+      onPointerOver={() => setHover(true)}
+      onPointerOut={() => setHover(false)}
+      scale={hover ? 1.2 : 1}
+      font="/fonts/inter-medium.woff"
+    >
+      {text}
+      <meshBasicMaterial transparent attach="material" />
+    </Text>
   );
 }
 
@@ -33,6 +61,7 @@ interface LavaOracleProps {
 const LavaOracle: React.FC<LavaOracleProps> = ({ marketSpike = false }) => {
   const [canvasLoaded, setCanvasLoaded] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [showLabels, setShowLabels] = useState(false);
   
   useEffect(() => {
     // Check if WebGL is supported
@@ -57,8 +86,14 @@ const LavaOracle: React.FC<LavaOracleProps> = ({ marketSpike = false }) => {
     
     window.addEventListener('mousemove', handleMouseMove);
     
+    // Show labels after a delay
+    const labelsTimer = setTimeout(() => {
+      setShowLabels(true);
+    }, 3000);
+    
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      clearTimeout(labelsTimer);
     };
   }, []);
 
@@ -67,7 +102,7 @@ const LavaOracle: React.FC<LavaOracleProps> = ({ marketSpike = false }) => {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#0B0F1A] to-[#162A54] rounded-xl overflow-hidden">
         <div className="p-6 text-center">
-          <div className="w-32 h-32 mx-auto bg-[#111111] rounded-full mb-4 border border-[#D4AF37]/30"></div>
+          <div className="w-32 h-32 mx-auto bg-[#111111] rounded-full mb-4 border border-[#38BDF8]/30"></div>
           <p className="text-white text-lg">Interactive 3D requires WebGL support</p>
           <p className="text-zinc-400 text-sm mt-2">Your browser may not support this feature</p>
         </div>
@@ -102,13 +137,52 @@ const LavaOracle: React.FC<LavaOracleProps> = ({ marketSpike = false }) => {
               marketSpike={marketSpike}
             />
             
+            {/* Secondary halos */}
+            <GoldenHalo 
+              position={[0, -2, 0]} 
+              scale={0.7} 
+              intensity={0.5} 
+              color="#38BDF8" 
+              rotationSpeed={0.3}
+            />
+            
+            {/* Floating data points */}
+            {showLabels && (
+              <>
+                <FloatingText 
+                  position={[1.5, 1.2, 0]} 
+                  text="SOCIAL SCORE" 
+                  color="#38BDF8" 
+                  size={0.15}
+                />
+                <FloatingText 
+                  position={[-1.8, 0.8, 0]} 
+                  text="MARKET CAP" 
+                  color="#00FFD0" 
+                  size={0.15}
+                />
+                <FloatingText 
+                  position={[1.2, -0.5, 0]} 
+                  text="GROWTH" 
+                  color="#FFD700" 
+                  size={0.15}
+                />
+                <FloatingText 
+                  position={[-1.6, -1.2, 0]} 
+                  text="ENGAGEMENT" 
+                  color="#38BDF8" 
+                  size={0.15}
+                />
+              </>
+            )}
+            
             {/* Add floating particles */}
             <Sparkles 
               count={50} 
               scale={10} 
               size={1} 
               speed={0.3} 
-              color="#FFD700" 
+              color="#38BDF8" 
               opacity={0.3}
             />
             

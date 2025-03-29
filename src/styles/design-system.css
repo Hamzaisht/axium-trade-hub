@@ -3,16 +3,25 @@
 
 :root {
   /* Color Palette */
-  --axium-bg: #0B0F1A;
-  --axium-bg-alt: #0E0F12;
-  --axium-gold: #FFD700;
+  --axium-bg: #0A0E1A;
+  --axium-bg-alt: #0E1422;
   --axium-blue: #38BDF8;
-  --axium-mint: #00FFD0;
+  --axium-cyan: #00FFD0;
+  --axium-gold: #FFD700;
+  --axium-gray-100: #F8FAFC;
+  --axium-gray-200: #E2E8F0;
+  --axium-gray-300: #CBD5E1;
+  --axium-gray-400: #94A3B8;
+  --axium-gray-500: #64748B;
+  --axium-gray-600: #475569;
+  --axium-gray-700: #334155;
+  --axium-gray-800: #1E293B;
+  --axium-gray-900: #0F172A;
   
   /* Shadows */
-  --axium-gold-glow: 0 0 15px rgba(255, 215, 0, 0.3);
   --axium-blue-glow: 0 0 15px rgba(56, 189, 248, 0.3);
-  --axium-mint-glow: 0 0 15px rgba(0, 255, 208, 0.3);
+  --axium-cyan-glow: 0 0 15px rgba(0, 255, 208, 0.3);
+  --axium-gold-glow: 0 0 15px rgba(255, 215, 0, 0.3);
   
   /* Typography */
   --axium-tracking: 0.025em;
@@ -37,28 +46,28 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .axium-button-primary {
-  @apply bg-gradient-to-r from-[#FFD700] to-[#D4AF37] text-black hover:shadow-[0_0_15px_rgba(255,215,0,0.4)];
+  @apply bg-gradient-to-r from-[#38BDF8] to-[#00FFD0] text-black hover:shadow-[0_0_15px_rgba(56,189,248,0.4)];
 }
 
 .axium-button-secondary {
-  @apply bg-gradient-to-r from-[#38BDF8] to-[#0284C7] text-white hover:shadow-[0_0_15px_rgba(56,189,248,0.4)];
+  @apply bg-gradient-to-r from-[#FFD700] to-[#D4AF37] text-black hover:shadow-[0_0_15px_rgba(255,215,0,0.4)];
 }
 
 .axium-button-accent {
-  @apply bg-gradient-to-r from-[#00FFD0] to-[#00B899] text-black hover:shadow-[0_0_15px_rgba(0,255,208,0.4)];
+  @apply bg-gradient-to-r from-[#38BDF8] to-[#0066FF] text-white hover:shadow-[0_0_15px_rgba(56,189,248,0.4)];
 }
 
 .axium-button-outline {
-  @apply border border-zinc-600 text-white hover:bg-zinc-800 hover:border-zinc-400;
+  @apply border border-[#38BDF8]/30 text-white hover:bg-[#38BDF8]/10 hover:border-[#38BDF8]/70;
 }
 
 /* Card Styles */
 .axium-card {
-  @apply rounded-xl border border-zinc-800 bg-zinc-900/50 backdrop-blur-md p-6;
+  @apply rounded-xl border border-[#38BDF8]/20 bg-[#0E1422]/80 backdrop-blur-md p-6 shadow-[0_0_20px_rgba(56,189,248,0.1)];
 }
 
 .axium-card-glass {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.3)];
+  @apply bg-white/5 backdrop-blur-xl border border-[#38BDF8]/10 rounded-xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.3)];
 }
 
 /* Demo Mode */
@@ -68,8 +77,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .demo-mode-container::before {
   content: '';
-  @apply absolute inset-0 rounded-xl border-2 border-yellow-400/30 pointer-events-none z-10;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+  @apply absolute inset-0 rounded-xl border-2 border-[#38BDF8]/30 pointer-events-none z-10;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
   animation: pulseBorder 3s infinite;
 }
 
@@ -87,7 +96,7 @@ h1, h2, h3, h4, h5, h6 {
   text-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
 }
 
-.mint-glow {
+.cyan-glow {
   text-shadow: 0 0 10px rgba(0, 255, 208, 0.7);
 }
 
@@ -100,7 +109,7 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
 }
 
-.shadow-mint-glow {
+.shadow-cyan-glow {
   box-shadow: 0 0 15px rgba(0, 255, 208, 0.4);
 }
 
@@ -118,12 +127,26 @@ h1, h2, h3, h4, h5, h6 {
   @apply cursor-pointer transition-all duration-300;
 }
 
-/* Gold Text Enhanced */
+/* Enhanced Text Effects */
 .gold-text {
   color: #FFD700;
   text-shadow: 0 0 5px rgba(255, 215, 0, 0.8),
                0 0 10px rgba(255, 215, 0, 0.6),
                0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.blue-text {
+  color: #38BDF8;
+  text-shadow: 0 0 5px rgba(56, 189, 248, 0.8),
+               0 0 10px rgba(56, 189, 248, 0.6),
+               0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.cyan-text {
+  color: #00FFD0;
+  text-shadow: 0 0 5px rgba(0, 255, 208, 0.8),
+               0 0 10px rgba(0, 255, 208, 0.6),
+               0 0 15px rgba(0, 255, 208, 0.4);
 }
 
 /* Button Hover Effects */
@@ -151,4 +174,113 @@ h1, h2, h3, h4, h5, h6 {
 
 .hover-shine:hover::after {
   left: 125%;
+}
+
+/* Futuristic Neon Line */
+.neon-line {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--axium-blue), transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.neon-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, white, transparent);
+  animation: neonPulse 3s infinite;
+}
+
+@keyframes neonPulse {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* Glitch Text Effect */
+.glitch-text {
+  position: relative;
+  animation: glitch 3s infinite;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-text::before {
+  left: 2px;
+  text-shadow: -1px 0 var(--axium-cyan);
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim 5s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+  left: -2px;
+  text-shadow: -1px 0 var(--axium-blue);
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim2 5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { clip: rect(44px, 450px, 56px, 0); }
+  20% { clip: rect(12px, 450px, 92px, 0); }
+  40% { clip: rect(32px, 450px, 52px, 0); }
+  60% { clip: rect(78px, 450px, 82px, 0); }
+  80% { clip: rect(23px, 450px, 33px, 0); }
+  100% { clip: rect(44px, 450px, 56px, 0); }
+}
+
+@keyframes glitch-anim2 {
+  0% { clip: rect(12px, 450px, 92px, 0); }
+  20% { clip: rect(44px, 450px, 56px, 0); }
+  40% { clip: rect(78px, 450px, 82px, 0); }
+  60% { clip: rect(32px, 450px, 52px, 0); }
+  80% { clip: rect(23px, 450px, 33px, 0); }
+  100% { clip: rect(12px, 450px, 92px, 0); }
+}
+
+/* Data Visualization */
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.data-card {
+  @apply axium-card flex flex-col;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.data-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(56, 189, 248, 0.2);
+}
+
+/* Futuristic animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
 }
