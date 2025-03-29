@@ -1,3 +1,4 @@
+
 import { Sidebar } from "@/components/layout/Sidebar";
 import { ReactNode } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -15,8 +16,7 @@ export function LayoutShell({ children, className = "" }: LayoutShellProps) {
   
   return (
     <div className={cn(
-      "flex min-h-screen transition-all duration-500",
-      isDark ? "bg-[#0B0F1A]" : "bg-[#F7F9FB]", // Using the specified colors
+      "flex min-h-screen transition-all duration-500 bg-background text-foreground",
       isDark && [
         "cyberpunk-grid",
         "bg-[linear-gradient(to_right,rgba(0,207,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,207,255,0.03)_1px,transparent_1px)]",

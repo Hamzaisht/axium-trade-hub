@@ -19,13 +19,13 @@ export function DashboardShell({ children, className = "" }: DashboardShellProps
   return (
     <TooltipProvider>
       <div className={cn(
-        "flex flex-col min-h-screen transition-colors duration-500",
-        isDark ? "bg-[#0B0F1A]" : "bg-[#F7F9FB]", // Using the specified colors
+        "flex flex-col min-h-screen transition-colors duration-500 bg-background text-foreground",
         className
       )}>
         <header className={cn(
           "border-b py-2 relative", 
-          isDark ? "bg-[#0F0F12] border-[#292F36]" : "bg-white border-gray-200"
+          isDark ? "border-[#292F36]" : "border-gray-200",
+          isDark ? "bg-card/90" : "bg-white"
         )}>
           {isDark && (
             <>

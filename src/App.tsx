@@ -33,19 +33,21 @@ function App() {
           <AuthProvider>
             <IPOProvider>
               <TradingProvider>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route element={<Layout />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/trading" element={<Trading />} />
-                    <Route path="/portfolio" element={<Portfolio />} />
-                    <Route path="/creator/:slug" element={<CreatorProfile />} />
-                    <Route path="/institutional/:slug" element={<InstitutionalCreator />} />
-                  </Route>
-                </Routes>
-                <ToastContainer />
+                <div className="min-h-screen font-sans antialiased bg-background text-foreground transition-colors">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route element={<Layout />}>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/trading" element={<Trading />} />
+                      <Route path="/portfolio" element={<Portfolio />} />
+                      <Route path="/creator/:slug" element={<CreatorProfile />} />
+                      <Route path="/institutional/:slug" element={<InstitutionalCreator />} />
+                    </Route>
+                  </Routes>
+                  <ToastContainer />
+                </div>
               </TradingProvider>
             </IPOProvider>
           </AuthProvider>

@@ -32,12 +32,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
-      document.body.classList.add('cyberpunk-grid');
-      document.body.style.backgroundColor = '#0B0F1A'; // Obsidian black
+      document.body.style.backgroundColor = 'rgb(11, 15, 26)'; // Obsidian black (#0B0F1A)
     } else {
       document.documentElement.classList.remove('dark');
-      document.body.classList.remove('cyberpunk-grid');
-      document.body.style.backgroundColor = '#F7F9FB'; // Light white/gray
+      document.body.style.backgroundColor = 'rgb(247, 249, 251)'; // Light white/gray (#F7F9FB)
     }
   }, [theme]);
 
