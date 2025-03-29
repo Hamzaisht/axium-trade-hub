@@ -1,138 +1,130 @@
 
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useGLTF, useTexture } from '@react-three/drei';
-import { GoldenVeins } from './GoldenVeins';
-
-// Create humanoid head model
-const createHeadGeometry = () => {
-  // Create a head shape using a combination of geometries
-  const geometry = new THREE.BufferGeometry();
-  
-  // Base head shape (sphere with modifications)
-  const baseHead = new THREE.SphereGeometry(1, 64, 64);
-  
-  // Modify vertices to create a more head-like shape
-  const positions = baseHead.attributes.position as THREE.BufferAttribute;
-  const vertices = [];
-  
-  for (let i = 0; i < positions.count; i++) {
-    let x = positions.getX(i);
-    let y = positions.getY(i);
-    let z = positions.getZ(i);
-    
-    // Elongate to create head shape
-    y = y * 1.2;
-    
-    // Flatten back of head slightly
-    if (z < -0.2) {
-      z = z * 0.9;
-    }
-    
-    // Create jaw/chin area
-    if (y < -0.3 && Math.abs(x) < 0.4 && z > 0.2) {
-      y = y * 1.3;
-      z = z * 1.2;
-    }
-    
-    // Add slight indentation for eyes
-    if (Math.abs(x) > 0.3 && Math.abs(x) < 0.5 && y > 0.1 && y < 0.3 && z > 0.7) {
-      z = z * 0.9;
-    }
-    
-    vertices.push(x, y, z);
-  }
-  
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geometry.computeVertexNormals();
-  
-  return geometry;
-};
+import { useTextureLoader } from '@/hooks/useTextureLoader';
 
 interface MarbleHeadProps {
-  position?: [number, number, number];
-  rotation?: [number, number, number];
-  mousePosition?: { x: number, y: number };
-  scrollEffect?: number;
+  position: [number, number, number];
+  rotation: [number, number, number];
+  mousePosition: { x: number, y: number };
+  scrollEffect: number;
 }
 
-export function MarbleHead({ 
-  position = [0, 0, 0], 
-  rotation = [0, 0, 0], 
-  mousePosition = { x: 0, y: 0 }, 
-  scrollEffect = 0 
-}: MarbleHeadProps) {
+export const MarbleHead: React.FC<MarbleHeadProps> = ({
+  position,
+  rotation,
+  mousePosition,
+  scrollEffect
+}) => {
   const groupRef = useRef<THREE.Group>(null);
-  const meshRef = useRef<THREE.Mesh>(null);
+  const headRef = useRef<THREE.Mesh>(null);
+  const haloRef = useRef<THREE.Mesh>(null);
   
-  // Custom geometry for humanoid head
-  const headGeometry = useMemo(() => createHeadGeometry(), []);
-  
-  // Optional: Try to load a model if available
-  let model = null;
-  try {
-    model = useGLTF('/models/marble-head.glb');
-  } catch (error) {
-    console.log('Using fallback geometry instead of GLB model');
-  }
+  // Load marble head texture
+  const { texture: marbleTexture, normalMap } = useTextureLoader({
+    main: '/textures/black-marble.jpg',
+    normal: '/textures/marble-normal.jpg',
+    fallback: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=1000&auto=format&fit=crop'
+  });
   
   // Animation loop
-  useFrame((state) => {
+  useFrame((state, delta) => {
+    const time = state.clock.getElapsedTime();
+    
     if (groupRef.current) {
-      // Gentle floating animation
-      groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.5) * 0.05;
+      // Subtle floating movement
+      groupRef.current.position.y = position[1] + Math.sin(time * 0.5) * 0.1;
       
-      // Respond to mouse movement
-      groupRef.current.rotation.y = rotation[1] + mousePosition.x * 0.2;
-      groupRef.current.rotation.x = rotation[0] + mousePosition.y * 0.1;
+      // Rotate based on mouse position for interactivity
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(
+        groupRef.current.rotation.y,
+        rotation[1] + mousePosition.x * 0.5,
+        delta * 2
+      );
       
-      // Scroll effect
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(
+        groupRef.current.rotation.x,
+        rotation[0] + mousePosition.y * 0.2,
+        delta * 2
+      );
+      
+      // Add scroll effect for parallax
       if (scrollEffect > 0) {
-        // Rotate when scrolling
-        groupRef.current.rotation.y = rotation[1] + scrollEffect * 0.5;
-        groupRef.current.position.x = position[0] - scrollEffect * 0.5;
+        groupRef.current.position.y = THREE.MathUtils.lerp(
+          groupRef.current.position.y,
+          position[1] - scrollEffect * 0.001,
+          delta * 2
+        );
       }
     }
     
-    if (meshRef.current) {
-      // Pulse the material's emissive intensity
-      const material = meshRef.current.material as THREE.MeshStandardMaterial;
-      if (material.emissiveIntensity !== undefined) {
-        material.emissiveIntensity = 0.1 + Math.sin(state.clock.elapsedTime) * 0.05;
-      }
+    if (headRef.current && headRef.current.material instanceof THREE.MeshStandardMaterial) {
+      // Subtle material animation
+      const pulseIntensity = 0.2 + Math.sin(time * 0.5) * 0.1;
+      headRef.current.material.emissiveIntensity = pulseIntensity;
+    }
+    
+    if (haloRef.current) {
+      // Rotate the halo
+      haloRef.current.rotation.z += delta * 0.2;
+      
+      // Pulse effect
+      const haloScale = 1 + Math.sin(time * 0.5) * 0.05;
+      haloRef.current.scale.set(haloScale, haloScale, 1);
     }
   });
   
   return (
-    <group ref={groupRef} position={position as any} rotation={rotation as any}>
-      {/* Main Head Mesh */}
-      <mesh 
-        ref={meshRef}
-        geometry={model?.nodes?.Head?.geometry || headGeometry}
-        castShadow
-        receiveShadow
-      >
+    <group 
+      ref={groupRef}
+      position={position}
+      rotation={rotation}
+    >
+      {/* The head/bust */}
+      <mesh ref={headRef} scale={1.5}>
+        <sphereGeometry args={[1, 64, 64]} />
         <meshStandardMaterial
-          color="#111111"
-          metalness={0.9}
-          roughness={0.1}
-          envMapIntensity={1}
-          emissive="#111111"
-          emissiveIntensity={0.1}
+          map={marbleTexture}
+          normalMap={normalMap}
+          normalScale={new THREE.Vector2(0.5, 0.5)}
+          color="#FFFFFF"
+          metalness={0.5}
+          roughness={0.3}
+          emissive="#D4AF37"
+          emissiveIntensity={0.2}
         />
       </mesh>
       
-      {/* Gold Veins Effect */}
-      <GoldenVeins 
-        parentGeometry={model?.nodes?.Head?.geometry || headGeometry}
-        intensity={0.8}
-        pulseSpeed={0.6}
-        pulseMagnitude={0.3}
-      />
+      {/* Golden halo ring */}
+      <mesh ref={haloRef} position={[0, 1.2, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[1.5, 1.7, 64]} />
+        <meshStandardMaterial
+          color="#D4AF37"
+          emissive="#D4AF37"
+          emissiveIntensity={0.8}
+          metalness={1}
+          roughness={0.3}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      
+      {/* Smaller detail rings */}
+      <mesh position={[0, 0, 0]} rotation={[Math.PI / 4, Math.PI / 6, 0]} scale={1.8}>
+        <ringGeometry args={[0.8, 0.85, 64]} />
+        <meshStandardMaterial
+          color="#3676FF"
+          emissive="#3676FF"
+          emissiveIntensity={0.5}
+          metalness={1}
+          roughness={0.3}
+          transparent={true}
+          opacity={0.7}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
     </group>
   );
-}
+};
 
-// Cleanup function to prevent memory leaks
-useGLTF.preload('/models/marble-head.glb');
+export default MarbleHead;

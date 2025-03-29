@@ -2,11 +2,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
-import { AuthProvider } from "./contexts/AuthContext";
-import { TradingProvider } from "./contexts/TradingContext";
-import { IPOProvider } from "./contexts/IPOContext";
-import { UserActivityProvider } from "./contexts/UserActivityContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import MarbleBackground from "./components/home/MarbleBackground";
 
 // Pages
 import Index from "./pages/Index";
@@ -20,6 +17,12 @@ import Creators from "./pages/Creators";
 import CreatorProfile from "./pages/CreatorProfile";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+
+// Providers - imported after Router so useNavigate works
+import { AuthProvider } from "./contexts/AuthContext";
+import { TradingProvider } from "./contexts/TradingContext";
+import { IPOProvider } from "./contexts/IPOContext";
+import { UserActivityProvider } from "./contexts/UserActivityContext";
 
 // Styles
 import "./App.css";
@@ -43,6 +46,9 @@ function App() {
             <TradingProvider>
               <IPOProvider>
                 <UserActivityProvider>
+                  {/* Animated background - placed here so it's available on all pages */}
+                  <MarbleBackground />
+                  
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/index" element={<Index />} />
@@ -56,7 +62,15 @@ function App() {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
-                  <Toaster position="top-right" />
+                  <Toaster position="top-right" toastOptions={{
+                    style: {
+                      background: 'rgba(13, 20, 36, 0.95)',
+                      border: '1px solid rgba(54, 118, 255, 0.3)',
+                      backdropFilter: 'blur(8px)',
+                      color: 'white',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2), 0 0 15px rgba(54, 118, 255, 0.3)'
+                    }
+                  }} />
                 </UserActivityProvider>
               </IPOProvider>
             </TradingProvider>

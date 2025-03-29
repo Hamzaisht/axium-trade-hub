@@ -24,7 +24,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const savedTheme = localStorage.getItem('axium-theme') as Theme;
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
-    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    // For our new design, we'll default to dark mode always
+    const initialTheme = savedTheme || 'dark';
     setTheme(initialTheme);
     applyTheme(initialTheme);
   }, []);
@@ -54,19 +55,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  // Theme toggle component
+  // Theme toggle component - updated with neon glow effect
   const ThemeToggle: React.FC = () => {
     return (
       <button
         onClick={toggleTheme}
-        className="p-2 rounded-full bg-gray-100 dark:bg-[#1A2747] hover:bg-gray-200 dark:hover:bg-[#243762] 
-                   transition-all duration-300 text-gray-800 dark:text-white"
+        className="p-2 rounded-full bg-black/30 backdrop-blur-lg border border-[#1A2747]/50 hover:border-[#3676FF]/70 
+                   transition-all duration-300 text-white shadow-lg hover:shadow-[0_0_15px_rgba(54,118,255,0.5)] group"
         aria-label="Toggle theme"
       >
         {theme === 'dark' ? (
-          <Sun className="h-5 w-5 text-[#FFD700] animate-theme-switch" />
+          <Sun className="h-5 w-5 text-[#FFD700] group-hover:rotate-45 transition-transform duration-300" />
         ) : (
-          <Moon className="h-5 w-5 text-blue-600 animate-theme-switch" />
+          <Moon className="h-5 w-5 text-[#3676FF] group-hover:-rotate-12 transition-transform duration-300" />
         )}
       </button>
     );

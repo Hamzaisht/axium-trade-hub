@@ -62,3 +62,5 @@ export function AvatarLighting() {
     </>
   );
 }
+
+export default AvatarLighting;

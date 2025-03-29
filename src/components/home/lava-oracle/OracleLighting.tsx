@@ -4,110 +4,76 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 export function OracleLighting() {
-  const spotLightRef = useRef<THREE.SpotLight>(null);
-  const pointLightRef = useRef<THREE.PointLight>(null);
-  const goldLightRef = useRef<THREE.PointLight>(null);
-  const rimLightRef = useRef<THREE.DirectionalLight>(null);
+  const spotLightRef = useRef<THREE.SpotLight | null>(null);
+  const pointLightRef = useRef<THREE.PointLight | null>(null);
   
   useFrame((state) => {
+    const time = state.clock.getElapsedTime();
+    
+    // Make spotlight pulse
     if (spotLightRef.current) {
-      // Make spotlight gently pulse
-      const intensity = 1 + Math.sin(state.clock.elapsedTime * 0.5) * 0.2;
-      spotLightRef.current.intensity = intensity;
+      spotLightRef.current.intensity = 0.8 + Math.sin(time * 0.5) * 0.2;
     }
     
+    // Make point light flicker occasionally
     if (pointLightRef.current) {
-      // Subtle movement for point light to simulate ambient lava glow
-      pointLightRef.current.position.x = Math.sin(state.clock.elapsedTime * 0.3) * 3;
-      pointLightRef.current.position.z = Math.cos(state.clock.elapsedTime * 0.2) * 2;
-    }
-
-    if (goldLightRef.current) {
-      // Make the gold light pulse with a different frequency
-      const goldIntensity = 0.8 + Math.sin(state.clock.elapsedTime * 0.7) * 0.3;
-      goldLightRef.current.intensity = goldIntensity;
-    }
-    
-    if (rimLightRef.current) {
-      // Slowly rotate rim light to create dynamic shadows
-      rimLightRef.current.position.x = Math.sin(state.clock.elapsedTime * 0.1) * 5;
-      rimLightRef.current.position.z = Math.cos(state.clock.elapsedTime * 0.1) * 5;
+      if (Math.random() > 0.95) {
+        pointLightRef.current.intensity = 0.5 + Math.random() * 0.5;
+      } else {
+        pointLightRef.current.intensity = THREE.MathUtils.lerp(
+          pointLightRef.current.intensity,
+          0.5,
+          0.1
+        );
+      }
     }
   });
   
   return (
     <>
       {/* Base ambient light */}
-      <ambientLight intensity={0.2} color="#ffffff" />
+      <ambientLight intensity={0.2} color="#CCCCFF" />
       
-      {/* Golden ambient light */}
-      <ambientLight intensity={0.15} color="#FFD700" />
-      
-      {/* Main directional light */}
-      <directionalLight 
-        position={[5, 5, 5]} 
-        intensity={0.6} 
-        color="#ffffff" 
+      {/* Main spot light */}
+      <spotLight 
+        ref={spotLightRef}
+        position={[0, 5, 5]} 
+        angle={0.5} 
+        penumbra={0.8} 
+        intensity={1} 
+        color="#FFD700" 
         castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
       />
       
-      {/* Golden accent light */}
+      {/* Rim light for dramatic effect */}
       <pointLight 
-        ref={goldLightRef}
-        position={[-3, 2, 3]} 
-        intensity={0.8} 
-        color="#FFD700" 
-        distance={12}
+        position={[-5, 0, -5]} 
+        intensity={0.5} 
+        color="#3676FF" 
+        distance={15}
         decay={2}
       />
       
-      {/* Blue accent light for contrast */}
+      {/* Front fill light */}
       <pointLight 
         ref={pointLightRef}
-        position={[3, -3, -5]} 
-        intensity={0.3} 
-        color="#38BDF8" 
-        distance={10}
-        decay={2}
-      />
-
-      {/* Mint accent light for additional color */}
-      <pointLight 
-        position={[0, -4, 2]} 
-        intensity={0.2} 
-        color="#00FFD0" 
+        position={[3, 1, 5]} 
+        intensity={0.5} 
+        color="#FFCC88" 
         distance={8}
         decay={2}
       />
       
-      {/* Dynamic spotlight from above */}
-      <spotLight 
-        ref={spotLightRef}
-        position={[0, 5, 2]} 
-        intensity={1} 
-        angle={0.3} 
-        penumbra={0.8} 
-        color="#ffffff" 
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-      />
-      
-      {/* Rim light for silhouette enhancement */}
-      <directionalLight
-        ref={rimLightRef}
-        position={[-5, 2, -5]}
-        intensity={0.4}
-        color="#FFD700"
-      />
-      
-      {/* Hemisphere light for natural ambient shadows */}
-      <hemisphereLight 
-        args={["#6495ED", "#191970", 0.3]} 
-        position={[0, 10, 0]} 
+      {/* Dramatic uplight */}
+      <pointLight 
+        position={[0, -4, 0]} 
+        intensity={0.3} 
+        color="#D946EF" 
+        distance={5}
+        decay={2}
       />
     </>
   );
 }
+
+export default OracleLighting;
