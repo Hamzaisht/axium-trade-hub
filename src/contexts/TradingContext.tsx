@@ -101,10 +101,13 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
         userId: user.id
       };
       
+      // Determine the order type properly based on available properties
+      const orderType = orderWithUserId.type || "buy"; // Default to "buy" if not specified
+      
       await placeOrder({
         userId: user.id,
         creatorId: orderWithUserId.ipoId || '',
-        type: orderWithUserId.side ? (orderWithUserId.side as "buy" | "sell") : (orderWithUserId.type as "buy" | "sell"),
+        type: orderType as "buy" | "sell",
         quantity: orderWithUserId.quantity || 0,
         price: orderWithUserId.price || 0
       });
