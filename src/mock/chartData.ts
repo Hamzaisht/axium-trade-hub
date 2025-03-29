@@ -1,11 +1,10 @@
-
 export interface ChartDataPoint {
   timestamp: string;
   price: number;
   volume?: number;
 }
 
-export type TimeFrame = '1D' | '1W' | '1M' | '3M' | '1Y';
+export type TimeFrame = "1H" | "1D" | "1W" | "1M" | "3M" | "1Y";
 
 const generateMockData = (
   timeframe: TimeFrame, 
