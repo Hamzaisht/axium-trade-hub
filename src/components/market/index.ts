@@ -5,6 +5,7 @@ export * from './CreatorHeader';
 export * from './EnhancedOrderBook';
 export * from './LiveChart';
 export * from './LivePriceChart';
+export * from './MarketFeed';
 export * from './OrderBookTable';
 export * from './PriceTicker';
 export * from './PriceTickerScroll';
