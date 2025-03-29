@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -6,7 +7,7 @@ import type {
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 5000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -137,6 +138,10 @@ function dispatch(action: Action) {
   })
 }
 
+type ToastOptions = Partial<
+  Pick<ToasterToast, "action" | "variant" | "description" | "duration">
+>
+
 type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
@@ -168,6 +173,12 @@ function toast({ ...props }: Toast) {
   }
 }
 
+interface ToastContextType {
+  toast: typeof toast
+  dismiss: (toastId?: string) => void
+  update: (id: string, options: ToastOptions) => void
+}
+
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
@@ -185,6 +196,10 @@ function useToast() {
     ...state,
     toast,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    update: (id: string, options: ToastOptions) => dispatch({
+      type: "UPDATE_TOAST",
+      toast: { id, ...options }
+    }),
   }
 }
 

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { showNotification } from "@/components/notifications/ToastContainer";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { placeOrder } from "@/lib/placeOrder";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BuySellSectionProps {
   creatorId: string;
@@ -97,53 +99,95 @@ export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuyS
       <CardContent>
         <Tabs value={orderType} onValueChange={(v) => setOrderType(v as OrderType)} className="mb-4">
           <TabsList className="grid grid-cols-2">
-            <TabsTrigger value="buy" className="data-[state=active]:bg-axium-positive data-[state=active]:text-white">
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Buy
-            </TabsTrigger>
-            <TabsTrigger value="sell" className="data-[state=active]:bg-axium-negative data-[state=active]:text-white">
-              <TrendingDown className="mr-2 h-4 w-4" />
-              Sell
-            </TabsTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger value="buy" className="data-[state=active]:bg-axium-positive data-[state=active]:text-white">
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  Buy
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p className="text-xs">Buy shares of {symbol}</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TabsTrigger value="sell" className="data-[state=active]:bg-axium-negative data-[state=active]:text-white">
+                  <TrendingDown className="mr-2 h-4 w-4" />
+                  Sell
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p className="text-xs">Sell shares of {symbol}</p>
+              </TooltipContent>
+            </Tooltip>
           </TabsList>
         </Tabs>
         
         <div className="space-y-4">
           <div>
             <div className="text-sm font-medium mb-1.5">Quantity</div>
-            <Input 
-              type="text" 
-              value={quantity} 
-              onChange={handleQuantityChange} 
-              placeholder="Enter quantity"
-            />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Input 
+                  type="text" 
+                  value={quantity} 
+                  onChange={handleQuantityChange} 
+                  placeholder="Enter quantity"
+                />
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p className="text-xs">Enter number of shares to {orderType}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="text-sm font-medium mb-1.5">Price</div>
-              <div className="py-2 px-3 border rounded-md bg-muted/50">
-                ${currentPrice}
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="py-2 px-3 border rounded-md bg-muted/50">
+                    ${currentPrice}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="left">
+                  <p className="text-xs">Current market price</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
             <div>
               <div className="text-sm font-medium mb-1.5">Total</div>
-              <div className="py-2 px-3 border rounded-md bg-muted/50">
-                ${calculateTotal()}
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="py-2 px-3 border rounded-md bg-muted/50">
+                    ${calculateTotal()}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p className="text-xs">Total transaction value</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
           
-          <Button 
-            className="w-full"
-            disabled={isProcessing || !quantity || parseFloat(quantity) <= 0}
-            onClick={handleSubmitOrder}
-            variant={orderType === "buy" ? "default" : "destructive"}
-          >
-            {isProcessing 
-              ? "Processing..." 
-              : `${orderType === "buy" ? "Buy" : "Sell"} ${symbol || "Token"}`}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                className="w-full"
+                disabled={isProcessing || !quantity || parseFloat(quantity) <= 0}
+                onClick={handleSubmitOrder}
+                variant={orderType === "buy" ? "default" : "destructive"}
+              >
+                {isProcessing 
+                  ? "Processing..." 
+                  : `${orderType === "buy" ? "Buy" : "Sell"} ${symbol || "Token"}`}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p className="text-xs">Submit {orderType} order for {quantity} {symbol}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </CardContent>
     </Card>

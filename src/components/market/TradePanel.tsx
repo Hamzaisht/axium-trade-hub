@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { showNotification } from "@/components/notifications/ToastContainer";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 interface TradePanelProps {
   creatorId: string;
@@ -31,6 +33,7 @@ export default function TradePanel({
         title: "Authentication Required",
         description: "Please log in to place orders",
         variant: "destructive",
+        duration: 4000,
       });
       showNotification.error("Please log in to place orders");
       return;
@@ -50,6 +53,8 @@ export default function TradePanel({
       toast({
         title: `Order placed`,
         description: `${type.toUpperCase()} ${quantity} ${symbol} at $${price}`,
+        variant: type === "buy" ? "success" : "info",
+        duration: 3000,
       });
       
       showNotification.success(
@@ -59,7 +64,8 @@ export default function TradePanel({
       toast({ 
         title: "Error", 
         description: err.message, 
-        variant: "destructive" 
+        variant: "destructive",
+        duration: 5000,
       });
       
       showNotification.error(
@@ -77,56 +83,103 @@ export default function TradePanel({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-xl">Trade {symbol}</CardTitle>
+        <CardTitle className="text-xl flex items-center">
+          Trade {symbol}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="h-4 w-4 ml-2 text-zinc-400" />
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p className="text-xs max-w-[200px]">
+                Place market orders to buy or sell {symbol} shares at the current market price
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <div>
             <div className="text-sm font-medium mb-1.5">Quantity</div>
-            <Input
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              className="w-full"
-            />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  className="w-full"
+                />
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p className="text-xs">Number of shares to trade</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           
           <div>
             <div className="text-sm font-medium mb-1.5">Price</div>
-            <Input
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
-              className="w-full"
-            />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={price}
+                  onChange={(e) => setPrice(Number(e.target.value))}
+                  className="w-full"
+                />
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p className="text-xs">Price per share in USD</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           
           <div>
             <div className="text-sm font-medium mb-1.5">Total</div>
-            <div className="py-2 px-3 border rounded-md bg-muted/50">
-              ${calculateTotal()}
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="py-2 px-3 border rounded-md bg-muted/50">
+                  ${calculateTotal()}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p className="text-xs">Total transaction value</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           
           <div className="grid grid-cols-2 gap-3 pt-2">
-            <Button
-              onClick={() => handleOrder("buy")}
-              disabled={isProcessing || quantity <= 0 || price <= 0}
-              className="bg-axium-positive hover:bg-axium-positive/90"
-            >
-              {isProcessing ? "Processing..." : "Buy"}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => handleOrder("buy")}
+                  disabled={isProcessing || quantity <= 0 || price <= 0}
+                  className="bg-axium-positive hover:bg-axium-positive/90"
+                >
+                  {isProcessing ? "Processing..." : "Buy"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p className="text-xs">Buy {quantity} shares at ${price} each</p>
+              </TooltipContent>
+            </Tooltip>
             
-            <Button
-              onClick={() => handleOrder("sell")}
-              disabled={isProcessing || quantity <= 0 || price <= 0}
-              variant="destructive"
-            >
-              {isProcessing ? "Processing..." : "Sell"}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => handleOrder("sell")}
+                  disabled={isProcessing || quantity <= 0 || price <= 0}
+                  variant="destructive"
+                >
+                  {isProcessing ? "Processing..." : "Sell"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p className="text-xs">Sell {quantity} shares at ${price} each</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </CardContent>
