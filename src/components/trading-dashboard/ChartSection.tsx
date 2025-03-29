@@ -94,7 +94,7 @@ export const ChartSection = ({
         onTimeframeChange={onTimeframeChange}
       />
       
-      <div className="h-[400px]">
+      <div className="h-[350px] mt-2">
         {isLoading ? (
           <ChartSkeleton height="100%" />
         ) : chartType === "candlestick" ? (
@@ -124,4 +124,3 @@ export const ChartSection = ({
     </GlassCard>
   );
 };
-

@@ -19,7 +19,7 @@ interface BuySellSectionProps {
   currentPrice?: number;
 }
 
-export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuySellSectionProps) {
+export function BuySellSection({ creatorId, symbol = "UNKNOWN", currentPrice = 25.75 }: BuySellSectionProps) {
   const [orderType, setOrderType] = useState<"buy" | "sell">("buy");
   const [quantity, setQuantity] = useState<string>("1");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -37,7 +37,7 @@ export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuyS
 
   const calculateTotal = () => {
     const qty = parseFloat(quantity) || 0;
-    return (qty * currentPrice).toFixed(2);
+    return (qty * (currentPrice || 0)).toFixed(2);
   };
 
   const handleSubmitOrder = async () => {
@@ -69,7 +69,7 @@ export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuyS
         creatorId: creatorId,
         type: orderType,
         quantity: parseInt(quantity, 10),
-        price: currentPrice
+        price: currentPrice || 0
       });
 
       toast({
@@ -94,51 +94,49 @@ export function BuySellSection({ creatorId, symbol, currentPrice = 25.75 }: BuyS
   const isOrderButtonDisabled = isProcessing || !quantity || parseFloat(quantity) <= 0;
 
   return (
-    <Card>
+    <Card className="shadow-lg border border-slate-800/30 backdrop-blur-sm">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2">
           <ArrowRightLeft className="h-5 w-5" />
           Place Order {isDemo && <span className="text-xs text-muted-foreground ml-2">(Demo Mode)</span>}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <OrderTypeTabs 
           orderType={orderType} 
           onOrderTypeChange={setOrderType} 
           symbol={symbol} 
         />
         
-        <div className="space-y-4">
-          <OrderQuantityInput 
-            quantity={quantity} 
-            onChange={handleQuantityChange} 
+        <OrderQuantityInput 
+          quantity={quantity} 
+          onChange={handleQuantityChange} 
+        />
+        
+        <div className="grid grid-cols-2 gap-4">
+          <OrderPriceDisplay 
+            currentPrice={currentPrice} 
           />
-          
-          <div className="grid grid-cols-2 gap-4">
-            <OrderPriceDisplay 
-              currentPrice={currentPrice} 
-            />
-            <OrderTotalDisplay 
-              total={calculateTotal()} 
-            />
-          </div>
-          
-          <ActionButtons 
-            orderType={orderType}
-            isProcessing={isProcessing}
-            isDemo={isDemo}
-            quantity={quantity}
-            symbol={symbol}
-            onSubmit={handleSubmitOrder}
-            isDisabled={isOrderButtonDisabled}
+          <OrderTotalDisplay 
+            total={calculateTotal()} 
           />
-          
-          {isDemo && (
-            <div className="text-xs text-muted-foreground text-center">
-              Demo Mode: No real transactions are made
-            </div>
-          )}
         </div>
+        
+        <ActionButtons 
+          orderType={orderType}
+          isProcessing={isProcessing}
+          isDemo={isDemo}
+          quantity={quantity}
+          symbol={symbol}
+          onSubmit={handleSubmitOrder}
+          isDisabled={isOrderButtonDisabled}
+        />
+        
+        {isDemo && (
+          <div className="text-xs text-muted-foreground text-center">
+            Demo Mode: No real transactions are made
+          </div>
+        )}
       </CardContent>
     </Card>
   );

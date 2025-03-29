@@ -1,6 +1,5 @@
 
 import React from "react";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { IPO } from "@/utils/mockApi";
 import { OrderTypeSelector } from "./OrderTypeSelector";
 import { OrderInputs } from "./OrderInputs";
@@ -13,12 +12,12 @@ interface TradeFormProps {
   onSuccess?: () => void;
 }
 
-const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
+export const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
   const { formData, isLoading, handleChange, handleSubmit } = useTradeForm(ipo, onSuccess);
 
   return (
-    <GlassCard className="w-full p-6">
-      <h2 className="text-2xl font-bold mb-6">Trade {ipo.symbol}</h2>
+    <div>
+      <h2 className="text-xl font-bold mb-4">Trade {ipo.symbol}</h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <OrderTypeSelector 
@@ -46,8 +45,6 @@ const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
           isLoading={isLoading}
         />
       </form>
-    </GlassCard>
+    </div>
   );
 };
-
-export default TradeForm;

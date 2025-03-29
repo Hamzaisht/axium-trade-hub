@@ -14,8 +14,8 @@ export const SubmitButton = ({ type, quantity, symbol, isLoading }: SubmitButton
     <Button 
       type="submit" 
       className={type === "buy" 
-        ? "w-full bg-axium-success hover:bg-axium-success/90" 
-        : "w-full bg-axium-error hover:bg-axium-error/90"}
+        ? "w-full bg-axium-success hover:bg-axium-success/90 shadow-lg shadow-axium-success/20" 
+        : "w-full bg-axium-error hover:bg-axium-error/90 shadow-lg shadow-axium-error/20"}
       disabled={isLoading}
     >
       {isLoading

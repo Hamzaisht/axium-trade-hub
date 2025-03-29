@@ -47,8 +47,8 @@ export const VirtualizedTradeHistory = ({
       <div 
         style={style}
         className={cn(
-          "grid grid-cols-4 py-1 text-sm border-b border-axium-gray-100 last:border-b-0",
-          index % 2 === 0 ? "bg-axium-gray-50/50" : "bg-white"
+          "grid grid-cols-4 py-1 text-sm border-b border-axium-gray-100/10 last:border-b-0",
+          index % 2 === 0 ? "bg-axium-gray-50/5" : "bg-transparent"
         )}
       >
         <div className={trade.side === 'buy' ? 'text-green-500' : 'text-red-500'}>
@@ -67,10 +67,6 @@ export const VirtualizedTradeHistory = ({
   
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-medium">Recent Trades {symbol && `(${symbol})`}</h2>
-      </div>
-      
       <div className="grid grid-cols-4 text-xs text-axium-gray-600 mb-1 px-1">
         <div>Side</div>
         <div className="text-right">Price</div>
@@ -84,6 +80,7 @@ export const VirtualizedTradeHistory = ({
           itemCount={trades.length}
           itemSize={32}
           width="100%"
+          className="scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"
         >
           {TradeRow}
         </List>
@@ -100,10 +97,6 @@ export const VirtualizedTradeHistory = ({
 const TradeHistorySkeleton = () => {
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-3">
-        <Skeleton className="h-5 w-40" />
-      </div>
-      
       <div className="grid grid-cols-4 text-xs text-axium-gray-600 mb-1 px-1">
         <div>Side</div>
         <div className="text-right">Price</div>
@@ -115,8 +108,8 @@ const TradeHistorySkeleton = () => {
         <div 
           key={idx} 
           className={cn(
-            "grid grid-cols-4 py-1 border-b border-axium-gray-100 last:border-b-0",
-            idx % 2 === 0 ? "bg-axium-gray-50/50" : "bg-white"
+            "grid grid-cols-4 py-1 border-b border-axium-gray-100/10 last:border-b-0",
+            idx % 2 === 0 ? "bg-axium-gray-50/5" : "bg-transparent"
           )}
         >
           <Skeleton className="h-4 w-10" />
