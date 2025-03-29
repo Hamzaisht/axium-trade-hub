@@ -91,6 +91,19 @@ h1, h2, h3, h4, h5, h6 {
   text-shadow: 0 0 10px rgba(0, 255, 208, 0.7);
 }
 
+/* Shadow Effects */
+.shadow-gold-glow {
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.shadow-blue-glow {
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.shadow-mint-glow {
+  box-shadow: 0 0 15px rgba(0, 255, 208, 0.4);
+}
+
 /* Grid Layout */
 .axium-container {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
@@ -103,4 +116,39 @@ h1, h2, h3, h4, h5, h6 {
 
 .axium-interactive {
   @apply cursor-pointer transition-all duration-300;
+}
+
+/* Gold Text Enhanced */
+.gold-text {
+  color: #FFD700;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.8),
+               0 0 10px rgba(255, 215, 0, 0.6),
+               0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+/* Button Hover Effects */
+.hover-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.hover-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  transition: all 0.75s;
+}
+
+.hover-shine:hover::after {
+  left: 125%;
 }

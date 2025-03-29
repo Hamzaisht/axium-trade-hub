@@ -21,6 +21,7 @@ export function LavaBeing({
 }: LavaBeingProps) {
   const groupRef = useRef<THREE.Group>(null);
   const headRef = useRef<THREE.Mesh>(null);
+  const bodyRef = useRef<THREE.Mesh>(null);
   
   // Create humanoid head geometry
   const headGeometry = useMemo(() => {
@@ -67,21 +68,54 @@ export function LavaBeing({
     return geometry;
   }, []);
   
+  // Create full body geometry
+  const bodyGeometry = useMemo(() => {
+    // Create torso
+    const torso = new THREE.CylinderGeometry(0.7, 0.5, 1.8, 32);
+    torso.translate(0, -1.5, 0);
+    
+    // Create shoulders
+    const shoulders = new THREE.CylinderGeometry(0.9, 0.7, 0.4, 32);
+    shoulders.translate(0, -0.7, 0);
+    
+    // Create arms
+    const leftArm = new THREE.CylinderGeometry(0.25, 0.2, 1.4, 16);
+    leftArm.translate(-0.9, -1.3, 0);
+    leftArm.rotateZ(Math.PI / 8);
+    
+    const rightArm = new THREE.CylinderGeometry(0.25, 0.2, 1.4, 16);
+    rightArm.translate(0.9, -1.3, 0);
+    rightArm.rotateZ(-Math.PI / 8);
+    
+    // Create legs
+    const leftLeg = new THREE.CylinderGeometry(0.25, 0.2, 1.6, 16);
+    leftLeg.translate(-0.35, -3.0, 0);
+    leftLeg.rotateZ(Math.PI / 32);
+    
+    const rightLeg = new THREE.CylinderGeometry(0.25, 0.2, 1.6, 16);
+    rightLeg.translate(0.35, -3.0, 0);
+    rightLeg.rotateZ(-Math.PI / 32);
+    
+    // Combine all geometries
+    const bodyGeo = BufferGeometryUtils.mergeBufferGeometries([
+      torso,
+      shoulders,
+      leftArm,
+      rightArm,
+      leftLeg,
+      rightLeg
+    ]);
+    
+    return bodyGeo;
+  }, []);
+  
   // Optional: Try to load a model if available
   let model = null;
   try {
-    model = useGLTF('/models/marble-head.glb');
+    model = useGLTF('/models/humanoid.glb');
   } catch (error) {
     console.log('Using fallback geometry instead of GLB model');
   }
-  
-  // Create neck and shoulders geometry
-  const torsoGeometry = useMemo(() => {
-    const geometry = new THREE.CylinderGeometry(0.5, 0.8, 1.2, 32);
-    // Move the cylinder down to connect with the head
-    geometry.translate(0, -1.2, 0);
-    return geometry;
-  }, []);
   
   // Animation loop
   useFrame((state) => {
@@ -92,6 +126,11 @@ export function LavaBeing({
     
     // Breathing/floating animation
     groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.5 * speed) * 0.05;
+    
+    // Subtle body sway
+    if (bodyRef.current) {
+      bodyRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3 * speed) * 0.05;
+    }
     
     // Respond to mouse movement (subtle head turning)
     if (headRef.current) {
@@ -128,6 +167,7 @@ export function LavaBeing({
       <mesh 
         ref={headRef}
         geometry={model?.nodes?.Head?.geometry || headGeometry}
+        position={[0, 0.2, 0]}
         castShadow
         receiveShadow
       >
@@ -139,10 +179,11 @@ export function LavaBeing({
         />
       </mesh>
       
-      {/* Shoulders/Torso */}
+      {/* Body */}
       <mesh
-        geometry={torsoGeometry}
-        position={[0, -0.6, 0]}
+        ref={bodyRef}
+        geometry={model?.nodes?.Body?.geometry || bodyGeometry}
+        position={[0, -2, 0]}
         castShadow
         receiveShadow
       >
@@ -157,7 +198,7 @@ export function LavaBeing({
       {/* Golden Lava Cracks */}
       <LavaCracks 
         parentGeometry={headGeometry}
-        torsoGeometry={torsoGeometry}
+        torsoGeometry={bodyGeometry}
         intensity={marketSpike ? 0.9 : 0.7}
         pulseSpeed={marketSpike ? 1.0 : 0.6}
         pulseMagnitude={marketSpike ? 0.4 : 0.3}
@@ -165,7 +206,7 @@ export function LavaBeing({
       
       {/* Glowing Golden Halo */}
       <GoldenHalo 
-        position={[0, 1.2, 0]} 
+        position={[0, 1.5, 0]} 
         scale={1.2}
         intensity={marketSpike ? 1.5 : 1.0}
         rotationSpeed={marketSpike ? 1.5 : 0.5}
@@ -174,5 +215,59 @@ export function LavaBeing({
   );
 }
 
+// Create BufferGeometryUtils if it doesn't exist already
+const BufferGeometryUtils = {
+  mergeBufferGeometries: (geometries: THREE.BufferGeometry[]) => {
+    const vertices: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
+    
+    for (const geometry of geometries) {
+      const position = geometry.attributes.position;
+      const normal = geometry.attributes.normal;
+      const uv = geometry.attributes.uv;
+      
+      for (let i = 0; i < position.count; i++) {
+        vertices.push(
+          position.getX(i),
+          position.getY(i),
+          position.getZ(i)
+        );
+        
+        if (normal) {
+          normals.push(
+            normal.getX(i),
+            normal.getY(i),
+            normal.getZ(i)
+          );
+        }
+        
+        if (uv) {
+          uvs.push(
+            uv.getX(i),
+            uv.getY(i)
+          );
+        }
+      }
+    }
+    
+    const mergedGeometry = new THREE.BufferGeometry();
+    mergedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    
+    if (normals.length > 0) {
+      mergedGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    } else {
+      mergedGeometry.computeVertexNormals();
+    }
+    
+    if (uvs.length > 0) {
+      mergedGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    }
+    
+    return mergedGeometry;
+  }
+};
+
 // Preload GLB model to prevent memory leaks
-useGLTF.preload('/models/marble-head.glb');
+useGLTF.preload('/models/humanoid.glb');
+

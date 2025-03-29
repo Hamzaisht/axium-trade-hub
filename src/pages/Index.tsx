@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { cn } from "@/lib/utils";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LavaOracle from "@/components/home/LavaOracle";
 import { useNavigate } from "react-router-dom";
@@ -29,7 +29,7 @@ const Index = () => {
   
   return (
     <div className={cn(
-      "min-h-screen bg-axium-dark-bg text-white transition-opacity duration-1000",
+      "min-h-screen bg-[#0B0F1A] text-white transition-opacity duration-1000",
       isLoaded ? "opacity-100" : "opacity-0"
     )}>
       <div className="relative h-screen w-full overflow-hidden">
@@ -44,11 +44,11 @@ const Index = () => {
               isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             )}>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-wide text-balance">
-                Trade <span className="gold-text">the Influence.</span>
+                <span className="gold-text">Trade</span> the Influence.
               </h1>
               
               <p className="text-base sm:text-lg text-zinc-400 mt-4 md:mt-6 max-w-xl tracking-wide text-balance">
-                Welcome to Axium — the world's first AI-powered exchange where creators become tradable assets.
+                Axium is the first AI-powered market where creators become tradable.
               </p>
               
               <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-4">
@@ -57,7 +57,7 @@ const Index = () => {
                   onClick={() => navigate('/creators/kol-superstar?demo=true')}
                 >
                   Try Demo
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <Play className="ml-2 h-4 w-4" />
                 </Button>
                 
                 <Button 
@@ -66,6 +66,7 @@ const Index = () => {
                   onClick={() => navigate('/login')}
                 >
                   Login to Trade
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
               
@@ -79,7 +80,13 @@ const Index = () => {
               "relative h-full md:h-[90%] transition-all duration-1000 delay-500 transform",
               isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
             )}>
-              <LavaOracle marketSpike={marketSpike} />
+              <div className="w-full h-full relative">
+                {/* Radial gradient background */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,215,0,0.1),transparent_70%)]"></div>
+                
+                {/* 3D Lava Oracle */}
+                <LavaOracle marketSpike={marketSpike} />
+              </div>
             </div>
           </div>
           

@@ -7,6 +7,7 @@ export function OracleLighting() {
   const spotLightRef = useRef<THREE.SpotLight>(null);
   const pointLightRef = useRef<THREE.PointLight>(null);
   const goldLightRef = useRef<THREE.PointLight>(null);
+  const rimLightRef = useRef<THREE.DirectionalLight>(null);
   
   useFrame((state) => {
     if (spotLightRef.current) {
@@ -25,6 +26,12 @@ export function OracleLighting() {
       // Make the gold light pulse with a different frequency
       const goldIntensity = 0.8 + Math.sin(state.clock.elapsedTime * 0.7) * 0.3;
       goldLightRef.current.intensity = goldIntensity;
+    }
+    
+    if (rimLightRef.current) {
+      // Slowly rotate rim light to create dynamic shadows
+      rimLightRef.current.position.x = Math.sin(state.clock.elapsedTime * 0.1) * 5;
+      rimLightRef.current.position.z = Math.cos(state.clock.elapsedTime * 0.1) * 5;
     }
   });
   
@@ -86,6 +93,20 @@ export function OracleLighting() {
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
+      />
+      
+      {/* Rim light for silhouette enhancement */}
+      <directionalLight
+        ref={rimLightRef}
+        position={[-5, 2, -5]}
+        intensity={0.4}
+        color="#FFD700"
+      />
+      
+      {/* Hemisphere light for natural ambient shadows */}
+      <hemisphereLight 
+        args={["#6495ED", "#191970", 0.3]} 
+        position={[0, 10, 0]} 
       />
     </>
   );

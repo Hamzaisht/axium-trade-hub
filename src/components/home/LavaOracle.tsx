@@ -6,10 +6,12 @@ import {
   Environment, 
   useProgress, 
   Html, 
-  ContactShadows 
+  ContactShadows,
+  Sparkles
 } from '@react-three/drei';
 import { LavaBeing } from './lava-oracle/LavaBeing';
 import { OracleLighting } from './lava-oracle/OracleLighting';
+import CanvasErrorBoundary from './marble-background/CanvasErrorBoundary';
 
 // Loading indicator for 3D model
 function Loader() {
@@ -74,48 +76,67 @@ const LavaOracle: React.FC<LavaOracleProps> = ({ marketSpike = false }) => {
   }
   
   return (
-    <div className="w-full h-full rounded-xl overflow-hidden">
-      <Canvas
-        gl={{ 
-          antialias: true,
-          alpha: true,
-          powerPreference: 'high-performance'
-        }}
-        dpr={[1, 2]}
-        camera={{ position: [0, 0, 4], fov: 45 }}
-        style={{ 
-          width: '100%', 
-          height: '100%',
-          background: 'transparent'
-        }}
-      >
-        <Suspense fallback={<Loader />}>
-          <OracleLighting />
-          
-          <LavaBeing 
-            position={[0, -0.5, 0]} 
-            rotation={[0, 0, 0]} 
-            mousePosition={mousePosition}
-            marketSpike={marketSpike}
-          />
-          
-          <ContactShadows opacity={0.4} scale={5} blur={2.5} far={4} />
-          <Environment preset="night" />
-          
-          <OrbitControls 
-            enableZoom={false} 
-            enablePan={false} 
-            rotateSpeed={0.2}
-            minPolarAngle={Math.PI / 3}
-            maxPolarAngle={Math.PI / 1.5}
-            enableDamping={true}
-            dampingFactor={0.05}
-            autoRotate={true}
-            autoRotateSpeed={0.5}
-          />
-        </Suspense>
-      </Canvas>
-    </div>
+    <CanvasErrorBoundary>
+      <div className="w-full h-full rounded-xl overflow-hidden">
+        <Canvas
+          gl={{ 
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance'
+          }}
+          dpr={[1, 2]}
+          camera={{ position: [0, 0, 7], fov: 45 }}
+          style={{ 
+            width: '100%', 
+            height: '100%',
+            background: 'transparent'
+          }}
+        >
+          <Suspense fallback={<Loader />}>
+            <OracleLighting />
+            
+            <LavaBeing 
+              position={[0, 0, 0]} 
+              rotation={[0, 0, 0]} 
+              mousePosition={mousePosition}
+              marketSpike={marketSpike}
+            />
+            
+            {/* Add floating particles */}
+            <Sparkles 
+              count={50} 
+              scale={10} 
+              size={1} 
+              speed={0.3} 
+              color="#FFD700" 
+              opacity={0.3}
+            />
+            
+            <ContactShadows 
+              opacity={0.4} 
+              scale={10} 
+              blur={2.5} 
+              far={4} 
+              color="#000000"
+            />
+            
+            <Environment preset="night" />
+            
+            <OrbitControls 
+              enableZoom={false} 
+              enablePan={false} 
+              rotateSpeed={0.2}
+              minPolarAngle={Math.PI / 3}
+              maxPolarAngle={Math.PI / 1.5}
+              enableDamping={true}
+              dampingFactor={0.05}
+              autoRotate={true}
+              autoRotateSpeed={0.5}
+            />
+          </Suspense>
+        </Canvas>
+      </div>
+    </CanvasErrorBoundary>
   );
 };
 
