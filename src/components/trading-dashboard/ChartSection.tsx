@@ -7,6 +7,15 @@ import { ChartControls } from "@/components/trading-dashboard/ChartControls";
 import { ChartIndicators } from "@/components/trading-dashboard/ChartIndicators";
 import { ChartSkeleton } from "@/components/ui/skeleton-components";
 
+// Define the ShowIndicators type
+type ShowIndicators = {
+  volume: boolean;
+  sma7: boolean;
+  sma30: boolean;
+  bollingerBands: boolean;
+  vwap: boolean;
+}
+
 interface ChartSectionProps {
   isLoading: boolean;
   selectedIPO: {
@@ -17,16 +26,10 @@ interface ChartSectionProps {
   };
   chartType: "candlestick" | "line";
   timeframe: string;
-  showIndicators: {
-    volume: boolean;
-    sma7: boolean;
-    sma30: boolean;
-    bollingerBands: boolean;
-    vwap: boolean;
-  };
+  showIndicators: ShowIndicators;
   onChartTypeChange: (type: "candlestick" | "line") => void;
   onTimeframeChange: (timeframe: string) => void;
-  onToggleIndicator: (indicator: keyof typeof showIndicators) => void;
+  onToggleIndicator: (indicator: keyof ShowIndicators) => void;
 }
 
 export const ChartSection = ({ 
@@ -121,3 +124,4 @@ export const ChartSection = ({
     </GlassCard>
   );
 };
+
