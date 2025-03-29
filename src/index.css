@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -167,28 +168,15 @@
   body::-webkit-scrollbar-thumb {
     @apply bg-axium-gray-300 rounded-full hover:bg-axium-gray-400 transition-colors dark:bg-axium-gray-700 dark:hover:bg-axium-gray-600;
   }
+  
+  /* Dark mode transition */
+  .dark-mode-transition {
+    @apply transition-all duration-500 ease-in-out;
+  }
 }
 
 @layer components {
-  .glass-card {
-    @apply bg-white/70 backdrop-blur-md rounded-lg border border-axium-gray-200/50 shadow-glass transition-all duration-300 dark:bg-axium-gray-800/40 dark:border-axium-gray-700/20;
-  }
-  
-  .glass-card-dark {
-    @apply bg-axium-gray-800/70 backdrop-blur-md rounded-lg border border-axium-gray-700/30 shadow-glass transition-all duration-300;
-  }
-  
-  .premium-card {
-    @apply bg-gradient-to-b from-white/80 to-white/60 backdrop-blur-md rounded-lg border border-axium-gray-200/50 shadow-glass-strong dark:from-axium-gray-800/80 dark:to-axium-gray-800/60 dark:border-axium-gray-700/30 dark:shadow-glass-blue;
-  }
-  
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  .text-gradient-blue {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-axium-blue to-axium-blue-light;
-  }
+  /* ... keep existing code (glass-card, glass-card-dark, premium-card, text-balance, text-gradient-blue) */
   
   .button-primary {
     @apply bg-axium-blue text-white hover:bg-axium-blue/90 rounded-lg px-4 py-2 transition-all duration-300 shadow-button hover:shadow-button-hover dark:bg-axium-neon-blue dark:hover:bg-axium-neon-blue/90 dark:shadow-neon-blue;
@@ -241,38 +229,10 @@
   }
   
   /* NASDAQ/Bloomberg style elements - Enhanced for Geek Studio Dark Mode */
-  .ticker-item {
-    @apply px-2 py-1 rounded flex items-center space-x-2 border-r border-border last:border-0;
-  }
-  
-  .terminal-header {
-    @apply bg-axium-dark-bg text-white p-2 rounded-t-md border-b border-axium-gray-700 flex justify-between items-center dark:bg-axium-gray-800;
-  }
-  
-  .data-row {
-    @apply flex justify-between py-1.5 border-b border-border/50 last:border-0;
-  }
-  
-  .table-header {
-    @apply text-xs text-muted-foreground uppercase tracking-wider py-2;
-  }
+  /* ... keep existing code (ticker-item, terminal-header, data-row, table-header) */
   
   /* Futuristic UI elements - Enhanced for Geek Studio Dark Mode */
-  .future-panel {
-    @apply bg-white/10 backdrop-blur-xl rounded-lg border border-white/20 shadow-lg transition-all dark:bg-black/30 dark:border-white/10 dark:shadow-glass-blue;
-  }
-  
-  .future-input {
-    @apply bg-white/20 backdrop-blur-md border border-white/30 rounded-md px-4 py-2 focus:ring-2 focus:ring-axium-neon-blue/50 focus:border-axium-neon-blue/50 transition-all dark:bg-black/40 dark:border-axium-neon-blue/30 dark:focus:ring-axium-neon-blue/70 dark:focus:border-axium-neon-blue/70;
-  }
-  
-  .future-button {
-    @apply bg-gradient-to-r from-axium-neon-blue to-axium-neon-blue/80 text-white rounded-md px-4 py-2 shadow-neon-blue hover:shadow-neon-blue hover:from-axium-neon-blue/90 hover:to-axium-neon-blue/70 transition-all dark:from-axium-neon-blue dark:to-axium-blue-light;
-  }
-  
-  .future-card {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-lg shadow-lg p-4 transition-all hover:border-white/20 dark:bg-black/20 dark:hover:border-axium-neon-blue/30 dark:shadow-glass-blue;
-  }
+  /* ... keep existing code (future-panel, future-input, future-button, future-card) */
 
   /* Geek Art Studio Dark Mode Special Effects */
   .cyberpunk-grid {
@@ -295,6 +255,74 @@
   .data-scanline::after {
     @apply dark:content-[''] dark:absolute dark:top-0 dark:left-0 dark:right-0 dark:h-[1px] dark:bg-axium-neon-blue/30 dark:animate-[scan_3s_linear_infinite];
   }
+
+  /* New Cyberpunk Elements */
+  .cyber-terminal {
+    @apply dark:bg-black/80 dark:border dark:border-axium-neon-blue/30 dark:rounded-md dark:font-mono dark:text-sm dark:p-4 dark:shadow-neon-blue;
+    @apply dark:before:content-['>_'] dark:before:text-axium-neon-blue dark:before:animate-blink;
+  }
+
+  .cyber-panel {
+    @apply dark:bg-gradient-to-br dark:from-axium-gray-900 dark:to-axium-gray-800 dark:border dark:border-axium-neon-blue/20 
+    dark:shadow-[0_0_15px_rgba(56,189,248,0.1)] dark:rounded-lg dark:backdrop-blur-sm;
+  }
+
+  .cyber-button {
+    @apply dark:bg-axium-gray-800 dark:text-axium-neon-blue dark:border dark:border-axium-neon-blue/50 
+    dark:hover:bg-axium-neon-blue/10 dark:hover:border-axium-neon-blue dark:transition-all dark:duration-300 
+    dark:rounded dark:px-4 dark:py-2 dark:shadow-neon-blue dark:hover:shadow-[0_0_15px_rgba(56,189,248,0.4)];
+  }
+
+  .hologram {
+    @apply dark:relative dark:overflow-hidden dark:before:content-[''] dark:before:absolute dark:before:inset-0 
+    dark:before:bg-gradient-to-tr dark:before:from-axium-neon-blue/5 dark:before:to-transparent dark:before:opacity-70 
+    dark:before:pointer-events-none;
+  }
+
+  .circuit-pattern {
+    @apply dark:bg-[url('/circuit-pattern.svg')] dark:bg-no-repeat dark:bg-cover dark:bg-blend-overlay dark:bg-opacity-10;
+  }
+
+  .glitch-text {
+    @apply dark:relative dark:inline-block;
+    text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75), -0.025em -0.05em 0 rgba(0, 255, 0, 0.75), 0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
+    animation: glitch 500ms infinite;
+  }
+
+  .matrix-rain {
+    @apply dark:relative dark:overflow-hidden;
+  }
+
+  .matrix-rain::before {
+    @apply dark:content-[''] dark:absolute dark:inset-0 dark:pointer-events-none dark:opacity-20;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='0' y='10' fill='%2338BDF8' font-family='monospace'%3E01101%3C/text%3E%3Ctext x='10' y='20' fill='%2338BDF8' font-family='monospace'%3E10110%3C/text%3E%3Ctext x='20' y='30' fill='%2338BDF8' font-family='monospace'%3E01011%3C/text%3E%3Ctext x='0' y='40' fill='%2338BDF8' font-family='monospace'%3E11010%3C/text%3E%3Ctext x='15' y='50' fill='%2338BDF8' font-family='monospace'%3E10101%3C/text%3E%3C/svg%3E");
+    animation: matrixfall 30s linear infinite;
+  }
+
+  .cyber-highlight {
+    @apply dark:bg-axium-neon-blue/10 dark:border-l-2 dark:border-axium-neon-blue dark:pl-2;
+  }
+
+  .retro-scanline {
+    @apply dark:relative dark:overflow-hidden;
+  }
+
+  .retro-scanline::after {
+    @apply dark:content-[''] dark:absolute dark:left-0 dark:right-0 dark:top-0 dark:bottom-0 dark:pointer-events-none;
+    background: linear-gradient(to bottom, rgba(56, 189, 248, 0) 50%, rgba(56, 189, 248, 0.025) 50%);
+    background-size: 100% 4px;
+    z-index: 20;
+  }
+
+  .cyber-notification {
+    @apply dark:bg-axium-gray-800 dark:text-axium-neon-blue dark:border dark:border-axium-neon-blue/50 
+    dark:p-3 dark:rounded dark:shadow-neon-blue dark:animate-pulse-subtle;
+  }
+
+  .data-bytes {
+    @apply dark:bg-black/40 dark:font-mono dark:text-xs dark:text-axium-neon-mint dark:p-2 dark:rounded dark:overflow-hidden;
+    @apply dark:after:content-[''] dark:after:block dark:after:w-2 dark:after:h-4 dark:after:bg-axium-neon-mint dark:after:animate-blink;
+  }
   
   @keyframes scan {
     0% {
@@ -304,9 +332,46 @@
       top: 100%;
     }
   }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  @keyframes glitch {
+    0% {
+      text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75), -0.025em -0.05em 0 rgba(0, 255, 0, 0.75), 0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
+    }
+    14% {
+      text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75), -0.025em -0.05em 0 rgba(0, 255, 0, 0.75), 0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
+    }
+    15% {
+      text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75), 0.025em 0.025em 0 rgba(0, 255, 0, 0.75), -0.05em -0.05em 0 rgba(0, 0, 255, 0.75);
+    }
+    49% {
+      text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75), 0.025em 0.025em 0 rgba(0, 255, 0, 0.75), -0.05em -0.05em 0 rgba(0, 0, 255, 0.75);
+    }
+    50% {
+      text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, 0.75), 0.05em 0 0 rgba(0, 255, 0, 0.75), 0 -0.05em 0 rgba(0, 0, 255, 0.75);
+    }
+    99% {
+      text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, 0.75), 0.05em 0 0 rgba(0, 255, 0, 0.75), 0 -0.05em 0 rgba(0, 0, 255, 0.75);
+    }
+    100% {
+      text-shadow: -0.025em 0 0 rgba(255, 0, 0, 0.75), -0.025em -0.025em 0 rgba(0, 255, 0, 0.75), -0.025em -0.05em 0 rgba(0, 0, 255, 0.75);
+    }
+  }
+
+  @keyframes matrixfall {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
 }
 
-/* Animation utilities */
 @layer utilities {
   .animation-delay-200 {
     animation-delay: 200ms;
@@ -454,6 +519,121 @@
     }
     100% {
       left: 125%;
+    }
+  }
+
+  /* New cyberpunk-inspired animations */
+  .cyber-flicker {
+    animation: flicker 5s linear infinite;
+  }
+
+  @keyframes flicker {
+    0%, 9.999%, 15%, 19.999%, 22%, 31.999%, 34%, 39.999%, 44%, 100% {
+      opacity: 0.99;
+      text-shadow: 0 0 5px rgba(56, 189, 248, 0.6), 0 0 10px rgba(56, 189, 248, 0.4), 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+    10%, 14.999%, 20%, 21.999%, 32%, 33.999%, 40%, 43.999% {
+      opacity: 0.4;
+      text-shadow: none;
+    }
+  }
+
+  .cyber-glitch {
+    animation: glitch 3s steps(1) infinite;
+  }
+
+  @keyframes glitch-skew {
+    0% { transform: skew(0deg); }
+    20% { transform: skew(5deg); }
+    25% { transform: skew(-5deg); }
+    30% { transform: skew(0deg); }
+    100% { transform: skew(0deg); }
+  }
+
+  .cyber-loading::after {
+    content: "...";
+    display: inline-block;
+    animation: dots 1.5s steps(4, end) infinite;
+    width: 1.25em;
+    text-align: left;
+  }
+
+  @keyframes dots {
+    0%, 20% { content: "."; }
+    40% { content: ".."; }
+    60% { content: "..."; }
+    90%, 100% { content: ""; }
+  }
+
+  .cyber-scan {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cyber-scan::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 15px;
+    background: linear-gradient(to bottom, 
+      rgba(56, 189, 248, 0) 0%,
+      rgba(56, 189, 248, 0.3) 50%,
+      rgba(56, 189, 248, 0) 100%
+    );
+    animation: cyber-scan 3s ease-in-out infinite;
+  }
+
+  @keyframes cyber-scan {
+    0% { top: -15px; }
+    100% { top: 100%; }
+  }
+
+  .digital-noise {
+    position: relative;
+  }
+
+  .digital-noise::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.1'/%3E%3C/svg%3E");
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .power-button {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
+    animation: power-pulse 2s infinite;
+  }
+
+  @keyframes power-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(56, 189, 248, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+    }
+  }
+
+  .cyber-typing::after {
+    content: "|";
+    animation: blink 1s infinite;
+  }
+
+  .cyber-breathe {
+    animation: breathe 4s ease-in-out infinite;
+  }
+
+  @keyframes breathe {
+    0%, 100% {
+      box-shadow: 0 0 10px 0 rgba(56, 189, 248, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 20px 5px rgba(56, 189, 248, 0.8);
     }
   }
 }
