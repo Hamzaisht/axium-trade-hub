@@ -147,9 +147,16 @@
   .gold-glassmorphism {
     @apply backdrop-blur-lg bg-axium-gold/5 border border-axium-gold/20 shadow-[0_0_15px_rgba(212,175,55,0.2)];
   }
+  
+  /* New Marble Avatar components */
+  .gold-text {
+    color: #D4AF37;
+    text-shadow: 0 0 5px rgba(212, 175, 55, 0.8),
+                 0 0 10px rgba(212, 175, 55, 0.6),
+                 0 0 15px rgba(212, 175, 55, 0.4);
+  }
 }
 
-/* Animation utilities */
 @layer utilities {
   .animation-delay-200 {
     animation-delay: 200ms;

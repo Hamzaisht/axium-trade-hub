@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { IPOProvider } from '@/contexts/IPOContext';
@@ -11,6 +12,7 @@ import { DualToastProvider } from '@/components/ui/DualToastProvider';
 import TokenRefreshProvider from '@/auth/TokenRefresh';
 
 // Pages
+import Home from '@/pages/Home';
 import Index from '@/pages/Index';
 import Dashboard from '@/pages/Dashboard';
 import Portfolio from '@/pages/Portfolio';
@@ -46,7 +48,8 @@ function App() {
                     <TradingProvider>
                       <DualToastProvider />
                       <Routes>
-                        <Route path="/" element={<Index />} />
+                        <Route path="/" element={<Home />} />
+                        <Route path="/index" element={<Index />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         
