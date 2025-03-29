@@ -1,3 +1,4 @@
+
 export interface ChartDataPoint {
   timestamp: string;
   price: number;
@@ -19,6 +20,10 @@ const generateMockData = (
   let interval = 0;
   
   switch(timeframe) {
+    case '1H':
+      dataPoints = 60; // Every minute for an hour
+      interval = 60 * 1000; // 1 minute in ms
+      break;
     case '1D':
       dataPoints = 24 * 6; // Every 10 minutes for a day
       interval = 10 * 60 * 1000; // 10 minutes in ms
@@ -75,6 +80,7 @@ export const getChartData = (
 
 // Pre-generated datasets for immediate use
 export const mockChartData: Record<TimeFrame, ChartDataPoint[]> = {
+  '1H': generateMockData('1H'),
   '1D': generateMockData('1D'),
   '1W': generateMockData('1W'),
   '1M': generateMockData('1M'),
