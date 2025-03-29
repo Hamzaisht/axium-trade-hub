@@ -272,13 +272,13 @@ export class MockTradingAPI {
     
     const newTrade = {
       id: faker.string.uuid(),
-      traderId: tradeData.traderId || faker.string.uuid(),
+      buyerId: tradeData.traderId || faker.string.uuid(),
+      sellerId: faker.string.uuid(),
       ipoId: tradeData.ipoId || mockIPOs[0].id,
-      amount: tradeData.amount || 1,
       price: tradeData.price || 10,
-      type: tradeData.type || 'buy',
-      status: 'completed',
-      timestamp: new Date()
+      quantity: tradeData.amount || 1,
+      timestamp: new Date().toISOString(),
+      creatorSymbol: mockIPOs.find(ipo => ipo.id === tradeData.ipoId)?.symbol || 'UNKNOWN'
     };
     
     mockTrades.push(newTrade);

@@ -1,7 +1,6 @@
-
 import { createContext, useContext, useState, ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { mockTradingAPI, Order, Trade } from "../utils/mockApi";
+import { mockTradingAPI, Order } from "../utils/mockApi";
 import { useAuth } from "./AuthContext";
 import { OrderBookData } from "./trading/types";
 import { toast } from "sonner";
