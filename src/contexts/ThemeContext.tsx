@@ -32,8 +32,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
+      document.body.classList.add('cyberpunk-grid', 'dark-mode-transition');
     } else {
       document.documentElement.classList.remove('dark');
+      document.body.classList.remove('cyberpunk-grid', 'dark-mode-transition');
     }
   }, [theme]);
 
