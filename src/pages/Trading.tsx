@@ -1,75 +1,159 @@
 
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTrading } from "@/contexts/TradingContext";
 import { useIPO } from "@/contexts/IPOContext";
+import { useMarketData } from "@/hooks/useMarketData";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { showNotification } from "@/components/notifications/ToastContainer";
-import { LayoutShell } from "@/components/layout/LayoutShell";
-import { DashboardShell } from "@/components/layout/DashboardShell";
-import { LoadingState } from "@/components/trading-dashboard/LoadingState";
-import { NoAssetsState } from "@/components/trading-dashboard/NoAssetsState";
-import { TradingDashboard } from "@/components/trading-dashboard/TradingDashboard";
-import { useTradingState } from "@/components/trading-dashboard/useTradingState";
+import { TradeFormSkeleton } from "@/components/ui/skeleton-components";
+import TradeForm from "@/components/trading/TradeForm";
+import InstitutionalTrading from "@/components/trading/institutional/InstitutionalTrading";
+import LiquidityPoolInfo from "@/components/trading/liquidity-pool";
+import { PriceTicker } from "@/components/market/PriceTicker";
+import { 
+  TradingHeader, 
+  AssetSelector,
+  PriceHeader,
+  ChartSection,
+  MetricsGrid,
+  OrderBookSection,
+  TradePanelSection,
+  TradingSettings,
+  TradingOrders,
+  AdvancedOrderSection
+} from "@/components/trading-dashboard";
 
 const Trading = () => {
+  const { user } = useAuth();
   const { isLoading: tradingLoading } = useTrading();
   const { ipos, isLoading: iposLoading } = useIPO();
+  const [selectedIPO, setSelectedIPO] = useState(ipos[0] || null);
+  const [timeframe, setTimeframe] = useState("1D");
+  const [chartType, setChartType] = useState<"candlestick" | "line">("candlestick");
+  const [showIndicators, setShowIndicators] = useState({
+    volume: true,
+    sma7: false,
+    sma30: false,
+    bollingerBands: false,
+    vwap: false
+  });
   
-  const {
-    selectedIPO,
-    timeframe,
-    chartType,
-    showIndicators,
-    marketDataLoading,
-    priceChangePercent,
-    handleIPOChange,
-    setTimeframe,
-    setChartType,
-    handleToggleIndicator
-  } = useTradingState(ipos);
+  const { isConnected, isLoading: marketDataLoading } = useMarketData(
+    selectedIPO?.id
+  );
 
-  const isLoading = iposLoading || tradingLoading;
-
-  // Handle notification for IPO change
-  const handleIPOChangeWithNotification = (ipoId: string) => {
+  const handleIPOChange = (ipoId: string) => {
     const ipo = ipos.find(i => i.id === ipoId);
     if (ipo) {
-      handleIPOChange(ipoId);
+      setSelectedIPO(ipo);
       showNotification.info(`Switched to ${ipo.symbol} - ${ipo.creatorName}`);
     }
   };
 
-  const handleRefresh = () => {
-    showNotification.info("Refreshing market data");
+  const handleToggleIndicator = (indicator: keyof typeof showIndicators) => {
+    setShowIndicators(prev => ({
+      ...prev,
+      [indicator]: !prev[indicator]
+    }));
   };
 
+  const calculatePriceChange = () => {
+    if (!selectedIPO) return 0;
+    const initialPrice = selectedIPO.initialPrice || 0;
+    const currentPrice = selectedIPO.currentPrice || 0;
+    if (initialPrice === 0) return 0;
+    return ((currentPrice - initialPrice) / initialPrice) * 100;
+  };
+
+  const priceChangePercent = calculatePriceChange();
+  const isLoading = iposLoading || tradingLoading;
+
   if (isLoading) {
-    return <LoadingState />;
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
   if (!selectedIPO) {
-    return <NoAssetsState />;
+    return <div className="flex justify-center items-center min-h-screen">No trading assets available</div>;
   }
 
   return (
-    <LayoutShell>
-      <DashboardShell>
-        <TradingDashboard
-          ipos={ipos}
-          selectedIPO={selectedIPO}
-          isLoading={isLoading}
-          marketDataLoading={marketDataLoading}
-          priceChangePercent={priceChangePercent}
-          timeframe={timeframe}
-          chartType={chartType}
-          showIndicators={showIndicators}
-          onSelectIPO={handleIPOChangeWithNotification}
-          onTimeframeChange={setTimeframe}
-          onChartTypeChange={setChartType}
-          onToggleIndicator={handleToggleIndicator}
-          onRefresh={handleRefresh}
+    <div className="bg-axium-gray-100/30 min-h-screen">
+      <div className="container max-w-7xl mx-auto px-4 py-6">
+        <TradingHeader 
+          title="Trading Dashboard"
+          isConnected={isConnected}
         />
-      </DashboardShell>
-    </LayoutShell>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <AssetSelector 
+              ipos={ipos}
+              selectedIPO={selectedIPO}
+              onSelectIPO={handleIPOChange}
+            />
+            
+            <div className="flex justify-between items-center">
+              <PriceHeader 
+                symbol={selectedIPO.symbol}
+                name={selectedIPO.creatorName}
+                currentPrice={selectedIPO.currentPrice}
+                priceChangePercent={priceChangePercent}
+              />
+              <PriceTicker creatorId={selectedIPO.id} symbol={selectedIPO.symbol} />
+            </div>
+            
+            <ChartSection 
+              isLoading={marketDataLoading}
+              selectedIPO={selectedIPO}
+              chartType={chartType}
+              timeframe={timeframe}
+              showIndicators={showIndicators}
+              onChartTypeChange={setChartType}
+              onTimeframeChange={setTimeframe}
+              onToggleIndicator={handleToggleIndicator}
+            />
+            
+            <TradePanelSection 
+              creatorId={selectedIPO.id}
+              currentPrice={selectedIPO.currentPrice}
+              symbol={selectedIPO.symbol}
+            />
+            
+            <OrderBookSection 
+              symbol={selectedIPO.symbol}
+              currentPrice={selectedIPO.currentPrice}
+              ipoId={selectedIPO.id}
+            />
+            
+            <MetricsGrid creatorId={selectedIPO.id} />
+            
+            {user && (user.role === 'admin' || user.role === 'investor') && (
+              <InstitutionalTrading />
+            )}
+            
+            <LiquidityPoolInfo symbol={selectedIPO.symbol} />
+          </div>
+          
+          <div className="space-y-6">
+            {tradingLoading ? (
+              <TradeFormSkeleton />
+            ) : (
+              <TradeForm ipo={selectedIPO} />
+            )}
+            
+            <AdvancedOrderSection 
+              symbol={selectedIPO.symbol}
+              currentPrice={selectedIPO.currentPrice}
+            />
+            
+            <TradingOrders />
+            
+            <TradingSettings />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

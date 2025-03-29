@@ -14,26 +14,22 @@ export const OrderInputs = ({ price, quantity, orderType, onChange }: OrderInput
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="price" className="text-[#8A9CCC] text-xs uppercase tracking-wider">Price ($)</Label>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#4A5878]">$</span>
-          <Input
-            id="price"
-            name="price"
-            type="number"
-            step="0.01"
-            min="0.01"
-            value={price}
-            onChange={onChange}
-            disabled={orderType === "market"}
-            required
-            className="pl-8 border-[#1E375F] bg-[#0D1424] text-white placeholder:text-[#4A5878] focus-visible:ring-axium-neon-blue"
-          />
-        </div>
+        <Label htmlFor="price">Price ($)</Label>
+        <Input
+          id="price"
+          name="price"
+          type="number"
+          step="0.01"
+          min="0.01"
+          value={price}
+          onChange={onChange}
+          disabled={orderType === "market"}
+          required
+        />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="quantity" className="text-[#8A9CCC] text-xs uppercase tracking-wider">Quantity</Label>
+        <Label htmlFor="quantity">Quantity</Label>
         <Input
           id="quantity"
           name="quantity"
@@ -43,7 +39,6 @@ export const OrderInputs = ({ price, quantity, orderType, onChange }: OrderInput
           value={quantity}
           onChange={onChange}
           required
-          className="border-[#1E375F] bg-[#0D1424] text-white placeholder:text-[#4A5878] focus-visible:ring-axium-neon-blue"
         />
       </div>
     </>

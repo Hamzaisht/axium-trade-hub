@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, TrendingDown, TrendingUp } from "lucide-react";
 import { getMockTradeHistory, Trade } from "@/mock/tradeHistory";
 import { format, formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { GlassCard } from "@/components/ui/card";
 
 interface TradeHistoryProps {
   creatorId: string;
@@ -61,14 +61,14 @@ export function TradeHistory({ creatorId, symbol, limit = 10 }: TradeHistoryProp
   );
 
   return (
-    <GlassCard>
-      <div className="p-4 border-b border-[#2D3748]">
-        <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-[#1EAEDB]" />
-          <h3 className="font-semibold">Recent Trades</h3>
-        </div>
-      </div>
-      <div className="p-4">
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2">
+          <Clock className="h-5 w-5" />
+          Recent Trades
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
         {isLoading ? (
           renderLoadingSkeleton()
         ) : trades.length > 0 ? (
@@ -76,10 +76,10 @@ export function TradeHistory({ creatorId, symbol, limit = 10 }: TradeHistoryProp
             {trades.slice(0, limit).map((trade, index) => (
               <div 
                 key={trade.id}
-                className={`flex justify-between items-center py-2 px-1 border-b border-[#2D3748]/50 last:border-0 animate-fade-in`}
+                className={`flex justify-between items-center py-2 px-1 border-b border-muted/50 last:border-0 animate-fade-in`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className={`flex items-center ${trade.side === 'buy' ? 'text-green-400' : 'text-red-400'}`}>
+                <div className={`flex items-center ${trade.side === 'buy' ? 'text-axium-positive' : 'text-axium-negative'}`}>
                   {trade.side === 'buy' 
                     ? <TrendingUp className="mr-1 h-4 w-4" /> 
                     : <TrendingDown className="mr-1 h-4 w-4" />
@@ -87,16 +87,16 @@ export function TradeHistory({ creatorId, symbol, limit = 10 }: TradeHistoryProp
                   <span>${formatPrice(trade.price)}</span>
                 </div>
                 <div className="text-sm">{trade.quantity.toLocaleString()}</div>
-                <div className="text-xs text-gray-400">{formatTime(trade.timestamp)}</div>
+                <div className="text-xs text-muted-foreground">{formatTime(trade.timestamp)}</div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-4 text-gray-400">
+          <div className="text-center py-4 text-muted-foreground">
             No trade history available
           </div>
         )}
-      </div>
-    </GlassCard>
+      </CardContent>
+    </Card>
   );
 }

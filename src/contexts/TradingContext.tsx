@@ -15,7 +15,6 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
   const [orderBook, setOrderBook] = useState<OrderBookData | null>(null);
   
   // Use the WebSocket hook to handle real-time trading data
-  // Now this is compatible because useWebSocketTrading accepts AuthenticatedUser
   const { 
     isConnected, 
     orders, 
