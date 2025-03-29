@@ -60,9 +60,9 @@ const Dashboard = () => {
     enabled: true
   });
 
-  const { data: aiValuation } = useAIValuation({
-    ipoId: selectedCreator?.id,
-    enabled: !!selectedCreator?.id
+  // Fix: Remove the .data property access and the enabled prop
+  const aiValuationResult = useAIValuation({
+    ipoId: selectedCreator?.id
   });
 
   const handleCreatorSelect = (id: string) => {
@@ -164,7 +164,7 @@ const Dashboard = () => {
             <div className="space-y-6">
               <CreatorHeader 
                 creator={selectedCreator} 
-                aiValuation={aiValuation?.valuation} 
+                aiValuation={aiValuationResult?.pricePrediction?.targetPrice} 
               />
               
               <LiveChart 
