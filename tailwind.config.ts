@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -69,7 +68,8 @@ export default {
 					'blue-light': '#3B82F6',
 					'blue-dark': '#1E3A8A',
 					'dark-bg': '#0B0F1A',  // Added primary dark background
-					'neon-blue': '#1EAEDB', // Added neon blue accent
+					'neon-blue': '#1EAEDB', // Renamed for consistency
+					'gold': '#D4AF37', // Added gold color
 					gray: {
 						100: '#F8F9FA',
 						200: '#E9ECEF',
@@ -99,7 +99,8 @@ export default {
 				'glass-blue': '0 0 20px rgba(0, 80, 255, 0.1), 0 0 4px rgba(0, 80, 255, 0.05)',
 				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
 				'button-hover': '0 4px 12px rgba(0, 0, 0, 0.1)',
-				'glow': '0 0 15px rgba(30, 174, 219, 0.5)', // Added neon blue glow
+				'glow': '0 0 15px rgba(30, 174, 219, 0.5)',
+				'gold-glow': '0 0 15px rgba(212, 175, 55, 0.5)',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -192,6 +193,38 @@ export default {
 					'100%': { 
 						boxShadow: '0 0 5px rgba(30, 174, 219, 0.5)' 
 					}
+				},
+				'float-slow': {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'50%': {
+						transform: 'translateY(-10px)'
+					}
+				},
+				'rotate-slow': {
+					'0%': {
+						transform: 'rotate(0deg)'
+					},
+					'100%': {
+						transform: 'rotate(360deg)'
+					}
+				},
+				'glow-pulse-blue': {
+					'0%, 100%': { 
+						textShadow: '0 0 5px rgba(30, 174, 219, 0.5)' 
+					},
+					'50%': { 
+						textShadow: '0 0 15px rgba(30, 174, 219, 0.8), 0 0 20px rgba(30, 174, 219, 0.5)' 
+					}
+				},
+				'glow-pulse-gold': {
+					'0%, 100%': { 
+						textShadow: '0 0 5px rgba(212, 175, 55, 0.5)' 
+					},
+					'50%': { 
+						textShadow: '0 0 15px rgba(212, 175, 55, 0.8), 0 0 20px rgba(212, 175, 55, 0.5)' 
+					}
 				}
 			},
 			animation: {
@@ -204,7 +237,11 @@ export default {
 				'slide-left': 'slide-left 0.3s ease-out',
 				'slide-right': 'slide-right 0.3s ease-out',
 				'ticker': 'ticker 30s linear infinite',
-				'glow-pulse': 'glow-pulse 3s infinite'
+				'glow-pulse': 'glow-pulse 3s infinite',
+				'float-slow': 'float-slow 8s ease-in-out infinite',
+				'rotate-slow': 'rotate-slow 20s linear infinite',
+				'glow-pulse-blue': 'glow-pulse-blue 2s infinite',
+				'glow-pulse-gold': 'glow-pulse-gold 2s infinite',
 			},
 			backdropFilter: {
 				'none': 'none',

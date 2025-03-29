@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
@@ -7,6 +6,7 @@ import Hero from "@/components/home/Hero";
 import LiveTicker from "@/components/home/LiveTicker";
 import Features from "@/components/home/Features";
 import FAQ from "@/components/home/FAQ";
+import MarbleBackground from "@/components/home/MarbleBackground";
 import { cn } from "@/lib/utils";
 import { ArrowRight, ChevronRight, ExternalLink, LineChart, Shield, Star, TrendingUp, Users } from "lucide-react";
 
@@ -27,55 +27,12 @@ const Index = () => {
       "min-h-screen bg-[#0A0E17] text-white transition-opacity duration-500",
       isLoaded ? "opacity-100" : "opacity-0"
     )}>
+      <MarbleBackground />
+      
       <Navbar />
       
       <main>
-        <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('/bg-grid.svg')] bg-center opacity-10"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0A0E17] via-transparent to-[#0A0E17]"></div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-center">
-            <div className="animate-fade-in animation-delay-100">
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#3AA0FF] to-white leading-tight">
-                The Future of Creator Investing
-              </h1>
-              <p className="text-[#8A9CCC] text-xl max-w-3xl mx-auto mb-8">
-                Buy and sell shares in your favorite creators on the world's most advanced 
-                trading platform for the creator economy.
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button 
-                  size="lg" 
-                  className="bg-[#3AA0FF] hover:bg-[#2D7DD2] text-white font-medium"
-                >
-                  Start Trading Now
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="border-[#1A2747] text-[#8A9CCC] hover:text-white"
-                >
-                  Explore Platform
-                  <ChevronRight className="ml-2 h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-            
-            <div className="mt-16 relative">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#3AA0FF]/30 to-purple-500/30 rounded-lg blur opacity-30"></div>
-              <div className="relative rounded-lg overflow-hidden border border-[#1A2747] shadow-2xl">
-                <img 
-                  src="/dashboard-preview.png" 
-                  alt="Axium Trading Dashboard" 
-                  className="w-full h-auto rounded-lg"
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://placehold.co/1200x600/0A0E17/3AA0FF?text=Axium+Trading+Platform';
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </section>
+        <Hero />
         
         <LiveTicker />
         

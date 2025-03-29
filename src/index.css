@@ -38,6 +38,10 @@
   * {
     @apply border-border;
   }
+  
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
 
   html {
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
@@ -48,10 +52,6 @@
     scroll-behavior: smooth;
   }
   
-  body {
-    @apply bg-background text-foreground antialiased;
-  }
-
   body::-webkit-scrollbar {
     @apply w-1.5;
   }
@@ -126,6 +126,26 @@
   
   .table-header {
     @apply text-xs text-muted-foreground uppercase tracking-wider py-2;
+  }
+  
+  .text-glow {
+    @apply animate-glow-pulse-blue;
+  }
+  
+  .text-glow-gold {
+    @apply animate-glow-pulse-gold;
+  }
+  
+  .neo-glassmorphism {
+    @apply backdrop-blur-lg bg-black/20 border border-white/10 shadow-[0_4px_15px_rgba(0,0,0,0.3)];
+  }
+  
+  .blue-glassmorphism {
+    @apply backdrop-blur-lg bg-axium-neon-blue/5 border border-axium-neon-blue/20 shadow-[0_0_15px_rgba(30,174,219,0.2)];
+  }
+  
+  .gold-glassmorphism {
+    @apply backdrop-blur-lg bg-axium-gold/5 border border-axium-gold/20 shadow-[0_0_15px_rgba(212,175,55,0.2)];
   }
 }
 
@@ -205,5 +225,37 @@
     50% {
       opacity: 0.7;
     }
+  }
+
+  /* New 3D and neon effects */
+  .marble-bg {
+    background: radial-gradient(circle at center, rgba(30, 174, 219, 0.1), transparent 70%),
+                linear-gradient(45deg, rgba(0, 0, 0, 0.9), rgba(10, 14, 23, 0.9));
+    background-blend-mode: screen, normal;
+    animation: rotate-hue 15s infinite linear;
+  }
+
+  @keyframes rotate-hue {
+    0% {
+      filter: hue-rotate(0deg);
+    }
+    100% {
+      filter: hue-rotate(360deg);
+    }
+  }
+
+  .neon-text {
+    color: #fff;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.8),
+                 0 0 10px rgba(30, 174, 219, 0.8),
+                 0 0 15px rgba(30, 174, 219, 0.6),
+                 0 0 20px rgba(30, 174, 219, 0.4);
+  }
+
+  .gold-text {
+    color: #D4AF37;
+    text-shadow: 0 0 5px rgba(212, 175, 55, 0.8),
+                 0 0 10px rgba(212, 175, 55, 0.6),
+                 0 0 15px rgba(212, 175, 55, 0.4);
   }
 }
