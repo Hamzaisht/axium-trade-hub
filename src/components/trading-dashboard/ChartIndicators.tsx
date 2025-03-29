@@ -1,6 +1,5 @@
 
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ShowIndicators } from "./ChartSection";
 
 interface ChartIndicatorsProps {
@@ -8,46 +7,52 @@ interface ChartIndicatorsProps {
   onToggleIndicator: (indicator: keyof ShowIndicators) => void;
 }
 
-export const ChartIndicators = ({ showIndicators, onToggleIndicator }: ChartIndicatorsProps) => {
-  const indicatorDescriptions = {
-    volume: "Show trading volume below the chart",
-    sma7: "Simple Moving Average (7 periods)",
-    sma30: "Simple Moving Average (30 periods)",
-    bollingerBands: "Bollinger Bands (standard deviation channels)",
-    vwap: "Volume Weighted Average Price"
-  };
-  
-  const renderIndicatorButton = (indicator: keyof ShowIndicators, label: string) => {
-    const isActive = showIndicators[indicator];
-    
-    return (
-      <Tooltip key={indicator}>
-        <TooltipTrigger asChild>
-          <Button 
-            variant={isActive ? "default" : "outline"} 
-            size="sm"
-            onClick={() => onToggleIndicator(indicator)}
-            className={isActive 
-              ? "bg-[#1E375F] text-white" 
-              : "border-[#1E375F] text-[#8A9CCC] hover:bg-[#1E375F]/30"}
-          >
-            {label}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" className="bg-[#1A2747] border-[#1E375F] text-white">
-          <p className="text-xs">{indicatorDescriptions[indicator]}</p>
-        </TooltipContent>
-      </Tooltip>
-    );
-  };
-
+export const ChartIndicators = ({ 
+  showIndicators, 
+  onToggleIndicator 
+}: ChartIndicatorsProps) => {
   return (
     <div className="flex flex-wrap gap-2 mt-4">
-      {renderIndicatorButton("volume", "Volume")}
-      {renderIndicatorButton("sma7", "SMA (7)")}
-      {renderIndicatorButton("sma30", "SMA (30)")}
-      {renderIndicatorButton("bollingerBands", "Bollinger")}
-      {renderIndicatorButton("vwap", "VWAP")}
+      <Button
+        size="sm"
+        variant={showIndicators.volume ? "default" : "outline"}
+        onClick={() => onToggleIndicator('volume')}
+        className={`text-xs ${showIndicators.volume ? 'bg-blue-600 dark:bg-[#3676FF] text-white' : 'text-gray-700 dark:text-axium-gray-300'}`}
+      >
+        Volume
+      </Button>
+      <Button
+        size="sm"
+        variant={showIndicators.sma7 ? "default" : "outline"}
+        onClick={() => onToggleIndicator('sma7')}
+        className={`text-xs ${showIndicators.sma7 ? 'bg-blue-600 dark:bg-[#3676FF] text-white' : 'text-gray-700 dark:text-axium-gray-300'}`}
+      >
+        SMA 7
+      </Button>
+      <Button
+        size="sm"
+        variant={showIndicators.sma30 ? "default" : "outline"}
+        onClick={() => onToggleIndicator('sma30')}
+        className={`text-xs ${showIndicators.sma30 ? 'bg-blue-600 dark:bg-[#3676FF] text-white' : 'text-gray-700 dark:text-axium-gray-300'}`}
+      >
+        SMA 30
+      </Button>
+      <Button
+        size="sm"
+        variant={showIndicators.bollingerBands ? "default" : "outline"}
+        onClick={() => onToggleIndicator('bollingerBands')}
+        className={`text-xs ${showIndicators.bollingerBands ? 'bg-blue-600 dark:bg-[#3676FF] text-white' : 'text-gray-700 dark:text-axium-gray-300'}`}
+      >
+        Bollinger Bands
+      </Button>
+      <Button
+        size="sm"
+        variant={showIndicators.vwap ? "default" : "outline"}
+        onClick={() => onToggleIndicator('vwap')}
+        className={`text-xs ${showIndicators.vwap ? 'bg-blue-600 dark:bg-[#3676FF] text-white' : 'text-gray-700 dark:text-axium-gray-300'}`}
+      >
+        VWAP
+      </Button>
     </div>
   );
 };

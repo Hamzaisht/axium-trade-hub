@@ -10,7 +10,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      "rounded-lg border bg-card text-card-foreground shadow-sm transition-all duration-300",
       className
     )}
     {...props}
@@ -84,7 +84,7 @@ const DarkCard = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border border-[#1A2747] bg-[#0D1424]/80 text-white shadow-xl backdrop-blur-sm",
+      "rounded-lg border border-gray-200 dark:border-[#1A2747] bg-white dark:bg-[#0D1424]/80 text-gray-900 dark:text-white shadow-xl backdrop-blur-sm transition-all duration-300",
       className
     )}
     {...props}
@@ -99,7 +99,7 @@ const GlassCard = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border border-[#1A2747]/50 bg-gradient-to-br from-[#0D1424]/90 to-[#0D1424]/70 backdrop-blur-md text-white shadow-lg",
+      "rounded-lg border border-gray-200/50 dark:border-[#1A2747]/50 bg-gradient-to-br from-white to-gray-50/90 dark:from-[#0D1424]/90 dark:to-[#0D1424]/70 backdrop-blur-md text-gray-900 dark:text-white shadow-lg transition-all duration-300 hover:shadow-xl",
       className
     )}
     {...props}
