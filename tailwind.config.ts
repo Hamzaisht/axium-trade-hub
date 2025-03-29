@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -65,27 +64,29 @@ export default {
 				},
 				// Custom Axium colors
 				axium: {
-					blue: '#0050FF',
-					'blue-light': '#3B82F6',
-					'blue-dark': '#1E3A8A',
-					'dark-bg': '#0B0F1A',  // Added primary dark background
-					'neon-blue': '#1EAEDB', // Added neon blue accent
+					blue: 'var(--axium-blue)',
+					'blue-light': 'var(--axium-blue-light)',
+					'blue-dark': 'var(--axium-blue-dark)',
+					'dark-bg': 'var(--axium-dark-bg)',
+					'neon-blue': 'var(--axium-neon-blue)',
+					'neon-gold': 'var(--axium-neon-gold)',
+					'neon-mint': 'var(--axium-neon-mint)',
 					gray: {
-						100: '#F8F9FA',
-						200: '#E9ECEF',
-						300: '#DEE2E6',
-						400: '#CED4DA',
-						500: '#ADB5BD',
-						600: '#6C757D',
-						700: '#495057',
-						800: '#343A40',
-						900: '#212529',
+						100: 'var(--axium-gray-100)',
+						200: 'var(--axium-gray-200)',
+						300: 'var(--axium-gray-300)',
+						400: 'var(--axium-gray-400)',
+						500: 'var(--axium-gray-500)',
+						600: 'var(--axium-gray-600)',
+						700: 'var(--axium-gray-700)',
+						800: 'var(--axium-gray-800)',
+						900: 'var(--axium-gray-900)',
 					},
-					'success': '#10B981',
-					'warning': '#F59E0B',
-					'error': '#EF4444',
-					'positive': '#22C55E',
-					'negative': '#F43F5E',
+					'success': 'var(--axium-success)',
+					'warning': 'var(--axium-warning)',
+					'error': 'var(--axium-error)',
+					'positive': 'var(--axium-positive)',
+					'negative': 'var(--axium-negative)',
 				}
 			},
 			borderRadius: {
@@ -94,12 +95,15 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			boxShadow: {
-				'glass': '0 0 20px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.1)',
-				'glass-strong': '0 0 30px rgba(0, 0, 0, 0.1), 0 0 8px rgba(0, 0, 0, 0.1)',
-				'glass-blue': '0 0 20px rgba(0, 80, 255, 0.1), 0 0 4px rgba(0, 80, 255, 0.05)',
-				'button': '0 1px 2px rgba(0, 0, 0, 0.05)',
-				'button-hover': '0 4px 12px rgba(0, 0, 0, 0.1)',
-				'glow': '0 0 15px rgba(30, 174, 219, 0.5)', // Added neon blue glow
+				'glass': 'var(--shadow-glass)',
+				'glass-strong': 'var(--shadow-glass-strong)',
+				'glass-blue': 'var(--shadow-glass-blue)',
+				'button': 'var(--shadow-button)',
+				'button-hover': 'var(--shadow-button-hover)',
+				'glow': 'var(--shadow-glow)',
+				'neon-gold': 'var(--shadow-neon-gold)',
+				'neon-blue': 'var(--shadow-neon-blue)',
+				'neon-mint': 'var(--shadow-neon-mint)',
 			},
 			keyframes: {
 				'accordion-down': {

@@ -1,34 +1,26 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { IPOProvider } from '@/contexts/IPOContext';
-import { PortfolioProvider } from '@/contexts/PortfolioContext';
-import { TradingProvider } from '@/contexts/TradingContext';
-import { DemoModeProvider } from '@/contexts/DemoModeContext';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from 'next-themes';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import { DualToastProvider } from '@/components/ui/DualToastProvider';
-import TokenRefreshProvider from '@/auth/TokenRefresh';
 
-// Pages
-import Index from '@/pages/Index';
-import Dashboard from '@/pages/Dashboard';
-import Portfolio from '@/pages/Portfolio';
-import Creators from '@/pages/Creators';
-import CreatorProfile from '@/pages/CreatorProfile';
-import InstitutionalCreator from '@/pages/InstitutionalCreator';
-import Trading from '@/pages/Trading';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import NotFound from '@/pages/NotFound';
-import './App.css';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { IPOProvider } from "@/contexts/IPOContext";
+import { TradingProvider } from "@/contexts/TradingContext";
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Trading from "./pages/Trading";
+import Portfolio from "./pages/Portfolio";
+import CreatorProfile from "./pages/CreatorProfile";
+import InstitutionalCreator from "./pages/InstitutionalCreator";
+import Layout from "./components/layout/Layout";
+import ToastContainer from "./components/notifications/ToastContainer";
 
-// Create a client for React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
       staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
     },
   },
 });
@@ -36,83 +28,28 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="dark">
-        <Router>
-          <DemoModeProvider>
-            <AuthProvider>
-              <TokenRefreshProvider>
-                <IPOProvider>
-                  <PortfolioProvider>
-                    <TradingProvider>
-                      <DualToastProvider />
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
-                        
-                        <Route 
-                          path="/dashboard" 
-                          element={
-                            <ProtectedRoute>
-                              <Dashboard />
-                            </ProtectedRoute>
-                          } 
-                        />
-                        
-                        <Route 
-                          path="/portfolio" 
-                          element={
-                            <ProtectedRoute>
-                              <Portfolio />
-                            </ProtectedRoute>
-                          } 
-                        />
-                        
-                        <Route 
-                          path="/creators" 
-                          element={
-                            <ProtectedRoute>
-                              <Creators />
-                            </ProtectedRoute>
-                          } 
-                        />
-                        
-                        <Route 
-                          path="/creators/:slug" 
-                          element={
-                            <ProtectedRoute>
-                              <CreatorProfile />
-                            </ProtectedRoute>
-                          } 
-                        />
-                        
-                        <Route 
-                          path="/creators/:slug/institutional" 
-                          element={
-                            <ProtectedRoute>
-                              <InstitutionalCreator />
-                            </ProtectedRoute>
-                          } 
-                        />
-                        
-                        <Route 
-                          path="/trading" 
-                          element={
-                            <ProtectedRoute>
-                              <Trading />
-                            </ProtectedRoute>
-                          } 
-                        />
-                        
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </TradingProvider>
-                  </PortfolioProvider>
-                </IPOProvider>
-              </TokenRefreshProvider>
-            </AuthProvider>
-          </DemoModeProvider>
-        </Router>
+      <ThemeProvider>
+        <AuthProvider>
+          <IPOProvider>
+            <TradingProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route element={<Layout />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/trading" element={<Trading />} />
+                    <Route path="/portfolio" element={<Portfolio />} />
+                    <Route path="/creator/:slug" element={<CreatorProfile />} />
+                    <Route path="/institutional/:slug" element={<InstitutionalCreator />} />
+                  </Route>
+                </Routes>
+              </BrowserRouter>
+              <ToastContainer />
+            </TradingProvider>
+          </IPOProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Menu, X, ChevronRight, LogOut, User, Bell, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,19 +56,21 @@ export const Navbar = () => {
   return (
     <nav className={cn(
       "fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 sm:px-6 lg:px-8",
-      isScrolled ? "py-3 bg-white/80 backdrop-blur-md shadow-sm" : "py-5 bg-transparent"
+      isScrolled ? 
+        "py-3 bg-white/80 backdrop-blur-md shadow-sm dark:bg-axium-dark-bg/80 dark:shadow-md" : 
+        "py-5 bg-transparent"
     )}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
           {/* Axium Logo */}
           <div className="flex items-center gap-2">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-axium-blue">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-axium-neon-blue">
               <path d="M14 3L25 20H3L14 3Z" stroke="currentColor" strokeWidth="2" fill="none" />
               <path d="M14 8L20 18H8L14 8Z" fill="currentColor" />
             </svg>
             <div className="font-bold text-xl">
-              <span className="text-axium-blue">Axium</span>
-              <span className="text-axium-gray-800">.io</span>
+              <span className="text-axium-neon-blue">Axium</span>
+              <span className="text-axium-gray-800 dark:text-white">.io</span>
             </div>
           </div>
         </Link>
@@ -80,10 +83,10 @@ export const Navbar = () => {
                 key={link.name}
                 to={link.path}
                 className={cn(
-                  "font-medium transition-colors duration-200 hover:text-axium-blue",
+                  "font-medium transition-colors duration-200 hover:text-axium-neon-blue",
                   location.pathname === link.path 
-                    ? "text-axium-blue" 
-                    : "text-axium-gray-700"
+                    ? "text-axium-neon-blue" 
+                    : "text-axium-gray-700 dark:text-axium-gray-300"
                 )}
               >
                 {link.name}
@@ -92,20 +95,22 @@ export const Navbar = () => {
           </div>
           
           <div className="flex items-center space-x-3">
+            <ThemeToggle />
+            
             {isAuthenticated ? (
               <>
                 <Button 
                   variant="outline" 
                   size="icon" 
-                  className="bg-white"
+                  className="bg-white dark:bg-axium-gray-800"
                 >
-                  <Bell className="h-5 w-5 text-axium-gray-600" />
+                  <Bell className="h-5 w-5 text-axium-gray-600 dark:text-axium-gray-300" />
                 </Button>
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="bg-white">
-                      <User className="h-5 w-5 text-axium-gray-600" />
+                    <Button variant="outline" size="icon" className="bg-white dark:bg-axium-gray-800">
+                      <User className="h-5 w-5 text-axium-gray-600 dark:text-axium-gray-300" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -142,13 +147,13 @@ export const Navbar = () => {
               <>
                 <Button 
                   variant="outline" 
-                  className="font-medium border-axium-gray-200 text-axium-gray-800 hover:bg-axium-gray-100"
+                  className="font-medium border-axium-gray-200 text-axium-gray-800 hover:bg-axium-gray-100 dark:border-axium-gray-700 dark:text-white dark:hover:bg-axium-gray-800"
                   onClick={() => navigate('/login')}
                 >
                   Log In
                 </Button>
                 <Button 
-                  className="font-medium bg-axium-blue hover:bg-axium-blue/90"
+                  className="font-medium bg-axium-blue hover:bg-axium-blue/90 dark:bg-axium-neon-blue dark:hover:bg-axium-neon-blue/90"
                   onClick={() => navigate('/register')}
                 >
                   Sign Up <ChevronRight className="ml-1 h-4 w-4" />
@@ -158,24 +163,29 @@ export const Navbar = () => {
           </div>
         </div>
         
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden text-axium-gray-800"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          {isMenuOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
-        </button>
+        {/* Mobile Menu Button with Theme Toggle */}
+        <div className="md:hidden flex items-center space-x-2">
+          <ThemeToggle />
+          <button
+            className="text-axium-gray-800 dark:text-white"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
       </div>
       
       {/* Mobile Menu */}
       <div className={cn(
-        "md:hidden absolute left-0 right-0 top-full bg-white/95 backdrop-blur-md shadow-md transition-all duration-300 overflow-hidden",
-        isMenuOpen ? "max-h-screen py-4" : "max-h-0 py-0"
+        "md:hidden absolute left-0 right-0 top-full transition-all duration-300 overflow-hidden",
+        isMenuOpen ? 
+          "max-h-screen py-4 bg-white/95 backdrop-blur-md shadow-md dark:bg-axium-dark-bg/95" : 
+          "max-h-0 py-0"
       )}>
         <div className="px-4 space-y-3 flex flex-col">
           {filteredNavLinks.map((link) => (

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface SidebarItemProps {
   icon: React.ElementType;
@@ -29,7 +30,7 @@ const SidebarItem = ({ icon: Icon, label, href, isActive, onClick }: SidebarItem
       className={cn(
         "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
         isActive 
-          ? "bg-primary/10 text-primary" 
+          ? "bg-primary/10 text-primary dark:bg-axium-neon-blue/10 dark:text-axium-neon-blue" 
           : "text-muted-foreground hover:bg-accent hover:text-foreground"
       )}
       onClick={onClick}
@@ -72,14 +73,16 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside 
         className={cn(
-          "fixed left-0 top-0 z-40 h-full w-64 bg-background border-r border-border transition-transform duration-300",
+          "fixed left-0 top-0 z-40 h-full w-64 border-r border-border transition-transform duration-300",
+          "bg-background/80 backdrop-blur-md dark:bg-axium-dark-bg/80",
           isMobile && !isOpen ? "-translate-x-full" : "translate-x-0",
           "md:relative md:translate-x-0"
         )}
       >
         <div className="flex h-full flex-col">
-          <div className="flex h-14 items-center border-b px-4">
+          <div className="flex h-14 items-center justify-between border-b px-4">
             <h2 className="text-lg font-semibold">Axium</h2>
+            <ThemeToggle className="md:hidden" />
           </div>
           <nav className="flex-1 space-y-1 p-4">
             {navigationItems.map((item) => (
@@ -93,6 +96,12 @@ export function Sidebar() {
               />
             ))}
           </nav>
+          <div className="p-4 border-t border-border hidden md:block">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Theme</span>
+              <ThemeToggle />
+            </div>
+          </div>
         </div>
       </aside>
     </>

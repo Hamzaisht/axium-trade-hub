@@ -6,18 +6,29 @@ import { OrderInputs } from "./OrderInputs";
 import { OrderSummary } from "./OrderSummary";
 import { SubmitButton } from "./SubmitButton";
 import { useTradeForm } from "./useTradeForm";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { cn } from "@/lib/utils";
 
 interface TradeFormProps {
   ipo: IPO;
   onSuccess?: () => void;
+  className?: string;
 }
 
-export const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
+export const TradeForm = ({ ipo, onSuccess, className }: TradeFormProps) => {
   const { formData, isLoading, handleChange, handleSubmit } = useTradeForm(ipo, onSuccess);
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">Trade {ipo.symbol}</h2>
+    <GlassCard 
+      variant={formData.type === "buy" ? "blue" : "mint"}
+      className={cn("transition-all duration-300", className)}
+    >
+      <h2 className="text-xl font-bold mb-4 flex items-center">
+        <span className={formData.type === "buy" ? "text-axium-neon-blue dark:text-axium-neon-blue" : "text-axium-neon-mint dark:text-axium-neon-mint"}>
+          Trade
+        </span>
+        <span className="ml-2 text-foreground">{ipo.symbol}</span>
+      </h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <OrderTypeSelector 
@@ -45,7 +56,7 @@ export const TradeForm = ({ ipo, onSuccess }: TradeFormProps) => {
           isLoading={isLoading}
         />
       </form>
-    </div>
+    </GlassCard>
   );
 };
 

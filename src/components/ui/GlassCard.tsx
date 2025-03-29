@@ -1,55 +1,42 @@
 
-import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import { HTMLAttributes, forwardRef } from "react";
+import { ReactNode } from "react";
 
-const glassCardVariants = cva(
-  "relative overflow-hidden transition-all duration-300 backdrop-blur-md",
-  {
-    variants: {
-      variant: {
-        default: "glass-card hover:shadow-glass-strong",
-        premium: "premium-card hover:shadow-glass-strong",
-        blue: "bg-gradient-to-b from-axium-blue/5 to-axium-blue/10 border border-axium-blue/20 shadow-glass-blue hover:shadow-glass-strong text-axium-blue-dark",
-        dark: "glass-card-dark text-white",
-      },
-      size: {
-        sm: "p-3 rounded-md",
-        md: "p-4 rounded-lg", 
-        lg: "p-6 rounded-lg",
-        xl: "p-8 rounded-xl",
-      },
-      interactive: {
-        true: "hover:translate-y-[-2px] cursor-pointer",
-        false: "",
-      }
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "md",
-      interactive: false,
-    },
-  }
-);
+interface GlassCardProps {
+  children: ReactNode;
+  className?: string;
+  variant?: "default" | "dark" | "blue" | "gold" | "mint";
+  interactive?: boolean;
+  onClick?: () => void;
+}
 
-export interface GlassCardProps 
-  extends HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof glassCardVariants> {}
-
-const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
-  ({ className, variant, size, interactive, children, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(glassCardVariants({ variant, size, interactive }), className)}
-        {...props}
-      >
-        {children}
-      </div>
-    );
-  }
-);
-
-GlassCard.displayName = "GlassCard";
-
-export { GlassCard, glassCardVariants };
+export function GlassCard({ 
+  children, 
+  className = "", 
+  variant = "default", 
+  interactive = false,
+  onClick
+}: GlassCardProps) {
+  const baseClasses = cn(
+    "rounded-lg p-4 transition-all duration-300",
+    interactive && "cursor-pointer hover:translate-y-[-2px]",
+    className
+  );
+  
+  const variantClasses = {
+    default: "bg-white/70 backdrop-blur-md border border-axium-gray-200/50 shadow-glass dark:bg-axium-gray-800/40 dark:border-axium-gray-700/20",
+    dark: "bg-axium-gray-800/70 backdrop-blur-md border border-axium-gray-700/30 shadow-glass dark:bg-black/40 dark:border-axium-gray-700/40",
+    blue: "bg-white/70 backdrop-blur-md border border-axium-neon-blue/30 shadow-neon-blue dark:bg-axium-gray-800/40 dark:border-axium-neon-blue/40",
+    gold: "bg-white/70 backdrop-blur-md border border-axium-neon-gold/30 shadow-neon-gold dark:bg-axium-gray-800/40 dark:border-axium-neon-gold/40",
+    mint: "bg-white/70 backdrop-blur-md border border-axium-neon-mint/30 shadow-neon-mint dark:bg-axium-gray-800/40 dark:border-axium-neon-mint/40"
+  };
+  
+  return (
+    <div 
+      className={cn(baseClasses, variantClasses[variant])}
+      onClick={onClick}
+    >
+      {children}
+    </div>
+  );
+}
