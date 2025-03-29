@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { ReactNode } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface LayoutShellProps {
   children: ReactNode;
@@ -31,9 +32,32 @@ export function LayoutShell({ children, className = "" }: LayoutShellProps) {
       )}>
         {isDark && (
           <>
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,207,255,0.1),transparent_70%)] pointer-events-none animate-pulse duration-[3000ms]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(0,255,208,0.15),transparent_70%)] pointer-events-none blur-3xl" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(227,78,255,0.1),transparent_70%)] pointer-events-none blur-2xl" />
+            {/* Dynamic animated cyberpunk background elements */}
+            <motion.div 
+              className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,207,255,0.1),transparent_70%)] pointer-events-none"
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.div 
+              className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(0,255,208,0.15),transparent_70%)] pointer-events-none blur-3xl"
+              animate={{ opacity: [0.3, 0.5, 0.3] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            />
+            <motion.div 
+              className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(227,78,255,0.1),transparent_70%)] pointer-events-none blur-2xl"
+              animate={{ opacity: [0.2, 0.4, 0.2] }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            />
+            
+            {/* Subtle animated scan lines */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <motion.div 
+                className="w-full h-[1px] bg-axium-neon-blue/10"
+                animate={{ top: ["0%", "100%"] }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                style={{ position: "absolute" }}
+              />
+            </div>
           </>
         )}
         <div className="relative z-10">

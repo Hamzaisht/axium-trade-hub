@@ -1,80 +1,64 @@
 
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { useTheme } from "@/contexts/ThemeContext";
+import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
-// Mock data for ticker
-const mockTickerData = [
-  { id: 1, name: "Emma Watson", symbol: "$EMW", price: 24.82, change: 12.5 },
-  { id: 2, name: "Zendaya", symbol: "$ZEN", price: 18.40, change: 5.2 },
-  { id: 3, name: "Tom Holland", symbol: "$THLD", price: 21.35, change: -1.8 },
-  { id: 4, name: "LeBron James", symbol: "$LBJ", price: 56.78, change: 3.4 },
-  { id: 5, name: "Taylor Swift", symbol: "$SWIFT", price: 89.21, change: 8.7 },
-  { id: 6, name: "BTS", symbol: "$BTS", price: 45.63, change: -2.3 },
-  { id: 7, name: "Dua Lipa", symbol: "$DLIPA", price: 19.92, change: 6.1 },
-  { id: 8, name: "Cristiano Ronaldo", symbol: "$CR7", price: 72.15, change: 4.5 },
-  { id: 9, name: "Billie Eilish", symbol: "$BLSH", price: 31.47, change: -0.9 },
-  { id: 10, name: "Ryan Reynolds", symbol: "$RYNR", price: 42.36, change: 7.2 },
+const TOKENS = [
+  { name: "Emma Watson", symbol: "EMW", price: 24.82, change: 12.5 },
+  { name: "Zendaya", symbol: "ZEN", price: 18.4, change: 5.7 },
+  { name: "Tom Holland", symbol: "THLD", price: 21.35, change: -2.3 },
+  { name: "Ryan Reynolds", symbol: "RYAN", price: 32.75, change: 8.9 },
+  { name: "Dwayne Johnson", symbol: "ROCK", price: 47.22, change: 15.2 },
+  { name: "Taylor Swift", symbol: "SWIFT", price: 56.89, change: 3.1 },
+  { name: "Kylie Jenner", symbol: "KYLJ", price: 29.11, change: -4.5 },
+  { name: "Lebron James", symbol: "KING", price: 43.65, change: 7.2 },
 ];
 
-type TickerItem = {
-  id: number;
-  name: string;
-  symbol: string;
-  price: number;
-  change: number;
-};
-
 export const LiveTicker = () => {
-  const [tickerData, setTickerData] = useState<TickerItem[]>(mockTickerData);
-  const [isPaused, setIsPaused] = useState(false);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   
-  // Update ticker data randomly every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isPaused) {
-        setTickerData(prev => 
-          prev.map(item => ({
-            ...item,
-            price: parseFloat((item.price + (Math.random() * 0.6 - 0.3)).toFixed(2)),
-            change: parseFloat((item.change + (Math.random() * 0.8 - 0.4)).toFixed(1))
-          }))
-        );
-      }
-    }, 5000);
-    
-    return () => clearInterval(interval);
-  }, [isPaused]);
-
   return (
-    <div 
-      className="relative overflow-hidden bg-axium-gray-100 py-4 border-y border-axium-gray-200"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
-      <div className={cn(
-        "flex items-center space-x-16 animate-ticker whitespace-nowrap",
-        isPaused && "animation-play-state-paused"
-      )}>
-        {/* Double the items to create seamless loop */}
-        {[...tickerData, ...tickerData].map((item, index) => (
-          <div key={`${item.id}-${index}`} className="flex items-center space-x-2">
-            <span className="font-medium text-axium-gray-800">{item.symbol}</span>
-            <span className="text-axium-gray-900">${item.price.toFixed(2)}</span>
-            <span className={cn(
-              "flex items-center text-sm",
-              item.change >= 0 ? "text-axium-success" : "text-axium-error"
-            )}>
-              {item.change >= 0 ? (
-                <TrendingUp className="h-3.5 w-3.5 mr-1" />
-              ) : (
-                <TrendingDown className="h-3.5 w-3.5 mr-1" />
-              )}
-              {Math.abs(item.change).toFixed(1)}%
-            </span>
-          </div>
-        ))}
+    <div className="relative py-4 bg-background/80 backdrop-blur-md border-y border-axium-neon-blue/20 overflow-hidden">
+      {isDark && (
+        <div className="absolute inset-0 bg-gradient-to-r from-axium-neon-blue/5 via-transparent to-axium-neon-mint/5"></div>
+      )}
+      
+      <div className="relative">
+        <div className="flex whitespace-nowrap animate-ticker">
+          {[...TOKENS, ...TOKENS].map((token, index) => (
+            <div 
+              key={`${token.symbol}-${index}`} 
+              className={`flex items-center mx-4 py-2 px-4 rounded-md ${isDark ? 'bg-foreground/5' : 'bg-background/90'} backdrop-blur-md border ${
+                token.change >= 0 
+                  ? 'border-axium-positive/20'
+                  : 'border-axium-negative/20'
+              }`}
+            >
+              <div className="flex items-center">
+                <span className="font-medium mr-2 text-foreground">{token.symbol}</span>
+                <span className="text-muted-foreground text-sm mr-3">{token.name}</span>
+                <span className="font-bold mr-2">${token.price.toFixed(2)}</span>
+                <span className={`flex items-center text-sm ${
+                  token.change >= 0 
+                    ? 'text-axium-positive' 
+                    : 'text-axium-negative'
+                }`}>
+                  {token.change >= 0 
+                    ? <TrendingUp className="h-3 w-3 mr-1" /> 
+                    : <TrendingDown className="h-3 w-3 mr-1" />
+                  }
+                  {Math.abs(token.change)}%
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+      
+      {/* Gradient fade effect on edges */}
+      <div className="absolute top-0 left-0 h-full w-20 bg-gradient-to-r from-background via-background/90 to-transparent z-10"></div>
+      <div className="absolute top-0 right-0 h-full w-20 bg-gradient-to-l from-background via-background/90 to-transparent z-10"></div>
     </div>
   );
 };

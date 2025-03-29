@@ -27,6 +27,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
       document.body.classList.add('cyberpunk-grid', 'dark-mode-transition');
+      
+      // Apply dark mode specific animations and effects
+      const overlay = document.createElement('div');
+      overlay.classList.add('fixed', 'inset-0', 'pointer-events-none', 'z-[-1]');
+      overlay.style.background = 'radial-gradient(circle at 10% 30%, rgba(0,207,255,0.07), transparent 70%)';
+      document.body.appendChild(overlay);
+      
+      return () => {
+        document.body.removeChild(overlay);
+      };
     } else {
       document.documentElement.classList.remove('dark');
       document.body.classList.remove('cyberpunk-grid', 'dark-mode-transition');
@@ -34,7 +44,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
+    // Add flash animation effect during theme toggle
+    const flash = document.createElement('div');
+    flash.classList.add('fixed', 'inset-0', 'bg-white', 'z-[9999]', 'pointer-events-none');
+    flash.style.opacity = '0.1';
+    document.body.appendChild(flash);
+    
+    setTimeout(() => {
+      document.body.removeChild(flash);
+      setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
+    }, 50);
   };
 
   return (
