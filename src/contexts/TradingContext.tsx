@@ -1,92 +1,27 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { mockTradingAPI, Order, Trade, IPO } from '@/utils/mockApi';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { Order, Trade } from '@/utils/mockApi';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
-import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';
-import { placeOrder } from '@/lib/placeOrder';
-
-interface OrderBookData {
-  bids: Order[];
-  asks: Order[];
-}
-
-interface TradingContextType {
-  isLoading: boolean;
-  orders: Order[];
-  trades: Trade[];
-  orderBook: OrderBookData | null;
-  placeOrder: (orderData: Partial<Order>) => Promise<Order>;
-  cancelOrder: (orderId: string) => Promise<void>;
-  fetchUserOrders: () => Promise<void>;
-  fetchUserTrades: () => Promise<void>;
-  fetchOrderBook: (ipoId: string) => Promise<void>;
-  isConnected: boolean;
-}
+import { TradingContextType, OrderBookData } from './trading/types';
+import { useWebSocketTrading } from '@/hooks/trading/useWebSocketTrading';
+import { TradingService } from '@/services/TradingService';
 
 const TradingContext = createContext<TradingContextType | undefined>(undefined);
 
 export const TradingProvider = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [trades, setTrades] = useState<Trade[]>([]);
   const [orderBook, setOrderBook] = useState<OrderBookData | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-
-  useEffect(() => {
-    mockWebSocket.connect();
-    
-    const connectionHandler = (data: { status: string }) => {
-      setIsConnected(data.status === 'connected');
-    };
-
-    const orderUpdateHandler = (data: Order) => {
-      if (user && data.userId === user.id) {
-        setOrders(prev => {
-          const orderIndex = prev.findIndex(o => o.id === data.id);
-          if (orderIndex >= 0) {
-            const newOrders = [...prev];
-            newOrders[orderIndex] = data;
-            return newOrders;
-          }
-          return [...prev, data];
-        });
-      }
-    };
-
-    const tradeHandler = (data: Trade & { creatorSymbol?: string }) => {
-      if (user && (data.buyerId === user.id || data.sellerId === user.id)) {
-        setTrades(prev => {
-          if (prev.some(t => t.id === data.id)) return prev;
-          return [data, ...prev];
-        });
-        
-        toast.success(`Trade executed: ${data.buyerId === user?.id ? 'Bought' : 'Sold'} ${data.quantity} ${data.creatorSymbol || 'tokens'} at $${data.price}`);
-      }
-    };
-
-    const orderBookHandler = (data: { ipoId: string, bids: Order[], asks: Order[] }) => {
-      if (orderBook && orderBook.bids[0]?.ipoId === data.ipoId) {
-        setOrderBook({
-          bids: data.bids,
-          asks: data.asks
-        });
-      }
-    };
-
-    mockWebSocket.on(WSEvents.CONNECTION, connectionHandler);
-    mockWebSocket.on(WSEvents.ORDER_UPDATED, orderUpdateHandler);
-    mockWebSocket.on(WSEvents.TRADE_EXECUTED, tradeHandler);
-    mockWebSocket.on(WSEvents.ORDERBOOK_UPDATE, orderBookHandler);
-
-    return () => {
-      mockWebSocket.off(WSEvents.CONNECTION, connectionHandler);
-      mockWebSocket.off(WSEvents.ORDER_UPDATED, orderUpdateHandler);
-      mockWebSocket.off(WSEvents.TRADE_EXECUTED, tradeHandler);
-      mockWebSocket.off(WSEvents.ORDERBOOK_UPDATE, orderBookHandler);
-    };
-  }, [user, orderBook]);
+  
+  // Use the WebSocket hook to handle real-time trading data
+  const { 
+    isConnected, 
+    orders, 
+    trades, 
+    setOrders, 
+    setTrades 
+  } = useWebSocketTrading(user, orderBook);
 
   const placeOrderInContext = async (orderData: Partial<Order>): Promise<Order> => {
     if (!isAuthenticated || !user) {
@@ -96,32 +31,9 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setIsLoading(true);
-      const orderWithUserId = {
-        ...orderData,
-        userId: user.id
-      };
-      
-      // Determine the order type properly based on available properties
-      const orderType = orderWithUserId.type || "buy"; // Default to "buy" if not specified
-      
-      await placeOrder({
-        userId: user.id,
-        creatorId: orderWithUserId.ipoId || '',
-        type: orderType as "buy" | "sell",
-        quantity: orderWithUserId.quantity || 0,
-        price: orderWithUserId.price || 0
-      });
-      
-      const newOrder = await mockTradingAPI.placeOrder(orderWithUserId);
-      
-      mockWebSocket.emit(WSEvents.ORDER_UPDATED, newOrder);
-      
+      const newOrder = await TradingService.placeOrder(orderData, user.id);
       await fetchUserOrders();
-      
       return newOrder;
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to place order');
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -135,16 +47,8 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setIsLoading(true);
-      const cancelledOrder = await mockTradingAPI.cancelOrder(orderId);
-      
-      mockWebSocket.emit(WSEvents.ORDER_UPDATED, cancelledOrder);
-      
+      await TradingService.cancelOrder(orderId);
       await fetchUserOrders();
-      
-      toast.success('Order cancelled successfully');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to cancel order');
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -155,10 +59,8 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setIsLoading(true);
-      const userOrders = await mockTradingAPI.getUserOrders();
+      const userOrders = await TradingService.getUserOrders();
       setOrders(userOrders);
-    } catch (error) {
-      toast.error('Failed to fetch orders');
     } finally {
       setIsLoading(false);
     }
@@ -169,10 +71,8 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       setIsLoading(true);
-      const userTrades = await mockTradingAPI.getUserTrades();
+      const userTrades = await TradingService.getUserTrades();
       setTrades(userTrades);
-    } catch (error) {
-      toast.error('Failed to fetch trades');
     } finally {
       setIsLoading(false);
     }
@@ -181,10 +81,8 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
   const fetchOrderBook = async (ipoId: string): Promise<void> => {
     try {
       setIsLoading(true);
-      const book = await mockTradingAPI.getOrderBook(ipoId);
+      const book = await TradingService.getOrderBook(ipoId);
       setOrderBook(book);
-    } catch (error) {
-      toast.error('Failed to fetch order book');
     } finally {
       setIsLoading(false);
     }
