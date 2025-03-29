@@ -1,13 +1,15 @@
 
 import { useEffect, useRef, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, useTexture, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 
-// This component represents the 3D marble with neon halo
-const Marble = () => {
+// This component represents the 3D marble with neon halo and gold/lava accents
+const SentientMarble = ({ scrollY, onButtonPress }) => {
   const marbleRef = useRef<THREE.Mesh>(null);
   const haloRef = useRef<THREE.Mesh>(null);
+  const lavaRingRef = useRef<THREE.Mesh>(null);
+  const goldRingRef = useRef<THREE.Group>(null);
 
   // Create fallback textures
   const fallbackTexture = new THREE.TextureLoader().load(
@@ -22,6 +24,7 @@ const Marble = () => {
   // Try loading the textures with error handling
   const [textureMap, setTextureMap] = useState<THREE.Texture | null>(null);
   const [normalMap, setNormalMap] = useState<THREE.Texture | null>(null);
+  const [lavaMap, setLavaMap] = useState<THREE.Texture | null>(null);
   const [texturesLoaded, setTexturesLoaded] = useState(false);
   
   useEffect(() => {
@@ -31,6 +34,8 @@ const Marble = () => {
     textureLoader.load(
       '/textures/black-marble.jpg',
       (texture) => {
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
         setTextureMap(texture);
         console.info('Black marble texture loaded successfully');
       },
@@ -59,12 +64,37 @@ const Marble = () => {
       }
     );
     
+    // Load lava texture for accents
+    textureLoader.load(
+      'https://images.unsplash.com/photo-1516476892398-bdcab4c8dab8?q=80&w=500&auto=format&fit=crop',
+      (texture) => {
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        setLavaMap(texture);
+        console.info('Lava texture loaded successfully');
+      },
+      undefined,
+      (error) => {
+        console.warn('Could not load lava texture, creating default texture:', error);
+        const defaultLava = new THREE.CanvasTexture(
+          new OffscreenCanvas(2, 2)
+        );
+        const ctx = defaultLava.image.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#D4AF37';
+          ctx.fillRect(0, 0, 2, 2);
+        }
+        setLavaMap(defaultLava);
+      }
+    );
+    
     setTexturesLoaded(true);
     
     return () => {
       // Clean up textures to prevent memory leaks
       if (textureMap) textureMap.dispose();
       if (normalMap) normalMap.dispose();
+      if (lavaMap) lavaMap.dispose();
       fallbackTexture.dispose();
     };
   }, []);
@@ -72,6 +102,34 @@ const Marble = () => {
   // State for interactive movement
   const [hover, setHover] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [pulseEffect, setPulseEffect] = useState(false);
+  const lastScrollY = useRef(0);
+
+  // Handle scroll events for interactive effects
+  useEffect(() => {
+    if (scrollY !== undefined && Math.abs(scrollY - lastScrollY.current) > 30) {
+      setPulseEffect(true);
+      lastScrollY.current = scrollY;
+      
+      const timer = setTimeout(() => {
+        setPulseEffect(false);
+      }, 800);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [scrollY]);
+
+  // Handle button press effect
+  useEffect(() => {
+    if (onButtonPress) {
+      setPulseEffect(true);
+      const timer = setTimeout(() => {
+        setPulseEffect(false);
+      }, 800);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [onButtonPress]);
 
   // Update marble position on mouse move
   useEffect(() => {
@@ -106,17 +164,103 @@ const Marble = () => {
         mousePosition.y * 0.3,
         0.05
       );
+      
+      // Add pulse effect on scroll/button press
+      if (pulseEffect) {
+        marbleRef.current.scale.x = THREE.MathUtils.lerp(
+          marbleRef.current.scale.x,
+          1.1,
+          0.1
+        );
+        marbleRef.current.scale.y = THREE.MathUtils.lerp(
+          marbleRef.current.scale.y,
+          1.1,
+          0.1
+        );
+        marbleRef.current.scale.z = THREE.MathUtils.lerp(
+          marbleRef.current.scale.z,
+          1.1,
+          0.1
+        );
+      } else {
+        marbleRef.current.scale.x = THREE.MathUtils.lerp(
+          marbleRef.current.scale.x,
+          1.0,
+          0.05
+        );
+        marbleRef.current.scale.y = THREE.MathUtils.lerp(
+          marbleRef.current.scale.y,
+          1.0,
+          0.05
+        );
+        marbleRef.current.scale.z = THREE.MathUtils.lerp(
+          marbleRef.current.scale.z,
+          1.0,
+          0.05
+        );
+      }
     }
 
-    // Animate halo
+    // Animate halo (hologram effect)
     if (haloRef.current) {
       haloRef.current.rotation.z += 0.005;
       haloRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3) * 0.2;
       haloRef.current.rotation.y = Math.cos(state.clock.elapsedTime * 0.2) * 0.1;
       
       // Pulse effect for the halo
-      const pulseScale = 1 + Math.sin(state.clock.elapsedTime) * 0.05;
+      const basePulse = 1 + Math.sin(state.clock.elapsedTime) * 0.05;
+      const extraPulse = pulseEffect ? 0.15 : 0;
+      const pulseScale = basePulse + extraPulse;
+      
       haloRef.current.scale.set(pulseScale, pulseScale, 1);
+      
+      // Increase halo opacity during pulse
+      if (haloRef.current.material instanceof THREE.MeshBasicMaterial) {
+        haloRef.current.material.opacity = pulseEffect ? 0.9 : 0.7;
+      }
+    }
+    
+    // Animate lava ring
+    if (lavaRingRef.current) {
+      lavaRingRef.current.rotation.z -= 0.003;
+      
+      if (lavaRingRef.current.material instanceof THREE.MeshStandardMaterial && lavaMap) {
+        lavaRingRef.current.material.map.offset.x += 0.001;
+        lavaRingRef.current.material.map.offset.y += 0.0005;
+        
+        // Increase emissive intensity during pulse
+        lavaRingRef.current.material.emissiveIntensity = pulseEffect ? 0.8 : 0.4;
+      }
+    }
+    
+    // Animate gold accents
+    if (goldRingRef.current) {
+      goldRingRef.current.rotation.x += 0.002;
+      goldRingRef.current.rotation.y += 0.001;
+      
+      if (pulseEffect) {
+        goldRingRef.current.scale.x = THREE.MathUtils.lerp(
+          goldRingRef.current.scale.x,
+          1.15,
+          0.1
+        );
+        goldRingRef.current.scale.y = THREE.MathUtils.lerp(
+          goldRingRef.current.scale.y,
+          1.15,
+          0.1
+        );
+      } else {
+        goldRingRef.current.scale.x = THREE.MathUtils.lerp(
+          goldRingRef.current.scale.x,
+          1.0,
+          0.05
+        );
+        goldRingRef.current.scale.y = THREE.MathUtils.lerp(
+          goldRingRef.current.scale.y,
+          1.0,
+          0.05
+        );
+      }
     }
   });
 
@@ -139,8 +283,21 @@ const Marble = () => {
         />
       </mesh>
       
-      {/* Neon halo effect */}
-      <mesh ref={haloRef} position={[0, 0, -0.5]} scale={2.2}>
+      {/* Lava/Gold ring */}
+      <mesh ref={lavaRingRef} position={[0, 0, -0.3]} rotation={[0.3, 0.2, 0]} scale={1.8}>
+        <torusGeometry args={[1.0, 0.08, 32, 100]} />
+        <meshStandardMaterial 
+          map={lavaMap}
+          color="#D4AF37" 
+          metalness={0.7}
+          roughness={0.3}
+          emissive="#D4AF37"
+          emissiveIntensity={0.4}
+        />
+      </mesh>
+      
+      {/* Hologram halo effect */}
+      <mesh ref={haloRef} position={[0, 1.5, 0]} rotation={[0, 0, 0]} scale={2.0}>
         <ringGeometry args={[0.7, 0.9, 64]} />
         <meshBasicMaterial 
           color="#1EAEDB" 
@@ -152,8 +309,8 @@ const Marble = () => {
       </mesh>
       
       {/* Second halo with different color */}
-      <mesh position={[0, 0, -0.3]} rotation={[0.5, 0.3, 0]} scale={2.5}>
-        <ringGeometry args={[0.9, 1.1, 64]} />
+      <mesh position={[0, 1.5, 0.1]} rotation={[0.5, 0.3, 0]} scale={2.2}>
+        <ringGeometry args={[0.5, 0.7, 64]} />
         <meshBasicMaterial 
           color="#D946EF" 
           side={THREE.DoubleSide}
@@ -164,16 +321,49 @@ const Marble = () => {
       </mesh>
       
       {/* Gold accent details */}
-      <mesh position={[0, 0, -0.1]} rotation={[0.2, 0.5, 0]} scale={1.8}>
-        <torusGeometry args={[1.1, 0.03, 16, 100]} />
-        <meshStandardMaterial 
-          color="#D4AF37" 
-          metalness={1}
-          roughness={0.3}
-          emissive="#D4AF37"
-          emissiveIntensity={0.2}
-        />
-      </mesh>
+      <group ref={goldRingRef}>
+        <mesh position={[0, 0, 0]} rotation={[0.2, 0.5, 0]} scale={1.8}>
+          <torusGeometry args={[1.2, 0.03, 16, 100]} />
+          <meshStandardMaterial 
+            color="#D4AF37" 
+            metalness={1}
+            roughness={0.3}
+            emissive="#D4AF37"
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        
+        <mesh position={[0, 0, 0]} rotation={[0.8, 0.2, 0]} scale={1.9}>
+          <torusGeometry args={[1.25, 0.02, 16, 100]} />
+          <meshStandardMaterial 
+            color="#D4AF37" 
+            metalness={1}
+            roughness={0.3}
+            emissive="#D4AF37"
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+      </group>
+      
+      {/* Halo rays */}
+      <group position={[0, 1.5, 0]} rotation={[0, 0, 0]}>
+        {[...Array(8)].map((_, i) => (
+          <mesh 
+            key={i} 
+            position={[0, 0, -0.05 * i]} 
+            rotation={[0, 0, Math.PI * i / 4]}
+          >
+            <planeGeometry args={[0.05, 0.8]} />
+            <meshBasicMaterial 
+              color="#1EAEDB" 
+              transparent={true} 
+              opacity={0.3}
+              blending={THREE.AdditiveBlending}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        ))}
+      </group>
     </group>
   );
 };
@@ -186,6 +376,14 @@ const Lights = () => {
       <directionalLight position={[10, 10, 5]} intensity={1} color="#ffffff" />
       <pointLight position={[-10, -10, -10]} intensity={0.5} color="#1EAEDB" />
       <pointLight position={[5, 5, 5]} intensity={0.3} color="#D946EF" />
+      <spotLight 
+        position={[0, 5, 5]} 
+        intensity={0.5} 
+        angle={0.5} 
+        penumbra={0.8} 
+        color="#D4AF37" 
+        castShadow
+      />
     </>
   );
 };
@@ -217,6 +415,36 @@ const CanvasErrorBoundary = ({ children }: { children: React.ReactNode }) => {
 // Main component that renders the Canvas
 export const MarbleBackground: React.FC = () => {
   const [canvasLoaded, setCanvasLoaded] = useState(true);
+  const [scrollY, setScrollY] = useState(0);
+  const [buttonPress, setButtonPress] = useState(0);
+  
+  // Track scroll position for interactivity
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
+  // Track button clicks for interactivity
+  useEffect(() => {
+    const handleButtonClick = () => {
+      setButtonPress(prev => prev + 1);
+    };
+    
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+      button.addEventListener('click', handleButtonClick);
+    });
+    
+    return () => {
+      buttons.forEach(button => {
+        button.removeEventListener('click', handleButtonClick);
+      });
+    };
+  }, []);
   
   useEffect(() => {
     // Check if WebGL is supported
@@ -238,12 +466,13 @@ export const MarbleBackground: React.FC = () => {
     return (
       <div className="fixed inset-0 w-full h-full -z-10 bg-gradient-to-b from-[#0A0E17] via-[#0D1424] to-[#0A0E17]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(30,174,219,0.1),transparent_70%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.05),transparent_80%)]"></div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 w-full h-full -z-10 opacity-80">
+    <div className="fixed inset-0 w-full h-full -z-10 opacity-90">
       <CanvasErrorBoundary>
         <Canvas
           gl={{ 
@@ -258,7 +487,7 @@ export const MarbleBackground: React.FC = () => {
         >
           <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={50} />
           <Lights />
-          <Marble />
+          <SentientMarble scrollY={scrollY} onButtonPress={buttonPress} />
           <OrbitControls enableZoom={false} enablePan={false} rotateSpeed={0.2} />
         </Canvas>
       </CanvasErrorBoundary>
