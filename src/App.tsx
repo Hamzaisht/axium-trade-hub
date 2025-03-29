@@ -33,8 +33,8 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light">
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="dark">
         <Router>
           <AuthProvider>
             <TokenRefreshProvider>
@@ -91,8 +91,8 @@ function App() {
             </TokenRefreshProvider>
           </AuthProvider>
         </Router>
-      </QueryClientProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 

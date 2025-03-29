@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { mockIPOAPI } from '@/utils/mockApi';
 
@@ -9,6 +9,7 @@ interface PriceTickerScrollProps {
 
 export function PriceTickerScroll({ className }: PriceTickerScrollProps) {
   const [scrollPos, setScrollPos] = useState(0);
+  const animationRef = useRef<number | null>(null);
   
   const { data: ipos = [] } = useQuery({
     queryKey: ['ipos'],
@@ -23,10 +24,18 @@ export function PriceTickerScroll({ className }: PriceTickerScrollProps) {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const animate = () => {
       setScrollPos((prev) => (prev + 1) % 200);
-    }, 50);
-    return () => clearInterval(interval);
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    
+    animationRef.current = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
   }, []);
 
   if (ipos.length === 0) {
@@ -34,7 +43,7 @@ export function PriceTickerScroll({ className }: PriceTickerScrollProps) {
   }
 
   return (
-    <div className={`overflow-hidden bg-axium-dark-bg text-white text-sm border-b border-zinc-700 py-2 ${className}`}>
+    <div className={`overflow-hidden bg-zinc-800 text-white text-sm border-b border-zinc-700 py-2 ${className}`}>
       <div
         className="flex gap-8 whitespace-nowrap"
         style={{ transform: `translateX(-${scrollPos}px)` }}
@@ -48,7 +57,7 @@ export function PriceTickerScroll({ className }: PriceTickerScrollProps) {
               <span className="font-medium">{ipo.symbol}:</span>
               <span className="ml-1">${ipo.currentPrice.toFixed(2)}</span>
               <span 
-                className={`ml-1 text-xs ${isPositive ? 'text-axium-positive' : 'text-axium-negative'}`}
+                className={`ml-1 text-xs ${isPositive ? 'text-green-400' : 'text-red-400'}`}
               >
                 {isPositive ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
               </span>
@@ -66,7 +75,7 @@ export function PriceTickerScroll({ className }: PriceTickerScrollProps) {
               <span className="font-medium">{ipo.symbol}:</span>
               <span className="ml-1">${ipo.currentPrice.toFixed(2)}</span>
               <span 
-                className={`ml-1 text-xs ${isPositive ? 'text-axium-positive' : 'text-axium-negative'}`}
+                className={`ml-1 text-xs ${isPositive ? 'text-green-400' : 'text-red-400'}`}
               >
                 {isPositive ? '▲' : '▼'} {Math.abs(percentChange).toFixed(2)}%
               </span>
