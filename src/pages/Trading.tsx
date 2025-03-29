@@ -38,6 +38,10 @@ const Trading = () => {
     }
   };
 
+  const handleRefresh = () => {
+    showNotification.info("Refreshing market data");
+  };
+
   if (isLoading) {
     return <LoadingState />;
   }
@@ -52,7 +56,7 @@ const Trading = () => {
         <TradingDashboard
           ipos={ipos}
           selectedIPO={selectedIPO}
-          tradingLoading={tradingLoading}
+          isLoading={isLoading}
           marketDataLoading={marketDataLoading}
           priceChangePercent={priceChangePercent}
           timeframe={timeframe}
@@ -62,6 +66,7 @@ const Trading = () => {
           onTimeframeChange={setTimeframe}
           onChartTypeChange={setChartType}
           onToggleIndicator={handleToggleIndicator}
+          onRefresh={handleRefresh}
         />
       </DashboardShell>
     </LayoutShell>

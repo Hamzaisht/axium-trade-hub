@@ -1,14 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-
-interface ShowIndicators {
-  volume: boolean;
-  sma7: boolean;
-  sma30: boolean;
-  bollingerBands: boolean;
-  vwap: boolean;
-}
+import { ShowIndicators } from "./ChartSection";
 
 interface ChartIndicatorsProps {
   showIndicators: ShowIndicators;

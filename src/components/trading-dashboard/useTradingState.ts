@@ -3,6 +3,14 @@ import { useState } from "react";
 import { IPO } from "@/utils/mockApi";
 import { useMarketData } from "@/hooks/useMarketData";
 
+export type IndicatorsState = {
+  volume: boolean;
+  sma7: boolean;
+  sma30: boolean;
+  bollingerBands: boolean;
+  vwap: boolean;
+};
+
 export const useTradingState = (ipos: IPO[], selectedIpoId?: string) => {
   const initialIpo = selectedIpoId 
     ? ipos.find(ipo => ipo.id === selectedIpoId) 
@@ -11,7 +19,7 @@ export const useTradingState = (ipos: IPO[], selectedIpoId?: string) => {
   const [selectedIPO, setSelectedIPO] = useState(initialIpo);
   const [timeframe, setTimeframe] = useState("1D");
   const [chartType, setChartType] = useState<"candlestick" | "line">("candlestick");
-  const [showIndicators, setShowIndicators] = useState({
+  const [showIndicators, setShowIndicators] = useState<IndicatorsState>({
     volume: true,
     sma7: false,
     sma30: false,
@@ -30,7 +38,7 @@ export const useTradingState = (ipos: IPO[], selectedIpoId?: string) => {
     }
   };
 
-  const handleToggleIndicator = (indicator: keyof typeof showIndicators) => {
+  const handleToggleIndicator = (indicator: keyof IndicatorsState) => {
     setShowIndicators(prev => ({
       ...prev,
       [indicator]: !prev[indicator]

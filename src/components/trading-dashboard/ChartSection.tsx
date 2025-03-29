@@ -8,7 +8,7 @@ import { ChartIndicators } from "@/components/trading-dashboard/ChartIndicators"
 import { ChartSkeleton } from "@/components/ui/skeleton-components";
 
 // Define the ShowIndicators type
-type ShowIndicators = {
+export type ShowIndicators = {
   volume: boolean;
   sma7: boolean;
   sma30: boolean;
@@ -124,4 +124,3 @@ export const ChartSection = ({
     </GlassCard>
   );
 };
-

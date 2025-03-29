@@ -13,6 +13,20 @@ interface TradingDashboardProps {
   onSelectIPO: (ipoId: string) => void;
   onRefresh: () => void;
   isLoading: boolean;
+  priceChangePercent?: number;
+  timeframe?: string;
+  chartType?: "candlestick" | "line";
+  showIndicators?: {
+    volume: boolean;
+    sma7: boolean;
+    sma30: boolean;
+    bollingerBands: boolean;
+    vwap: boolean;
+  };
+  onTimeframeChange?: (timeframe: string) => void;
+  onChartTypeChange?: (type: "candlestick" | "line") => void;
+  onToggleIndicator?: (indicator: string) => void;
+  marketDataLoading?: boolean;
 }
 
 export const TradingDashboard = ({
@@ -20,19 +34,32 @@ export const TradingDashboard = ({
   selectedIPO,
   onSelectIPO,
   onRefresh,
-  isLoading
+  isLoading,
+  priceChangePercent = 0,
+  timeframe = "1D",
+  chartType = "candlestick",
+  showIndicators = {
+    volume: true,
+    sma7: false,
+    sma30: false,
+    bollingerBands: false,
+    vwap: false
+  },
+  onTimeframeChange,
+  onChartTypeChange,
+  onToggleIndicator,
+  marketDataLoading = false
 }: TradingDashboardProps) => {
-  const [timeframe, setTimeframe] = useState<"1H" | "1D" | "1W" | "1M" | "1Y">("1D");
-  // State for chart indicators
-  const [indicators, setIndicators] = useState({
+  const [localTimeframe, setLocalTimeframe] = useState<"1H" | "1D" | "1W" | "1M" | "1Y">("1D");
+  const [localIndicators, setLocalIndicators] = useState({
     showVolume: true,
     showMA: false,
     showRSI: false,
     showBollingerBands: false
   });
 
-  const toggleIndicator = (indicator: keyof typeof indicators) => {
-    setIndicators(prev => ({
+  const toggleIndicator = (indicator: keyof typeof localIndicators) => {
+    setLocalIndicators(prev => ({
       ...prev,
       [indicator]: !prev[indicator]
     }));
@@ -51,25 +78,43 @@ export const TradingDashboard = ({
       </div>
 
       <PriceHeader 
-        selectedIPO={selectedIPO} 
-        onRefresh={onRefresh} 
-        isLoading={isLoading} 
+        symbol={selectedIPO.symbol}
+        name={selectedIPO.creatorName}
+        currentPrice={selectedIPO.currentPrice}
+        priceChangePercent={priceChangePercent}
       />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="xl:col-span-2 space-y-4">
           <ChartSection 
-            selectedIPO={selectedIPO} 
-            timeframe={timeframe} 
-            setTimeframe={setTimeframe}
-            indicators={indicators}
-            toggleIndicator={toggleIndicator}
+            isLoading={marketDataLoading || isLoading}
+            selectedIPO={{
+              id: selectedIPO.id,
+              symbol: selectedIPO.symbol,
+              creatorName: selectedIPO.creatorName,
+              currentPrice: selectedIPO.currentPrice
+            }}
+            chartType={chartType as "candlestick" | "line"}
+            timeframe={timeframe}
+            showIndicators={showIndicators}
+            onChartTypeChange={onChartTypeChange || (() => {})}
+            onTimeframeChange={onTimeframeChange || (() => {})}
+            onToggleIndicator={(indicator) => onToggleIndicator ? onToggleIndicator(indicator) : null}
           />
-          <OrderBookSection selectedIPO={selectedIPO} />
+          
+          <OrderBookSection 
+            symbol={selectedIPO.symbol}
+            currentPrice={selectedIPO.currentPrice}
+            ipoId={selectedIPO.id}
+          />
         </div>
         
         <div className="xl:col-span-1">
-          <TradePanelSection selectedIPO={selectedIPO} />
+          <TradePanelSection 
+            creatorId={selectedIPO.id}
+            currentPrice={selectedIPO.currentPrice}
+            symbol={selectedIPO.symbol}
+          />
         </div>
       </div>
     </div>
