@@ -16,13 +16,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Initialize theme based on saved preference or default to dark
   useEffect(() => {
     const savedTheme = localStorage.getItem('axium-theme') as Theme;
-    
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else {
-      // Default to dark mode (unlike browsers which typically default to light)
-      setTheme('dark');
-    }
+    setTheme(savedTheme || 'dark'); // Default to dark mode
   }, []);
 
   // Apply theme class to document and save to localStorage
