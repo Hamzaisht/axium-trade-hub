@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { mockTradingAPI, Order, Trade, IPO } from '@/utils/mockApi';
 import { toast } from 'sonner';
@@ -103,7 +104,7 @@ export const TradingProvider = ({ children }: { children: ReactNode }) => {
       await placeOrder({
         userId: user.id,
         creatorId: orderWithUserId.ipoId || '',
-        type: orderWithUserId.side as "buy" | "sell",
+        type: orderWithUserId.side ? (orderWithUserId.side as "buy" | "sell") : (orderWithUserId.type as "buy" | "sell"),
         quantity: orderWithUserId.quantity || 0,
         price: orderWithUserId.price || 0
       });
