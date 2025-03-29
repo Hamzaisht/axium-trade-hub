@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
@@ -7,7 +6,7 @@ import Hero from "@/components/home/Hero";
 import LiveTicker from "@/components/home/LiveTicker";
 import Features from "@/components/home/Features";
 import FAQ from "@/components/home/FAQ";
-import MarbleBackground from "@/components/home/MarbleBackground";
+import PremiumBackground from "@/components/home/PremiumBackground";
 import AnimatedCubeExample from "@/components/home/AnimatedCubeExample";
 import { cn } from "@/lib/utils";
 import { ArrowRight, ChevronRight, ExternalLink, LineChart, Shield, Star, TrendingUp, Users } from "lucide-react";
@@ -29,7 +28,7 @@ const Index = () => {
       "min-h-screen bg-[#0A0E17] text-white transition-opacity duration-500",
       isLoaded ? "opacity-100" : "opacity-0"
     )}>
-      <MarbleBackground />
+      <PremiumBackground />
       
       <Navbar />
       
@@ -80,7 +79,6 @@ const Index = () => {
           </div>
         </section>
         
-        {/* Add our new component here */}
         <AnimatedCubeExample />
         
         <section className="py-24 relative overflow-hidden">
