@@ -1,2 +1,3 @@
 
-// This is a placeholder. You'll need to upload a black marble texture image to this path.
+// This file will be a binary image file that will be uploaded to the project.
+// We need to use a fallback mechanism for textures in case they don't load.

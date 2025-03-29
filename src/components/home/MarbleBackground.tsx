@@ -9,11 +9,65 @@ const Marble = () => {
   const marbleRef = useRef<THREE.Mesh>(null);
   const haloRef = useRef<THREE.Mesh>(null);
 
-  // Load textures
-  const textures = useTexture({
-    map: '/textures/black-marble.jpg', // We'll need to add this image
-    normalMap: '/textures/marble-normal.jpg', // We'll need to add this image
-  });
+  // Create fallback textures
+  const fallbackTexture = new THREE.TextureLoader().load(
+    'https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=1000&auto=format&fit=crop',
+    undefined,
+    undefined,
+    (error) => {
+      console.error('Error loading fallback texture:', error);
+    }
+  );
+  
+  // Try loading the textures with error handling
+  const [textureMap, setTextureMap] = useState<THREE.Texture | null>(null);
+  const [normalMap, setNormalMap] = useState<THREE.Texture | null>(null);
+  const [texturesLoaded, setTexturesLoaded] = useState(false);
+  
+  useEffect(() => {
+    const textureLoader = new THREE.TextureLoader();
+    
+    // Load marble texture with fallback
+    textureLoader.load(
+      '/textures/black-marble.jpg',
+      (texture) => {
+        setTextureMap(texture);
+        console.info('Black marble texture loaded successfully');
+      },
+      undefined,
+      (error) => {
+        console.warn('Could not load black marble texture, using fallback:', error);
+        setTextureMap(fallbackTexture);
+      }
+    );
+    
+    // Load normal map with fallback
+    textureLoader.load(
+      '/textures/marble-normal.jpg',
+      (texture) => {
+        setNormalMap(texture);
+        console.info('Marble normal map loaded successfully');
+      },
+      undefined,
+      (error) => {
+        console.warn('Could not load normal map, creating default normal map:', error);
+        // Create a default normal map
+        const defaultNormal = new THREE.CanvasTexture(
+          new OffscreenCanvas(2, 2)
+        );
+        setNormalMap(defaultNormal);
+      }
+    );
+    
+    setTexturesLoaded(true);
+    
+    return () => {
+      // Clean up textures to prevent memory leaks
+      if (textureMap) textureMap.dispose();
+      if (normalMap) normalMap.dispose();
+      fallbackTexture.dispose();
+    };
+  }, []);
 
   // State for interactive movement
   const [hover, setHover] = useState(false);
@@ -76,7 +130,8 @@ const Marble = () => {
       >
         <sphereGeometry args={[1.5, 64, 64]} />
         <meshStandardMaterial 
-          {...textures} 
+          map={textureMap || fallbackTexture}
+          normalMap={normalMap}
           color="#111111"
           metalness={0.8}
           roughness={0.2}
@@ -135,16 +190,78 @@ const Lights = () => {
   );
 };
 
+// Error boundary for Canvas
+const CanvasErrorBoundary = ({ children }: { children: React.ReactNode }) => {
+  const [hasError, setHasError] = useState(false);
+  
+  useEffect(() => {
+    const handleError = () => {
+      setHasError(true);
+    };
+    
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+  
+  if (hasError) {
+    return (
+      <div className="fixed inset-0 w-full h-full -z-10 bg-gradient-to-b from-[#0A0E17] via-[#0D1424] to-[#0A0E17]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(30,174,219,0.1),transparent_70%)]"></div>
+      </div>
+    );
+  }
+  
+  return <>{children}</>;
+};
+
 // Main component that renders the Canvas
 export const MarbleBackground: React.FC = () => {
+  const [canvasLoaded, setCanvasLoaded] = useState(true);
+  
+  useEffect(() => {
+    // Check if WebGL is supported
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) {
+        console.warn('WebGL not supported, using fallback background');
+        setCanvasLoaded(false);
+      }
+    } catch (e) {
+      console.error('Error checking WebGL support:', e);
+      setCanvasLoaded(false);
+    }
+  }, []);
+  
+  // Fallback gradient background if WebGL not supported
+  if (!canvasLoaded) {
+    return (
+      <div className="fixed inset-0 w-full h-full -z-10 bg-gradient-to-b from-[#0A0E17] via-[#0D1424] to-[#0A0E17]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(30,174,219,0.1),transparent_70%)]"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 w-full h-full -z-10 opacity-80">
-      <Canvas>
-        <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={50} />
-        <Lights />
-        <Marble />
-        <OrbitControls enableZoom={false} enablePan={false} rotateSpeed={0.2} />
-      </Canvas>
+      <CanvasErrorBoundary>
+        <Canvas
+          gl={{ 
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance'
+          }}
+          dpr={[1, 2]} // Responsive to device pixel ratio
+          onError={(e) => {
+            console.error('Canvas error:', e);
+          }}
+        >
+          <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={50} />
+          <Lights />
+          <Marble />
+          <OrbitControls enableZoom={false} enablePan={false} rotateSpeed={0.2} />
+        </Canvas>
+      </CanvasErrorBoundary>
       <div className="absolute inset-0 bg-gradient-to-b from-[#0A0E17]/30 via-transparent to-[#0A0E17]/90"></div>
     </div>
   );
