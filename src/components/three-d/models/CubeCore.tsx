@@ -31,7 +31,7 @@ const CubeCore = ({
   const meshRef = useRef<THREE.Mesh>(null);
   
   // Load textures using our custom hook
-  const { texture: textureMap, normalMap, lavaMap, texturesLoaded } = useTextureLoader(
+  const { textures, texture: textureMap, normalMap, loading, error } = useTextureLoader(
     texturePaths,
     {
       main: { 
@@ -49,6 +49,9 @@ const CubeCore = ({
       }
     }
   );
+
+  // Get accent texture if available
+  const accentMap = textures['accent'] || null;
   
   // Animation loop
   useFrame((state, delta) => {
@@ -100,7 +103,7 @@ const CubeCore = ({
   });
   
   // Show loader while textures are loading
-  if (!texturesLoaded) {
+  if (loading) {
     return (
       <mesh position={position} rotation={rotation}>
         <boxGeometry args={[size, size, size]} />
@@ -119,7 +122,7 @@ const CubeCore = ({
       <meshStandardMaterial
         map={textureMap}
         normalMap={normalMap}
-        aoMap={lavaMap}
+        aoMap={accentMap}
         metalness={0.8}
         roughness={0.2}
         color={hover ? "#ffffff" : "#333333"}

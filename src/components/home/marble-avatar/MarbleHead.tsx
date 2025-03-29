@@ -38,9 +38,21 @@ const createHeadGeometry = () => {
   return geometry;
 };
 
-export function MarbleHead({ position = [0, 0, 0], rotation = [0, 0, 0], mousePosition = { x: 0, y: 0 }, scrollEffect = 0 }) {
-  const groupRef = useRef();
-  const meshRef = useRef();
+interface MarbleHeadProps {
+  position?: [number, number, number];
+  rotation?: [number, number, number];
+  mousePosition?: { x: number, y: number };
+  scrollEffect?: number;
+}
+
+export function MarbleHead({ 
+  position = [0, 0, 0], 
+  rotation = [0, 0, 0], 
+  mousePosition = { x: 0, y: 0 }, 
+  scrollEffect = 0 
+}: MarbleHeadProps) {
+  const groupRef = useRef<THREE.Group>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
   const { nodes, materials } = useModelOrFallback();
   
   // Animation loop
@@ -63,7 +75,8 @@ export function MarbleHead({ position = [0, 0, 0], rotation = [0, 0, 0], mousePo
     
     if (meshRef.current && meshRef.current.material) {
       // Pulse the material's emissive intensity
-      meshRef.current.material.emissiveIntensity = 0.1 + Math.sin(state.clock.elapsedTime) * 0.05;
+      const material = meshRef.current.material as THREE.MeshStandardMaterial;
+      material.emissiveIntensity = 0.1 + Math.sin(state.clock.elapsedTime) * 0.05;
     }
   });
   

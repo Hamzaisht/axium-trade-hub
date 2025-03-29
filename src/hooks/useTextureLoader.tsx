@@ -57,7 +57,7 @@ export function useTextureLoader(
                   resolve(loadedTexture);
                 },
                 undefined, // onProgress not supported by TextureLoader
-                (err) => reject(new Error(`Failed to load texture ${key}: ${err.message}`))
+                (err) => reject(new Error(`Failed to load texture ${key}: ${err instanceof Error ? err.message : String(err)}`))
               );
             });
             

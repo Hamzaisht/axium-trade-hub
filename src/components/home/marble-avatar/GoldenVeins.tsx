@@ -4,8 +4,8 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 export function GoldenVeins({ parentGeometry = null, intensity = 0.8, pulseSpeed = 0.5, pulseMagnitude = 0.2 }) {
-  const linesRef = useRef();
-  const pointsRef = useRef();
+  const linesRef = useRef<THREE.LineSegments>(null);
+  const pointsRef = useRef<THREE.Points>(null);
   
   // Generate veins based on parent geometry or create procedural veins
   const { veinsGeometry, pointsGeometry } = useMemo(() => {
@@ -98,15 +98,15 @@ export function GoldenVeins({ parentGeometry = null, intensity = 0.8, pulseSpeed
     if (linesRef.current) {
       // Pulse the material's opacity/emissive for a flowing effect
       const pulse = Math.sin(state.clock.elapsedTime * pulseSpeed) * pulseMagnitude + 0.7;
-      linesRef.current.material.opacity = intensity * pulse;
-      linesRef.current.material.emissiveIntensity = intensity * pulse;
+      const material = linesRef.current.material as THREE.LineBasicMaterial;
+      material.opacity = intensity * pulse;
     }
     
     if (pointsRef.current) {
       // Similar pulse but slightly out of phase for interest
       const pointsPulse = Math.sin(state.clock.elapsedTime * pulseSpeed + 0.5) * pulseMagnitude + 0.7;
-      pointsRef.current.material.opacity = intensity * pointsPulse * 1.2; // Brighter points
-      pointsRef.current.material.emissiveIntensity = intensity * pointsPulse * 1.2;
+      const material = pointsRef.current.material as THREE.PointsMaterial;
+      material.opacity = intensity * pointsPulse * 1.2; // Brighter points
     }
   });
   
@@ -118,8 +118,6 @@ export function GoldenVeins({ parentGeometry = null, intensity = 0.8, pulseSpeed
           color="#D4AF37" 
           transparent 
           opacity={0.7}
-          emissive="#D4AF37"
-          emissiveIntensity={0.8}
           linewidth={1}
         />
       </lineSegments>
@@ -131,9 +129,7 @@ export function GoldenVeins({ parentGeometry = null, intensity = 0.8, pulseSpeed
           size={0.03} 
           transparent 
           opacity={0.9}
-          emissive="#FFC700" 
-          emissiveIntensity={1}
-          sizeAttenuation
+          sizeAttenuation={true}
         />
       </points>
     </group>
