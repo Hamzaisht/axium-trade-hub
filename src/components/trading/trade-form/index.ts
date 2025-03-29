@@ -1,3 +1,3 @@
 
-export { default } from './TradeForm';
 export * from './TradeForm';
+export { default as TradeForm } from './TradeForm';

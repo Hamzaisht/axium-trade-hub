@@ -1,12 +1,11 @@
-
 import { useState, useEffect } from 'react';
 import { Order, Trade } from '@/utils/mockApi';
 import { mockWebSocket, WSEvents } from '@/utils/mockWebSocket';
 import { OrderBookData } from '@/contexts/trading/types';
-import { AuthenticatedUser } from '@/contexts/AuthContext';
+import { User } from '@supabase/supabase-js';
 
-// Update the type to accept AuthenticatedUser instead of User
-export function useWebSocketTrading(user: AuthenticatedUser | null, orderBook: OrderBookData | null) {
+// Update the type of user to match what's used in AuthContext
+export function useWebSocketTrading(user: User | null, orderBook: OrderBookData | null) {
   const [isConnected, setIsConnected] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);

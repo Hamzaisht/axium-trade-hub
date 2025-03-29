@@ -1,172 +1,101 @@
-import { createContext, useContext, useState, ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { mockTradingAPI, Order } from "../utils/mockApi";
-import { useAuth } from "./AuthContext";
-import { OrderBookData } from "./trading/types";
-import { toast } from "sonner";
 
-interface Trade {
-  id: string;
-  traderId: string;
-  ipoId: string;
-  amount: number;
-  price: number;
-  type: "buy" | "sell";
-  status: "completed" | "pending" | "failed";
-  timestamp: Date;
-}
-
-interface TradingContextType {
-  trades: Trade[];
-  orders: Order[];
-  orderBook: OrderBookData | null;
-  isLoading: boolean;
-  error: Error | null;
-  fetchTradeHistory: (ipoId: string) => void;
-  placeTrade: (ipoId: string, amount: number, price: number, type: "buy" | "sell") => Promise<Trade>;
-  placeOrder: (orderData: Partial<Order>) => Promise<Order>;
-  cancelOrder: (orderId: string) => Promise<void>;
-  fetchUserOrders: () => Promise<void>;
-  fetchUserTrades: () => Promise<void>;
-  fetchOrderBook: (ipoId: string) => Promise<void>;
-  isConnected: boolean;
-}
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { Order, Trade } from '@/utils/mockApi';
+import { toast } from 'sonner';
+import { useAuth } from './AuthContext';
+import { TradingContextType, OrderBookData } from './trading/types';
+import { useWebSocketTrading } from '@/hooks/trading/useWebSocketTrading';
+import { TradingService } from '@/services/TradingService';
 
 const TradingContext = createContext<TradingContextType | undefined>(undefined);
 
-export function TradingProvider({ children }: { children: ReactNode }) {
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
+export const TradingProvider = ({ children }: { children: ReactNode }) => {
+  const { isAuthenticated, user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const [orderBook, setOrderBook] = useState<OrderBookData | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const { user } = useAuth();
   
-  const { isLoading, error, refetch } = useQuery({
-    queryKey: ['trades'],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const response = await mockTradingAPI.getUserTrades();
-      setTrades(response as unknown as Trade[]);
-      return response;
-    },
-    enabled: !!user?.id,
-  });
-  
-  const fetchTradeHistory = async (ipoId: string) => {
-    try {
-      if (!user?.id) return;
-      const trades = await mockTradingAPI.getTradesForIPO(ipoId);
-      setTrades(trades as unknown as Trade[]);
-    } catch (error) {
-      console.error("Error fetching trade history:", error);
-    }
-  };
-  
-  const placeTrade = async (
-    ipoId: string, 
-    amount: number, 
-    price: number, 
-    type: "buy" | "sell"
-  ): Promise<Trade> => {
-    if (!user?.id) {
-      throw new Error("User not authenticated");
-    }
-    
-    try {
-      const newTrade = await mockTradingAPI.createTrade({
-        ipoId,
-        traderId: user.id,
-        amount,
-        price,
-        type,
-      });
-      
-      setTrades(prev => [newTrade as unknown as Trade, ...prev]);
-      return newTrade as unknown as Trade;
-    } catch (error) {
-      console.error("Error placing trade:", error);
-      throw error;
-    }
-  };
+  // Use the WebSocket hook to handle real-time trading data
+  const { 
+    isConnected, 
+    orders, 
+    trades, 
+    setOrders, 
+    setTrades 
+  } = useWebSocketTrading(user, orderBook);
 
-  const placeOrder = async (orderData: Partial<Order>): Promise<Order> => {
-    if (!user?.id) {
-      throw new Error("User not authenticated");
+  const placeOrderInContext = async (orderData: Partial<Order>): Promise<Order> => {
+    if (!isAuthenticated || !user) {
+      toast.error('Please log in to place an order');
+      throw new Error('Not authenticated');
     }
-    
+
     try {
-      const newOrder = await mockTradingAPI.placeOrder({
-        ...orderData,
-        userId: user.id
-      });
-      
-      setOrders(prev => [newOrder, ...prev]);
-      toast.success(`${orderData.type === 'buy' ? 'Buy' : 'Sell'} order placed successfully`);
+      setIsLoading(true);
+      const newOrder = await TradingService.placeOrder(orderData, user.id);
+      await fetchUserOrders();
       return newOrder;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to place order';
-      toast.error(errorMessage);
-      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const cancelOrder = async (orderId: string): Promise<void> => {
+    if (!isAuthenticated) {
+      toast.error('Please log in to cancel an order');
+      throw new Error('Not authenticated');
+    }
+
     try {
-      await mockTradingAPI.cancelOrder(orderId);
-      setOrders(prev => prev.map(order => 
-        order.id === orderId ? { ...order, status: 'cancelled' } : order
-      ));
-      toast.success('Order cancelled successfully');
-    } catch (error) {
-      toast.error('Failed to cancel order');
-      throw error;
+      setIsLoading(true);
+      await TradingService.cancelOrder(orderId);
+      await fetchUserOrders();
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const fetchUserOrders = async (): Promise<void> => {
-    if (!user?.id) return;
-    
+    if (!isAuthenticated) return;
+
     try {
-      const userOrders = await mockTradingAPI.getUserOrders();
+      setIsLoading(true);
+      const userOrders = await TradingService.getUserOrders();
       setOrders(userOrders);
-    } catch (error) {
-      toast.error('Failed to fetch orders');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const fetchUserTrades = async (): Promise<void> => {
-    if (!user?.id) return;
-    
+    if (!isAuthenticated) return;
+
     try {
-      const userTrades = await mockTradingAPI.getUserTrades();
-      setTrades(userTrades as unknown as Trade[]);
-    } catch (error) {
-      toast.error('Failed to fetch trade history');
+      setIsLoading(true);
+      const userTrades = await TradingService.getUserTrades();
+      setTrades(userTrades);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const fetchOrderBook = async (ipoId: string): Promise<void> => {
     try {
-      const data = await mockTradingAPI.getOrderBook(ipoId);
-      setOrderBook(data);
-      setIsConnected(true);
-    } catch (error) {
-      toast.error('Failed to fetch order book');
-      setIsConnected(false);
+      setIsLoading(true);
+      const book = await TradingService.getOrderBook(ipoId);
+      setOrderBook(book);
+    } finally {
+      setIsLoading(false);
     }
   };
-  
+
   return (
     <TradingContext.Provider
       value={{
-        trades,
-        orders,
-        orderBook,
         isLoading,
-        error: error as Error | null,
-        fetchTradeHistory,
-        placeTrade,
-        placeOrder,
+        orders,
+        trades,
+        orderBook,
+        placeOrder: placeOrderInContext,
         cancelOrder,
         fetchUserOrders,
         fetchUserTrades,
@@ -177,12 +106,12 @@ export function TradingProvider({ children }: { children: ReactNode }) {
       {children}
     </TradingContext.Provider>
   );
-}
+};
 
-export function useTrading() {
+export const useTrading = () => {
   const context = useContext(TradingContext);
   if (context === undefined) {
-    throw new Error("useTrading must be used within a TradingProvider");
+    throw new Error('useTrading must be used within a TradingProvider');
   }
   return context;
-}
+};

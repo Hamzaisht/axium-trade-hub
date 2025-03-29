@@ -1,126 +1,83 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Light Mode Default */
-    --background: 0 0% 99%;
-    --background-secondary: 220 14% 96%;
+    --background: 210 33% 99%;
     --foreground: 222 47% 11%;
-    
+
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
-    
+
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    
+
     --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
-    
-    --secondary: 270 67% 47%;
-    --secondary-foreground: 210 40% 98%;
-    
-    --muted: 210 40% 96.1%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
-    
-    --accent: 270 67% 47%;
+
+    --accent: 210 40% 96%;
     --accent-foreground: 222 47% 11%;
-    
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-    
+
     --border: 214.3 31.8% 91.4%;
-    --border-light: 0 0% 90%;
-    --border-dark: 0 0% 14.9%;
-    
     --input: 214.3 31.8% 91.4%;
     --ring: 221 83% 53%;
-    
+
     --radius: 0.5rem;
   }
 
-  .dark {
-    --background: 222 47% 6%;
-    --background-secondary: 222 47% 4%;
-    --foreground: 210 40% 98%;
-    
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
-    
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 98%;
-    
-    --primary: 199 91% 60%;
-    --primary-foreground: 222 47% 11%;
-    
-    --secondary: 47 100% 50%;
-    --secondary-foreground: 222 47% 11%;
-    
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20.2% 65.1%;
-    
-    --accent: 165 100% 50%;
-    --accent-foreground: 222 47% 11%;
-    
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --border: 217 33% 20%;
-    --border-light: 217 33% 25%;
-    --border-dark: 217 33% 18%;
-    
-    --input: 217 33% 20%;
-    --ring: 224.3 76.3% 48%;
+  * {
+    @apply border-border;
   }
-}
 
-* {
-  @apply border-border transition-colors duration-300;
-}
+  html {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
 
-html {
-  scroll-behavior: smooth;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  font-synthesis-weight: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  @apply bg-background text-foreground antialiased;
-}
-
-/* Scrollbar styling */
-body::-webkit-scrollbar {
-  @apply w-1.5;
-}
-
-body::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-
-body::-webkit-scrollbar-thumb {
-  @apply bg-muted rounded-full hover:bg-muted/80 transition-colors;
+  body::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+  
+  body::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  body::-webkit-scrollbar-thumb {
+    @apply bg-axium-gray-300 rounded-full hover:bg-axium-gray-400 transition-colors;
+  }
 }
 
 @layer components {
-  /* Glass Card Styles */
   .glass-card {
-    @apply bg-white/5 dark:bg-white/5 backdrop-blur-md rounded-lg border border-white/10 dark:border-white/10 shadow-glass transition-all duration-300;
+    @apply bg-white/70 backdrop-blur-md rounded-lg border border-axium-gray-200/50 shadow-glass transition-all duration-300;
   }
   
   .glass-card-dark {
-    @apply bg-axium-gray-800/30 backdrop-blur-md rounded-lg border border-axium-gray-700/30 shadow-glass transition-all duration-300;
+    @apply bg-axium-gray-800/70 backdrop-blur-md rounded-lg border border-axium-gray-700/30 shadow-glass transition-all duration-300;
   }
   
   .premium-card {
-    @apply bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md rounded-lg border border-white/10 shadow-glass-strong;
+    @apply bg-gradient-to-b from-white/80 to-white/60 backdrop-blur-md rounded-lg border border-axium-gray-200/50 shadow-glass-strong;
   }
   
-  /* Text Utilities */
   .text-balance {
     text-wrap: balance;
   }
@@ -128,41 +85,15 @@ body::-webkit-scrollbar-thumb {
   .text-gradient-blue {
     @apply text-transparent bg-clip-text bg-gradient-to-r from-axium-blue to-axium-blue-light;
   }
-
-  .text-gradient-gold {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-axium-gold to-[#D4AF37];
-  }
   
-  .text-gradient-purple {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-violet-500;
-  }
-  
-  /* Button Styles */
   .button-primary {
-    @apply dark:bg-gradient-to-r dark:from-axium-gold dark:to-[#D4AF37] dark:text-black dark:hover:shadow-gold-glow 
-           bg-gradient-to-r bg-blue-600 from-blue-700 to-indigo-700 text-white hover:shadow-light-glow 
-           rounded-lg px-4 py-2 transition-all duration-300;
+    @apply bg-axium-blue text-white hover:bg-axium-blue/90 rounded-lg px-4 py-2 transition-all duration-300 shadow-button hover:shadow-button-hover;
   }
   
   .button-secondary {
-    @apply dark:bg-gradient-to-r dark:from-axium-blue dark:to-[#0284C7] dark:text-white dark:hover:shadow-glow
-           bg-gradient-to-r from-purple-600 to-violet-600 text-white hover:shadow-light-purple-glow
-           rounded-lg px-4 py-2 transition-all duration-300;
-  }
-
-  .button-accent {
-    @apply dark:bg-gradient-to-r dark:from-axium-mint dark:to-[#00B899] dark:text-black dark:hover:shadow-mint-glow
-           bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-light-purple-glow
-           rounded-lg px-4 py-2 transition-all duration-300;
+    @apply bg-white text-axium-gray-800 hover:bg-axium-gray-100 rounded-lg px-4 py-2 border border-axium-gray-200 transition-all duration-300 shadow-button hover:shadow-button-hover;
   }
   
-  .button-outline {
-    @apply bg-transparent dark:text-white text-gray-800 hover:bg-gray-100 dark:hover:bg-axium-gray-800
-           rounded-lg px-4 py-2 border border-gray-300 dark:border-axium-gray-600 dark:hover:border-axium-gray-400 
-           transition-all duration-300;
-  }
-  
-  /* Layout Utilities */
   .section-padding {
     @apply py-16 md:py-24;
   }
@@ -171,140 +102,48 @@ body::-webkit-scrollbar-thumb {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
   
-  /* Glow effects */
+  /* Glow effects for buttons and interactive elements */
   .glow-hover {
     @apply transition-all duration-300;
   }
   
   .glow-hover:hover {
-    @apply dark:shadow-glow shadow-light-glow animate-pulse-glow;
-  }
-
-  .gold-glow-hover:hover {
-    @apply dark:shadow-gold-glow shadow-light-purple-glow animate-pulse-glow;
-  }
-
-  .mint-glow-hover:hover {
-    @apply dark:shadow-mint-glow shadow-light-glow animate-pulse-subtle;
+    @apply shadow-glow animate-glow-pulse;
   }
   
-  /* Gold text effect */
-  .gold-text {
-    @apply dark:text-[#FFD700] text-blue-600 dark:shadow-[0_0_5px_rgba(255,215,0,0.8),0_0_10px_rgba(255,215,0,0.6),0_0_15px_rgba(255,215,0,0.4)]
-           shadow-[0_0_5px_rgba(37,99,235,0.4),0_0_10px_rgba(37,99,235,0.2)];
-  }
-
-  /* Blue text effect */
-  .blue-text {
-    @apply dark:text-[#38BDF8] text-indigo-600 dark:shadow-[0_0_5px_rgba(56,189,248,0.8),0_0_10px_rgba(56,189,248,0.6),0_0_15px_rgba(56,189,248,0.4)]
-           shadow-[0_0_5px_rgba(79,70,229,0.4),0_0_10px_rgba(79,70,229,0.2)];
-  }
-
-  /* Mint text effect */
-  .mint-text {
-    @apply dark:text-[#00FFD0] text-violet-600 dark:shadow-[0_0_5px_rgba(0,255,208,0.8),0_0_10px_rgba(0,255,208,0.6),0_0_15px_rgba(0,255,208,0.4)]
-           shadow-[0_0_5px_rgba(124,58,237,0.4),0_0_10px_rgba(124,58,237,0.2)];
-  }
-
-  /* Glassmorphism */
-  .neo-glassmorphism {
-    @apply backdrop-blur-lg dark:bg-black/20 bg-white/60 dark:border dark:border-white/10 border border-black/5
-           dark:shadow-[0_4px_15px_rgba(0,0,0,0.3)] shadow-[0_4px_15px_rgba(0,0,0,0.05)];
-  }
-  
-  .blue-glassmorphism {
-    @apply backdrop-blur-lg dark:bg-axium-blue/5 bg-blue-600/5 dark:border dark:border-axium-blue/20 border border-blue-600/20
-           dark:shadow-[0_0_15px_rgba(56,189,248,0.2)] shadow-[0_0_15px_rgba(37,99,235,0.1)];
-  }
-  
-  .gold-glassmorphism {
-    @apply backdrop-blur-lg dark:bg-axium-gold/5 bg-purple-600/5 dark:border dark:border-axium-gold/20 border border-purple-600/20
-           dark:shadow-[0_0_15px_rgba(255,215,0,0.2)] shadow-[0_0_15px_rgba(124,58,237,0.1)];
-  }
-
-  .mint-glassmorphism {
-    @apply backdrop-blur-lg dark:bg-axium-mint/5 bg-indigo-600/5 dark:border dark:border-axium-mint/20 border border-indigo-600/20
-           dark:shadow-[0_0_15px_rgba(0,255,208,0.2)] shadow-[0_0_15px_rgba(79,70,229,0.1)];
-  }
-  
-  /* Bloomberg Terminal / Trading UI */
+  /* NASDAQ/Bloomberg style elements */
   .ticker-item {
     @apply px-2 py-1 rounded flex items-center space-x-2 border-r border-border last:border-0;
   }
   
   .terminal-header {
-    @apply bg-background dark:bg-axium-dark-bg text-foreground dark:text-white p-2 rounded-t-md 
-           border-b border-gray-200 dark:border-axium-gray-700 flex justify-between items-center;
+    @apply bg-axium-dark-bg text-white p-2 rounded-t-md border-b border-axium-gray-700 flex justify-between items-center;
   }
   
   .data-row {
-    @apply flex justify-between py-1.5 border-b border-border/50 dark:border-border/50 last:border-0;
+    @apply flex justify-between py-1.5 border-b border-border/50 last:border-0;
   }
   
   .table-header {
     @apply text-xs text-muted-foreground uppercase tracking-wider py-2;
   }
-  
-  /* New Futuristic UI Elements */
-  .futuristic-panel {
-    @apply rounded-xl border dark:border-[#1E375F]/70 border-gray-200
-           dark:bg-[#0C1221]/95 bg-white/95 backdrop-blur-lg shadow-lg
-           transition-all duration-300 hover:shadow-xl;
-  }
-  
-  .data-display {
-    @apply text-sm font-mono bg-gray-50 dark:bg-[#111827]/60 rounded px-2 py-1
-           border border-gray-200 dark:border-[#1E375F]/50 overflow-x-auto;
-  }
-  
-  .futuristic-input {
-    @apply bg-background dark:bg-[#0C1221] text-foreground dark:text-white
-           border-input dark:border-[#1E375F] rounded-md px-3 py-2
-           focus:ring-1 focus:ring-primary dark:focus:ring-[#3676FF]
-           transition-all duration-200 outline-none w-full
-           placeholder:text-muted-foreground;
-  }
-  
-  .grid-bg {
-    @apply dark:bg-grid-pattern bg-grid-pattern-light dark:bg-[#080B14] bg-gray-50;
-    background-size: 30px 30px;
-  }
-  
-  .noise-texture {
-    @apply bg-noise opacity-[0.03] absolute inset-0 z-10 pointer-events-none;
-  }
 }
 
-/* MARKET DASHBOARD SPECIFIC STYLES */
+/* Animation utilities */
 @layer utilities {
-  /* Interactive hover effects */
-  .hover-scale {
-    @apply transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98];
+  .animation-delay-200 {
+    animation-delay: 200ms;
   }
   
-  .hover-border {
-    @apply transition-all duration-300 hover:border-primary dark:hover:border-[#3676FF];
+  .animation-delay-400 {
+    animation-delay: 400ms;
   }
   
-  .hover-glow {
-    @apply transition-shadow duration-300 hover:shadow-md dark:hover:shadow-[0_0_10px_rgba(56,189,248,0.2)]
-           hover:shadow-[0_0_10px_rgba(79,70,229,0.1)];
+  .animation-delay-600 {
+    animation-delay: 600ms;
   }
   
-  /* Text highlights for trading UI */
-  .price-up {
-    @apply text-axium-positive font-semibold;
-  }
-  
-  .price-down {
-    @apply text-axium-negative font-semibold;
-  }
-  
-  .highlight-text {
-    @apply font-semibold dark:text-[#3676FF] text-blue-600;
-  }
-  
-  /* Flash effects for price changes */
+  /* Bloomberg-style positive/negative flashing for price changes */
   .flash-positive {
     animation: flash-green 1s ease-out;
   }
@@ -315,47 +154,56 @@ body::-webkit-scrollbar-thumb {
   
   @keyframes flash-green {
     0%, 100% { background-color: transparent; }
-    50% { @apply bg-green-500/20; }
+    50% { background-color: rgba(34, 197, 94, 0.2); }
   }
   
   @keyframes flash-red {
     0%, 100% { background-color: transparent; }
-    50% { @apply bg-red-500/20; }
+    50% { background-color: rgba(244, 63, 94, 0.2); }
   }
   
-  /* Trading component layouts */
-  .market-layout {
-    @apply grid grid-cols-1 lg:grid-cols-4 gap-4;
+  /* New animations for MarketFeed */
+  .animate-slide-left {
+    animation: slide-in-left 0.4s ease-out;
   }
   
-  .sidebar-layout {
-    @apply flex-none w-64 h-full overflow-y-auto;
+  @keyframes slide-in-left {
+    0% {
+      transform: translateX(-10px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
   }
   
-  .content-layout {
-    @apply flex-grow overflow-x-hidden overflow-y-auto;
+  .animate-float {
+    animation: float 2s ease-in-out;
   }
   
-  /* Cursors */
-  .cursor-trading {
-    @apply cursor-crosshair;
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-3px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
   }
   
-  /* Neon effects */
-  .neon-border {
-    @apply dark:border dark:border-[#3676FF]/30 border border-blue-600/30
-           dark:shadow-[0_0_5px_rgba(54,118,255,0.5),inset_0_0_5px_rgba(54,118,255,0.2)] 
-           shadow-[0_0_5px_rgba(37,99,235,0.2),inset_0_0_5px_rgba(37,99,235,0.1)];
+  .animate-pulse-subtle {
+    animation: pulse-subtle 2s infinite;
   }
   
-  .neon-text {
-    @apply dark:text-white text-gray-900 
-           dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] 
-           drop-shadow-[0_0_8px_rgba(0,0,0,0.2)];
-  }
-  
-  .neon-glow {
-    @apply dark:shadow-[0_0_20px_rgba(54,118,255,0.4),0_0_60px_rgba(54,118,255,0.1)] 
-           shadow-[0_0_20px_rgba(37,99,235,0.2),0_0_40px_rgba(37,99,235,0.1)];
+  @keyframes pulse-subtle {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
   }
 }

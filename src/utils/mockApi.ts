@@ -266,24 +266,6 @@ export class MockTradingAPI {
       asks: orders.filter(order => order.type === 'sell').sort((a, b) => a.price - b.price)
     };
   }
-
-  async createTrade(tradeData: any): Promise<any> {
-    await delay(300);
-    
-    const newTrade = {
-      id: faker.string.uuid(),
-      buyerId: tradeData.traderId || faker.string.uuid(),
-      sellerId: faker.string.uuid(),
-      ipoId: tradeData.ipoId || mockIPOs[0].id,
-      price: tradeData.price || 10,
-      quantity: tradeData.amount || 1,
-      timestamp: new Date().toISOString(),
-      creatorSymbol: mockIPOs.find(ipo => ipo.id === tradeData.ipoId)?.symbol || 'UNKNOWN'
-    };
-    
-    mockTrades.push(newTrade);
-    return newTrade;
-  }
 }
 
 // Mock Portfolio API class
@@ -341,36 +323,6 @@ export class MockPortfolioAPI {
       cash,
       history
     };
-  }
-
-  async getUserPositions(): Promise<any[]> {
-    await delay(500);
-    
-    // Generate random positions for the portfolio
-    return Array(Math.floor(Math.random() * 8) + 1).fill(null).map(() => {
-      const randomIPO = mockIPOs[Math.floor(Math.random() * mockIPOs.length)];
-      const averageBuyPrice = parseFloat(faker.number.float({ 
-        min: randomIPO.currentPrice * 0.7, 
-        max: randomIPO.currentPrice * 1.3, 
-        fractionDigits: 2
-      }).toFixed(2));
-      
-      const shares = faker.number.int({ min: 10, max: 1000 });
-      const currentPrice = randomIPO.currentPrice;
-      const profitLoss = (currentPrice - averageBuyPrice) * shares;
-      const profitLossPercentage = ((currentPrice - averageBuyPrice) / averageBuyPrice) * 100;
-      
-      return {
-        id: randomIPO.id,
-        creatorName: randomIPO.creatorName,
-        symbol: randomIPO.symbol,
-        shares,
-        averageBuyPrice,
-        currentPrice,
-        profitLoss,
-        profitLossPercentage
-      };
-    });
   }
 }
 

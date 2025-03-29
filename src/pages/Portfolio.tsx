@@ -1,363 +1,505 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { LayoutShell } from "@/components/layout/LayoutShell";
-import { DashboardShell } from "@/components/layout/DashboardShell";
-import { GlassCard } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { mockPortfolioAPI } from "@/utils/mockApi";
-import { Briefcase, PieChart, TrendingUp, History, ArrowUpRight, ArrowDownRight, RefreshCw } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useSoundFX } from "@/hooks/useSoundFX";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, CartesianGrid, Tooltip } from "recharts";
+import { ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown, Wallet, CreditCard, Clock, BarChart3 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-interface PortfolioPosition {
-  id: string;
-  creatorName: string;
-  symbol: string;
-  shares: number;
-  averageBuyPrice: number;
-  currentPrice: number;
-  profitLoss: number;
-  profitLossPercentage: number;
-}
+// Mock data for portfolio
+const portfolioData = {
+  totalValue: 142580,
+  change: 8.3,
+  changeValue: 11850,
+  invested: 98570,
+  holdings: [
+    { name: "Taylor Swift", symbol: "$SWIFT", value: 42850, units: 480.32, change: 8.7, color: "#0050FF" },
+    { name: "LeBron James", symbol: "$LBJ", value: 30451, units: 536.21, change: 3.4, color: "#3B82F6" },
+    { name: "Cristiano Ronaldo", symbol: "$CR7", value: 28860, units: 400.00, change: 4.5, color: "#60A5FA" },
+    { name: "Zendaya", symbol: "$ZEN", value: 15640, units: 850.00, change: 5.2, color: "#93C5FD" },
+    { name: "Emma Watson", symbol: "$EMW", value: 14950, units: 602.33, change: 12.5, color: "#BFDBFE" },
+    { name: "Tom Holland", symbol: "$THLD", value: 9829, units: 460.37, change: -1.8, color: "#DBEAFE" },
+  ],
+  transactions: [
+    { id: 1, type: "buy", symbol: "$SWIFT", units: 10.5, price: 85.32, total: 895.86, date: "2023-05-01T10:15:00" },
+    { id: 2, type: "sell", symbol: "$EMW", units: 5.2, price: 23.45, total: 121.94, date: "2023-04-28T14:30:00" },
+    { id: 3, type: "buy", symbol: "$CR7", units: 20, price: 71.05, total: 1421.00, date: "2023-04-25T09:45:00" },
+    { id: 4, type: "buy", symbol: "$LBJ", units: 15, price: 54.21, total: 813.15, date: "2023-04-22T16:20:00" },
+    { id: 5, type: "sell", symbol: "$ZEN", units: 8.5, price: 17.95, total: 152.58, date: "2023-04-20T11:05:00" },
+  ],
+  performance: [
+    { date: "Jan", value: 92500 },
+    { date: "Feb", value: 98200 },
+    { date: "Mar", value: 105400 },
+    { date: "Apr", value: 112800 },
+    { date: "May", value: 130700 },
+    { date: "Jun", value: 142580 },
+  ]
+};
 
 const Portfolio = () => {
-  const navigate = useNavigate();
-  const { playHover, playClick } = useSoundFX();
-  const [activeTab, setActiveTab] = useState("holdings");
+  const [timeFrame, setTimeFrame] = useState("6m");
   
-  const { data: positions = [], isLoading, refetch } = useQuery({
-    queryKey: ['portfolio'],
-    queryFn: async () => {
-      const data = await mockPortfolioAPI.getUserPositions();
-      return data;
-    },
-  });
+  // Format date for the transaction history
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  };
   
-  const totalValue = positions.reduce((sum, pos) => sum + (pos.shares * pos.currentPrice), 0);
-  const totalProfit = positions.reduce((sum, pos) => sum + pos.profitLoss, 0);
-  const totalProfitPercentage = (totalProfit / (totalValue - totalProfit)) * 100;
+  // Calculate the percentage each holding represents
+  const totalPortfolioValue = portfolioData.holdings.reduce((sum, item) => sum + item.value, 0);
+  const holdingsWithPercent = portfolioData.holdings.map(holding => ({
+    ...holding,
+    percent: (holding.value / totalPortfolioValue * 100).toFixed(1)
+  }));
   
-  const handleRefresh = () => {
-    playClick();
-    refetch();
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border border-axium-gray-200 rounded-md shadow-sm">
+          <p className="font-medium">{`$${payload[0].value.toLocaleString()}`}</p>
+        </div>
+      );
+    }
+    return null;
   };
   
   return (
-    <LayoutShell>
-      <DashboardShell>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 gap-6">
-            {/* Portfolio Header */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-            >
-              <div>
-                <h1 className="text-3xl font-bold flex items-center text-gray-900 dark:text-white">
-                  <Briefcase className="mr-2 h-8 w-8 text-blue-600 dark:text-[#3AA0FF]" />
-                  Portfolio
-                </h1>
-                <p className="text-gray-600 dark:text-[#8A9CCC]">Manage your creator token investments</p>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="dark:border-[#1A2747] dark:text-[#8A9CCC] dark:hover:bg-[#1A2747]/50"
-                  onClick={handleRefresh}
-                  onMouseEnter={playHover}
-                >
-                  <RefreshCw className="h-4 w-4 mr-1" />
-                  Refresh
-                </Button>
-                <Button 
-                  className="bg-blue-600 hover:bg-blue-700 dark:bg-[#3AA0FF] dark:hover:bg-[#2D7DD2]"
-                  onMouseEnter={playHover}
-                  onClick={() => {
-                    playClick();
-                    navigate('/trading');
-                  }}
-                >
-                  Buy Creators
-                </Button>
-              </div>
-            </motion.div>
-            
-            {/* Portfolio Summary Cards */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6"
-            >
-              <GlassCard className="p-6 hover-scale">
-                <h3 className="text-sm font-medium text-gray-600 dark:text-[#8A9CCC]">Total Portfolio Value</h3>
-                <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-white">${totalValue.toFixed(2)}</p>
-                <div className="flex items-center mt-2">
-                  <div className={`flex items-center ${totalProfit >= 0 ? 'text-green-600 dark:text-[#00C076]' : 'text-red-600 dark:text-[#FF4A60]'}`}>
-                    {totalProfit >= 0 ? (
-                      <ArrowUpRight className="h-4 w-4 mr-1" />
-                    ) : (
-                      <ArrowDownRight className="h-4 w-4 mr-1" />
-                    )}
-                    <span>{Math.abs(totalProfitPercentage).toFixed(2)}%</span>
-                  </div>
-                  <span className="text-gray-600 dark:text-[#8A9CCC] ml-2 text-sm">All time</span>
-                </div>
-              </GlassCard>
-              
-              <GlassCard className="p-6 hover-scale">
-                <h3 className="text-sm font-medium text-gray-600 dark:text-[#8A9CCC]">Total Profit/Loss</h3>
-                <p className={`text-3xl font-bold mt-2 ${totalProfit >= 0 ? 'text-green-600 dark:text-[#00C076]' : 'text-red-600 dark:text-[#FF4A60]'}`}>
-                  ${totalProfit.toFixed(2)}
-                </p>
-                <div className="flex items-center mt-2">
-                  <div className="text-gray-600 dark:text-[#8A9CCC] text-sm">
-                    <span>From {positions.length} creators</span>
-                  </div>
-                </div>
-              </GlassCard>
-              
-              <GlassCard className="p-6 hover-scale">
-                <h3 className="text-sm font-medium text-gray-600 dark:text-[#8A9CCC]">Portfolio Diversity</h3>
-                <div className="mt-3 flex gap-1">
-                  {positions.slice(0, 8).map((position, index) => (
-                    <div 
-                      key={position.id}
-                      className="h-4 rounded-full" 
-                      style={{
-                        width: `${Math.max(5, (position.shares * position.currentPrice / totalValue) * 100)}%`,
-                        backgroundColor: [
-                          'rgb(59, 130, 246)', 'rgb(16, 185, 129)', 'rgb(245, 158, 11)', 
-                          'rgb(139, 92, 246)', 'rgb(236, 72, 153)', 'rgb(239, 68, 68)', 
-                          'rgb(168, 85, 247)', 'rgb(14, 165, 233)'
-                        ][index % 8]
-                      }}
-                    />
-                  ))}
-                </div>
-                <div className="flex justify-between items-center mt-3">
-                  <span className="text-xs text-gray-600 dark:text-[#8A9CCC]">Categories</span>
-                  <div className="text-blue-600 dark:text-[#3AA0FF] text-sm font-medium cursor-pointer hover:underline" onClick={() => setActiveTab("analytics")}>
-                    Analytics →
-                  </div>
-                </div>
-              </GlassCard>
-            </motion.div>
-            
-            {/* Portfolio Tabs */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <Tabs 
-                value={activeTab} 
-                onValueChange={setActiveTab}
-                className="w-full"
-              >
-                <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-100 dark:bg-[#0D1424] p-1">
-                  <TabsTrigger 
-                    value="holdings" 
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-[#1A2747] dark:text-white"
-                    onClick={() => playClick()}
-                  >
-                    <Briefcase className="h-4 w-4 mr-2" />
-                    Holdings
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="history" 
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-[#1A2747] dark:text-white"
-                    onClick={() => playClick()}
-                  >
-                    <History className="h-4 w-4 mr-2" />
-                    History
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="analytics" 
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-[#1A2747] dark:text-white"
-                    onClick={() => playClick()}
-                  >
-                    <PieChart className="h-4 w-4 mr-2" />
-                    Analytics
-                  </TabsTrigger>
-                </TabsList>
-                
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <TabsContent value="holdings" className="space-y-4">
-                      <GlassCard className="overflow-hidden">
-                        <div className="overflow-x-auto">
-                          <table className="w-full">
-                            <thead>
-                              <tr className="bg-gray-50 dark:bg-[#0C1221]">
-                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-[#8A9CCC]">Creator</th>
-                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-[#8A9CCC]">Shares</th>
-                                <th className="px-4 py-3 text-right text-sm font-medium text-gray-600 dark:text-[#8A9CCC]">Avg. Buy</th>
-                                <th className="px-4 py-3 text-right text-sm font-medium text-gray-600 dark:text-[#8A9CCC]">Current</th>
-                                <th className="px-4 py-3 text-right text-sm font-medium text-gray-600 dark:text-[#8A9CCC]">P/L</th>
-                                <th className="px-4 py-3 text-right text-sm font-medium text-gray-600 dark:text-[#8A9CCC]">Value</th>
-                                <th className="px-4 py-3 text-center text-sm font-medium text-gray-600 dark:text-[#8A9CCC]">Action</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200 dark:divide-[#1A2747]">
-                              {isLoading ? (
-                                <tr>
-                                  <td colSpan={7} className="px-4 py-8 text-center text-gray-600 dark:text-[#8A9CCC]">Loading...</td>
-                                </tr>
-                              ) : positions.length === 0 ? (
-                                <tr>
-                                  <td colSpan={7} className="px-4 py-8 text-center text-gray-600 dark:text-[#8A9CCC]">
-                                    No holdings yet. Start trading to build your portfolio.
-                                  </td>
-                                </tr>
-                              ) : (
-                                positions.map((position) => (
-                                  <tr 
-                                    key={position.id} 
-                                    className="hover:bg-gray-50 dark:hover:bg-[#0D1424] transition-colors duration-150 cursor-pointer"
-                                    onClick={() => navigate(`/creators/${position.symbol.toLowerCase()}`)}
-                                    onMouseEnter={playHover}
-                                  >
-                                    <td className="px-4 py-4">
-                                      <div className="flex items-center">
-                                        <div className="h-8 w-8 flex-shrink-0 rounded-full bg-blue-100 dark:bg-[#1A2747] flex items-center justify-center mr-3">
-                                          <span className="font-semibold text-blue-700 dark:text-[#3AA0FF]">{position.symbol.charAt(0)}</span>
-                                        </div>
-                                        <div>
-                                          <div className="font-medium text-gray-900 dark:text-white">{position.creatorName}</div>
-                                          <div className="text-sm text-gray-600 dark:text-[#8A9CCC]">${position.symbol}</div>
-                                        </div>
-                                      </div>
-                                    </td>
-                                    <td className="px-4 py-4 text-gray-900 dark:text-white">{position.shares.toFixed(2)}</td>
-                                    <td className="px-4 py-4 text-right text-gray-900 dark:text-white">${position.averageBuyPrice.toFixed(2)}</td>
-                                    <td className="px-4 py-4 text-right text-gray-900 dark:text-white">${position.currentPrice.toFixed(2)}</td>
-                                    <td className={`px-4 py-4 text-right font-medium ${
-                                      position.profitLoss >= 0 
-                                        ? 'text-green-600 dark:text-[#00C076]' 
-                                        : 'text-red-600 dark:text-[#FF4A60]'
-                                    }`}>
-                                      ${Math.abs(position.profitLoss).toFixed(2)}
-                                      <span className="block text-xs">
-                                        {position.profitLossPercentage >= 0 ? "+" : "-"}
-                                        {Math.abs(position.profitLossPercentage).toFixed(2)}%
-                                      </span>
-                                    </td>
-                                    <td className="px-4 py-4 text-right font-medium text-gray-900 dark:text-white">
-                                      ${(position.shares * position.currentPrice).toFixed(2)}
-                                    </td>
-                                    <td className="px-4 py-4 text-center">
-                                      <Button 
-                                        size="sm" 
-                                        className="bg-blue-600 hover:bg-blue-700 dark:bg-[#3AA0FF] dark:hover:bg-[#2D7DD2]"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          playClick();
-                                          navigate('/trading');
-                                        }}
-                                      >
-                                        <TrendingUp className="h-4 w-4 mr-1" />
-                                        Trade
-                                      </Button>
-                                    </td>
-                                  </tr>
-                                ))
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                      </GlassCard>
-                      
-                      {positions.length > 0 && (
-                        <div className="flex justify-end">
-                          <Button 
-                            variant="outline"
-                            className="dark:border-[#1A2747] dark:text-[#8A9CCC] dark:hover:bg-[#1A2747]/50"
-                            onMouseEnter={playHover}
-                            onClick={() => {
-                              playClick();
-                              // Export functionality would go here
-                            }}
-                          >
-                            Export CSV
-                          </Button>
-                        </div>
+    <div className="min-h-screen bg-axium-gray-100/30">
+      <Navbar />
+      
+      <main className="pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-axium-gray-900 mb-2">My Portfolio</h1>
+            <p className="text-axium-gray-600">Track your investments and performance</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <GlassCard className="md:col-span-2">
+              <div className="flex flex-col sm:flex-row justify-between items-start mb-8">
+                <div>
+                  <p className="text-axium-gray-600 mb-1">Total Portfolio Value</p>
+                  <div className="flex items-baseline">
+                    <h2 className="text-3xl font-bold mr-3">${portfolioData.totalValue.toLocaleString()}</h2>
+                    <div className={cn(
+                      "flex items-center text-sm font-medium",
+                      portfolioData.change >= 0 ? "text-axium-success" : "text-axium-error"
+                    )}>
+                      {portfolioData.change >= 0 ? (
+                        <ArrowUpRight className="h-4 w-4 mr-1" />
+                      ) : (
+                        <ArrowDownRight className="h-4 w-4 mr-1" />
                       )}
-                    </TabsContent>
-                    
-                    <TabsContent value="history" className="space-y-4">
-                      <GlassCard className="p-6">
-                        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Transaction History</h3>
-                        <p className="text-gray-600 dark:text-[#8A9CCC]">Your recent trades and transactions will appear here.</p>
-                        
-                        <div className="mt-4 text-center py-12">
-                          <TrendingUp className="h-12 w-12 mx-auto text-gray-400 dark:text-[#3A4766] mb-3" />
-                          <p className="text-gray-600 dark:text-[#8A9CCC]">No transactions recorded yet.</p>
-                          <Button 
-                            className="mt-4 bg-blue-600 hover:bg-blue-700 dark:bg-[#3AA0FF] dark:hover:bg-[#2D7DD2]"
-                            onMouseEnter={playHover}
-                            onClick={() => {
-                              playClick();
-                              navigate('/trading');
-                            }}
-                          >
-                            Make your first trade
-                          </Button>
-                        </div>
-                      </GlassCard>
-                    </TabsContent>
-                    
-                    <TabsContent value="analytics" className="space-y-4">
-                      <GlassCard className="p-6">
-                        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Portfolio Analytics</h3>
-                        <p className="text-gray-600 dark:text-[#8A9CCC]">
-                          Detailed analytics about your portfolio performance will be displayed here.
-                        </p>
-                        
-                        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                          <div className="bg-gray-50 dark:bg-[#0C1221] rounded-lg p-4 border border-gray-200 dark:border-[#1A2747]">
-                            <h4 className="text-sm font-medium text-gray-600 dark:text-[#8A9CCC] mb-4">Portfolio Allocation</h4>
-                            <div className="h-48 flex items-center justify-center">
-                              <PieChart className="h-24 w-24 text-gray-400 dark:text-[#3A4766]" />
-                            </div>
-                          </div>
-                          
-                          <div className="bg-gray-50 dark:bg-[#0C1221] rounded-lg p-4 border border-gray-200 dark:border-[#1A2747]">
-                            <h4 className="text-sm font-medium text-gray-600 dark:text-[#8A9CCC] mb-4">Performance Over Time</h4>
-                            <div className="h-48 flex items-center justify-center">
-                              <TrendingUp className="h-24 w-24 text-gray-400 dark:text-[#3A4766]" />
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="mt-6 text-center">
-                          <p className="text-gray-600 dark:text-[#8A9CCC] text-sm">
-                            Enhanced analytics coming soon. Build your portfolio to see more insights.
-                          </p>
-                        </div>
-                      </GlassCard>
-                    </TabsContent>
-                  </motion.div>
-                </AnimatePresence>
+                      {portfolioData.change >= 0 ? "+" : ""}{portfolioData.change}% (${portfolioData.changeValue.toLocaleString()})
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2 mt-4 sm:mt-0">
+                  <Button 
+                    variant={timeFrame === "1m" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setTimeFrame("1m")}
+                    className={timeFrame === "1m" ? "bg-axium-blue text-white" : "bg-white"}
+                  >
+                    1M
+                  </Button>
+                  <Button 
+                    variant={timeFrame === "6m" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setTimeFrame("6m")}
+                    className={timeFrame === "6m" ? "bg-axium-blue text-white" : "bg-white"}
+                  >
+                    6M
+                  </Button>
+                  <Button 
+                    variant={timeFrame === "1y" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setTimeFrame("1y")}
+                    className={timeFrame === "1y" ? "bg-axium-blue text-white" : "bg-white"}
+                  >
+                    1Y
+                  </Button>
+                  <Button 
+                    variant={timeFrame === "all" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => setTimeFrame("all")}
+                    className={timeFrame === "all" ? "bg-axium-blue text-white" : "bg-white"}
+                  >
+                    All
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={portfolioData.performance}
+                    margin={{
+                      top: 5,
+                      right: 5,
+                      left: 5,
+                      bottom: 5,
+                    }}
+                  >
+                    <defs>
+                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#0050FF" stopOpacity={0.2}/>
+                        <stop offset="95%" stopColor="#0050FF" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke="#EEEEEE" strokeDasharray="5 5" vertical={false} />
+                    <XAxis 
+                      dataKey="date" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 12, fill: '#6C757D' }}
+                    />
+                    <YAxis 
+                      domain={['auto', 'auto']} 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fontSize: 12, fill: '#6C757D' }}
+                      tickFormatter={(value) => `$${value / 1000}k`}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="value"
+                      stroke="#0050FF"
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: "#0050FF", strokeWidth: 0 }}
+                      activeDot={{ r: 6, fill: "#0050FF", strokeWidth: 2, stroke: "#fff" }}
+                      fillOpacity={1}
+                      fill="url(#colorValue)"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </GlassCard>
+            
+            <GlassCard>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold">Portfolio Breakdown</h3>
+              </div>
+              
+              <div className="h-[200px] mb-6">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={holdingsWithPercent}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {holdingsWithPercent.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']}
+                      labelFormatter={(index) => holdingsWithPercent[index].symbol}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              
+              <div className="space-y-4">
+                {holdingsWithPercent.slice(0, 4).map((holding, index) => (
+                  <div key={holding.symbol} className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div 
+                        className="w-3 h-3 rounded-full mr-3"
+                        style={{ backgroundColor: holding.color }}
+                      />
+                      <div>
+                        <p className="font-medium">{holding.symbol}</p>
+                        <p className="text-xs text-axium-gray-500">{holding.percent}%</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">${holding.value.toLocaleString()}</p>
+                      <div className={cn(
+                        "flex items-center text-xs justify-end",
+                        holding.change >= 0 ? "text-axium-success" : "text-axium-error"
+                      )}>
+                        {holding.change >= 0 ? (
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3 mr-1" />
+                        )}
+                        {holding.change >= 0 ? "+" : ""}{holding.change}%
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {holdingsWithPercent.length > 4 && (
+                  <Button 
+                    variant="outline"
+                    className="w-full border-axium-gray-200 text-axium-gray-700 hover:bg-axium-gray-100 mt-2"
+                  >
+                    View All Assets
+                  </Button>
+                )}
+              </div>
+            </GlassCard>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <GlassCard className="md:col-span-2">
+              <Tabs defaultValue="holdings">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold">My Assets</h3>
+                  <TabsList className="bg-axium-gray-100">
+                    <TabsTrigger value="holdings" className="data-[state=active]:bg-axium-blue data-[state=active]:text-white">
+                      Holdings
+                    </TabsTrigger>
+                    <TabsTrigger value="transactions" className="data-[state=active]:bg-axium-blue data-[state=active]:text-white">
+                      Transactions
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                
+                <TabsContent value="holdings" className="space-y-0">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                      <thead>
+                        <tr className="border-b border-axium-gray-200">
+                          <th className="py-3 px-4 text-left text-xs font-medium text-axium-gray-600 uppercase tracking-wider">Asset</th>
+                          <th className="py-3 px-4 text-left text-xs font-medium text-axium-gray-600 uppercase tracking-wider">Amount</th>
+                          <th className="py-3 px-4 text-right text-xs font-medium text-axium-gray-600 uppercase tracking-wider">Value</th>
+                          <th className="py-3 px-4 text-right text-xs font-medium text-axium-gray-600 uppercase tracking-wider">Change</th>
+                          <th className="py-3 px-4 text-center text-xs font-medium text-axium-gray-600 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-axium-gray-200">
+                        {portfolioData.holdings.map((holding) => (
+                          <tr key={holding.symbol} className="hover:bg-axium-gray-50">
+                            <td className="py-4 px-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div 
+                                  className="w-8 h-8 rounded-full mr-3 bg-axium-gray-200 overflow-hidden flex-shrink-0"
+                                  style={{ 
+                                    background: `linear-gradient(135deg, ${holding.color}20, ${holding.color}50)` 
+                                  }}
+                                />
+                                <div>
+                                  <p className="font-medium text-axium-gray-900">{holding.symbol}</p>
+                                  <p className="text-sm text-axium-gray-500">{holding.name}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-4 px-4 whitespace-nowrap">
+                              <p className="font-medium">{holding.units.toFixed(2)}</p>
+                            </td>
+                            <td className="py-4 px-4 whitespace-nowrap text-right">
+                              <p className="font-medium">${holding.value.toLocaleString()}</p>
+                            </td>
+                            <td className="py-4 px-4 whitespace-nowrap text-right">
+                              <div className={cn(
+                                "inline-flex items-center justify-end px-2.5 py-0.5 rounded-full text-xs font-medium w-[80px]",
+                                holding.change >= 0 
+                                  ? "bg-axium-success/10 text-axium-success" 
+                                  : "bg-axium-error/10 text-axium-error"
+                              )}>
+                                {holding.change >= 0 ? (
+                                  <TrendingUp className="h-3 w-3 mr-1" />
+                                ) : (
+                                  <TrendingDown className="h-3 w-3 mr-1" />
+                                )}
+                                {holding.change >= 0 ? "+" : ""}{holding.change}%
+                              </div>
+                            </td>
+                            <td className="py-4 px-4 whitespace-nowrap text-center">
+                              <div className="flex justify-center space-x-2">
+                                <Button 
+                                  size="sm"
+                                  className="bg-axium-blue hover:bg-axium-blue/90 text-white"
+                                >
+                                  Trade
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="transactions" className="space-y-0">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                      <thead>
+                        <tr className="border-b border-axium-gray-200">
+                          <th className="py-3 px-4 text-left text-xs font-medium text-axium-gray-600 uppercase tracking-wider">Date</th>
+                          <th className="py-3 px-4 text-left text-xs font-medium text-axium-gray-600 uppercase tracking-wider">Type</th>
+                          <th className="py-3 px-4 text-left text-xs font-medium text-axium-gray-600 uppercase tracking-wider">Asset</th>
+                          <th className="py-3 px-4 text-right text-xs font-medium text-axium-gray-600 uppercase tracking-wider">Amount</th>
+                          <th className="py-3 px-4 text-right text-xs font-medium text-axium-gray-600 uppercase tracking-wider">Price</th>
+                          <th className="py-3 px-4 text-right text-xs font-medium text-axium-gray-600 uppercase tracking-wider">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-axium-gray-200">
+                        {portfolioData.transactions.map((transaction) => (
+                          <tr key={transaction.id} className="hover:bg-axium-gray-50">
+                            <td className="py-4 px-4 whitespace-nowrap">
+                              <p className="text-sm text-axium-gray-600">{formatDate(transaction.date)}</p>
+                            </td>
+                            <td className="py-4 px-4 whitespace-nowrap">
+                              <div className={cn(
+                                "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                                transaction.type === "buy" 
+                                  ? "bg-axium-success/10 text-axium-success" 
+                                  : "bg-axium-error/10 text-axium-error"
+                              )}>
+                                {transaction.type.toUpperCase()}
+                              </div>
+                            </td>
+                            <td className="py-4 px-4 whitespace-nowrap">
+                              <p className="font-medium">{transaction.symbol}</p>
+                            </td>
+                            <td className="py-4 px-4 whitespace-nowrap text-right">
+                              <p className="font-medium">{transaction.units.toFixed(2)}</p>
+                            </td>
+                            <td className="py-4 px-4 whitespace-nowrap text-right">
+                              <p className="font-medium">${transaction.price.toFixed(2)}</p>
+                            </td>
+                            <td className="py-4 px-4 whitespace-nowrap text-right">
+                              <p className="font-medium">${transaction.total.toFixed(2)}</p>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="flex justify-center mt-6">
+                    <Button 
+                      variant="outline"
+                      className="border-axium-gray-200 text-axium-gray-700 hover:bg-axium-gray-100"
+                    >
+                      View All Transactions
+                    </Button>
+                  </div>
+                </TabsContent>
               </Tabs>
-            </motion.div>
+            </GlassCard>
+            
+            <div className="space-y-6">
+              <GlassCard>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Account Balance</h3>
+                </div>
+                
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-axium-gray-500 text-sm">Available funds</p>
+                    <p className="text-2xl font-semibold mt-1">$5,280.42</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Button 
+                      className="w-full bg-axium-success hover:bg-axium-success/90 text-white"
+                    >
+                      <Wallet className="h-4 w-4 mr-2" />
+                      Deposit
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="w-full border-axium-gray-200 text-axium-gray-700 hover:bg-axium-gray-100"
+                    >
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Withdraw
+                    </Button>
+                  </div>
+                </div>
+              </GlassCard>
+              
+              <GlassCard>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold">Pending Orders</h3>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="h-8 text-axium-gray-600 hover:text-axium-blue"
+                  >
+                    <Clock className="h-4 w-4 mr-1" />
+                    History
+                  </Button>
+                </div>
+                
+                <div className="text-center py-8">
+                  <p className="text-axium-gray-500">No pending orders</p>
+                </div>
+              </GlassCard>
+              
+              <GlassCard>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold">Profit/Loss</h3>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="h-8 text-axium-gray-600 hover:text-axium-blue"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-1" />
+                    Details
+                  </Button>
+                </div>
+                
+                <div className="h-[120px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={[
+                        { month: 'Jan', profit: 2500 },
+                        { month: 'Feb', profit: 1800 },
+                        { month: 'Mar', profit: 4200 },
+                        { month: 'Apr', profit: 3500 },
+                        { month: 'May', profit: 5800 },
+                        { month: 'Jun', profit: 8300 },
+                      ]}
+                      margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                    >
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
+                      <YAxis hide />
+                      <Tooltip
+                        formatter={(value: number) => [`$${value.toLocaleString()}`, 'Profit']}
+                      />
+                      <Bar dataKey="profit" fill="#0050FF" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                <div className="mt-2 pt-4 border-t border-axium-gray-200 flex justify-between">
+                  <div>
+                    <p className="text-axium-gray-500 text-xs">Total Profit</p>
+                    <p className="text-axium-success font-semibold">+$44,010</p>
+                  </div>
+                  <div>
+                    <p className="text-axium-gray-500 text-xs">Return</p>
+                    <p className="text-axium-success font-semibold">+44.65%</p>
+                  </div>
+                </div>
+              </GlassCard>
+            </div>
           </div>
         </div>
-      </DashboardShell>
-    </LayoutShell>
+      </main>
+      
+      <Footer />
+    </div>
   );
 };
 

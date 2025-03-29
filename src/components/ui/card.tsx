@@ -1,4 +1,3 @@
-
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -10,7 +9,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm transition-all duration-300",
+      "rounded-lg border bg-card text-card-foreground shadow-sm",
       className
     )}
     {...props}
@@ -77,34 +76,4 @@ const CardFooter = React.forwardRef<
 ))
 CardFooter.displayName = "CardFooter"
 
-const DarkCard = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-lg border border-gray-200 dark:border-[#1A2747] bg-white dark:bg-[#0D1424]/80 text-gray-900 dark:text-white shadow-xl backdrop-blur-sm transition-all duration-300",
-      className
-    )}
-    {...props}
-  />
-))
-DarkCard.displayName = "DarkCard"
-
-const GlassCard = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-lg border border-gray-200/50 dark:border-[#1A2747]/50 bg-gradient-to-br from-white to-gray-50/90 dark:from-[#0D1424]/90 dark:to-[#0D1424]/70 backdrop-blur-md text-gray-900 dark:text-white shadow-lg transition-all duration-300 hover:shadow-xl",
-      className
-    )}
-    {...props}
-  />
-))
-GlassCard.displayName = "GlassCard"
-
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, DarkCard, GlassCard }
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
