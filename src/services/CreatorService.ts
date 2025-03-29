@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Json } from "@/integrations/supabase/types";
 
 export interface Creator {
   id: string;
@@ -25,9 +26,30 @@ export interface TradeEvent {
   event_type: 'buy' | 'sell' | 'valuation_update';
   quantity?: number;
   price?: number;
-  metadata?: any;
+  metadata?: Json;
   timestamp: string;
 }
+
+// Type from the database that needs to be transformed
+interface RawTradeEvent {
+  id: string;
+  creator_id: string;
+  user_id: string;
+  event_type: string;
+  quantity?: number;
+  price?: number;
+  metadata?: Json;
+  timestamp: string;
+}
+
+// Function to validate and convert event type
+const validateEventType = (type: string): 'buy' | 'sell' | 'valuation_update' => {
+  if (type === 'buy' || type === 'sell' || type === 'valuation_update') {
+    return type;
+  }
+  console.warn(`Unknown event type: ${type}, defaulting to 'valuation_update'`);
+  return 'valuation_update';
+};
 
 export const CreatorService = {
   async getCreators(): Promise<Creator[]> {
@@ -69,7 +91,14 @@ export const CreatorService = {
         .order('timestamp', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      
+      // Transform the raw data to ensure event_type is correct
+      const transformedData: TradeEvent[] = (data || []).map((item: RawTradeEvent) => ({
+        ...item,
+        event_type: validateEventType(item.event_type)
+      }));
+      
+      return transformedData;
     } catch (error: any) {
       toast.error(`Failed to fetch trade events: ${error.message}`);
       return [];
@@ -85,10 +114,16 @@ export const CreatorService = {
         .single();
       
       if (error) throw error;
-      return data;
+      
+      // Transform to ensure correct typing
+      return {
+        ...data,
+        event_type: validateEventType(data.event_type)
+      };
     } catch (error: any) {
       toast.error(`Failed to record trade event: ${error.message}`);
       return null;
     }
   }
 };
+
