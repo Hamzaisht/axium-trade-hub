@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { IPOProvider } from "@/contexts/IPOContext";
 import { TradingProvider } from "@/contexts/TradingContext";
+import { DemoModeProvider } from "@/contexts/DemoModeContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -33,21 +34,23 @@ function App() {
           <AuthProvider>
             <IPOProvider>
               <TradingProvider>
-                <div className="min-h-screen font-sans antialiased bg-background text-foreground transition-colors">
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route element={<Layout />}>
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/trading" element={<Trading />} />
-                      <Route path="/portfolio" element={<Portfolio />} />
-                      <Route path="/creator/:slug" element={<CreatorProfile />} />
-                      <Route path="/institutional/:slug" element={<InstitutionalCreator />} />
-                    </Route>
-                  </Routes>
-                  <ToastContainer />
-                </div>
+                <DemoModeProvider>
+                  <div className="min-h-screen font-sans antialiased bg-background text-foreground transition-colors">
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route element={<Layout />}>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/trading" element={<Trading />} />
+                        <Route path="/portfolio" element={<Portfolio />} />
+                        <Route path="/creator/:slug" element={<CreatorProfile />} />
+                        <Route path="/institutional/:slug" element={<InstitutionalCreator />} />
+                      </Route>
+                    </Routes>
+                    <ToastContainer />
+                  </div>
+                </DemoModeProvider>
               </TradingProvider>
             </IPOProvider>
           </AuthProvider>
