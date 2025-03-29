@@ -26,7 +26,7 @@ export function LayoutShell({ children, className = "" }: LayoutShellProps) {
         isDark && "relative"
       )}>
         {isDark && (
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(56,189,248,0.15),transparent_70%)] pointer-events-none"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,207,255,0.15),transparent_70%)] pointer-events-none"></div>
         )}
         <div className="relative z-10">
           {children}

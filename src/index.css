@@ -264,7 +264,7 @@
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
   
-  /* Glow effects for buttons and interactive elements - Enhanced for Geex Studio Dark Mode */
+  /* Glow effects for buttons and interactive elements - Enhanced for Geek Studio Dark Mode */
   .glow-hover {
     @apply transition-all duration-300;
   }
@@ -273,7 +273,7 @@
     @apply shadow-glow animate-glow-pulse dark:shadow-neon-blue;
   }
   
-  /* Neon effects - Enhanced for Geex Studio Dark Mode */
+  /* Neon effects - Enhanced for Geek Studio Dark Mode */
   .neon-text-gold {
     @apply text-axium-neon-gold drop-shadow-md dark:text-axium-neon-gold dark:drop-shadow-[0_0_5px_rgba(255,215,0,0.7)];
   }

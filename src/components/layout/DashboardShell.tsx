@@ -1,8 +1,6 @@
 
 import { ReactNode } from "react";
 import { PriceTickerScroll } from "@/components/market/PriceTickerScroll";
-import { LiveChart } from "@/components/market/LiveChart";
-import { MarketFeed } from "@/components/market/MarketFeed";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
