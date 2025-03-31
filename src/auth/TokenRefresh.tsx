@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { showNotification } from '@/components/notifications/ToastContainer';
 
 export const TokenRefreshProvider = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -27,7 +27,7 @@ export const TokenRefreshProvider = ({ children }: { children: React.ReactNode }
           
           if (error) {
             console.error("Token refresh failed:", error);
-            toast.error("Authentication expired. Please log in again.");
+            showNotification.error("Authentication expired. Please log in again.");
           } else if (data.session) {
             console.log("Token refreshed successfully");
           }

@@ -16,7 +16,6 @@ import Dashboard from '@/pages/Dashboard';
 import Portfolio from '@/pages/Portfolio';
 import Creators from '@/pages/Creators';
 import Trading from '@/pages/Trading';
-import Admin from '@/pages/Admin';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import NotFound from '@/pages/NotFound';
@@ -34,7 +33,7 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="light">
       <QueryClientProvider client={queryClient}>
         <Router>
           <AuthProvider>
@@ -80,15 +79,6 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <Trading />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      
-                      <Route 
-                        path="/admin" 
-                        element={
-                          <ProtectedRoute requiredRole="admin">
-                            <Admin />
                           </ProtectedRoute>
                         } 
                       />
